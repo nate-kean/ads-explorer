@@ -1,0 +1,125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ADSExplorer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumerateExplorerWindows.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RootShellFolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShellItems.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ads_enumerate.cpp">
+      <Filter>Source Files\ADS</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RootShellFolder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RootShellFolderADS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RootShellViewADS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellFolderView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumerateExplorerWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ads.h">
+      <Filter>Header Files\ADS</Filter>
+    </ClInclude>
+    <ClInclude Include="RootShellView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CComEnumOnCArray.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CStringCopyTo.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="MPidlMgr.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="wtlstr.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ShellItems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="RootShellFolder.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="register.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="unregister.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="ADSExplorer.def">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\.clang-format">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{31af3ebf-273e-4dbd-8c2f-909a37282170}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9ef3e0a8-dfcf-4c4a-be5c-241db1d8b5da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{cc6da92b-e203-48ba-bc62-fb9adbdf6ef7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ADS">
+      <UniqueIdentifier>{c40ee7d3-3705-410d-b95d-f746f620136f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ADS">
+      <UniqueIdentifier>{1790d177-ee21-45bd-8a58-05b08ef40b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Core">
+      <UniqueIdentifier>{1a7321d8-55aa-4d3b-9952-fd5cdb82ba3c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ADSExplorer.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\notes.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ADSExplorer.idl">
+      <Filter>Resource Files</Filter>
+    </Midl>
+  </ItemGroup>
+</Project>

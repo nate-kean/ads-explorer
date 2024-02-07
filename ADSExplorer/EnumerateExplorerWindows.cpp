@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -21,13 +21,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 #include "stdafx.h"
-
 #include "ShellItems.h"
 
-CString PhysicalManifestationPath(void)
-{
+static CString PhysicalManifestationPath(void) {
 	// Workaround. See COWRootShellFolder::GetDisplayNameOf.
 	CString str;
 	// yes, it really is the opposite
@@ -36,8 +33,7 @@ CString PhysicalManifestationPath(void)
 	return str;
 }
 
-BOOL IsExplorerWindow(IWebBrowserApp *wba)
-{
+static BOOL IsExplorerWindow(IWebBrowserApp *wba) {
 	BSTR appName;
 	wba->get_FullName(&appName);
 	CString appNameNormalized = CString(appName);
@@ -49,12 +45,17 @@ BOOL IsExplorerWindow(IWebBrowserApp *wba)
 }
 
 #if _DEBUG
-void TraceHwndInner(HWND tracedWindow, TCHAR *desc)
-{
+static void TraceHwndInner(HWND tracedWindow, TCHAR *desc) {
 	TCHAR name[255], klass[255];
 	GetClassName(tracedWindow, klass, 255);
 	GetWindowText(tracedWindow, name, 255);
-	ATLTRACE(_T(" ** TraceHwnd %ld %s: name %s class %s"), (long)tracedWindow, desc, name, klass);
+	ATLTRACE(
+		_T(" ** TraceHwnd %ld %s: name %s class %s"),
+		(long) tracedWindow,
+		desc,
+		name,
+		klass
+	);
 }
 
 #define TraceHwnd(t, d) TraceHwndInner(t, d)
@@ -62,8 +63,7 @@ void TraceHwndInner(HWND tracedWindow, TCHAR *desc)
 #define TraceHwnd(x, y)
 #endif
 
-static BOOL FolderItemStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr)
-{
+static BOOL FolderItemStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr) {
 	IDispatch *sfvd_disp;
 	IShellFolderViewDual *sfvd;
 	Folder *folder;
@@ -84,7 +84,9 @@ static BOOL FolderItemStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr)
 		ok = FALSE;
 		goto fail2;
 	}
-	if (FAILED(sfvd_disp->QueryInterface(IID_IShellFolderViewDual, (void**)&sfvd))) {
+	if (FAILED(
+			sfvd_disp->QueryInterface(IID_IShellFolderViewDual, (void **) &sfvd)
+		)) {
 		ATLTRACE(_T(" ** Enumerate isn't an IShellFolderViewDual i=%ld"), i);
 		ok = FALSE;
 		goto fail3;
@@ -94,7 +96,7 @@ static BOOL FolderItemStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr)
 		ok = FALSE;
 		goto fail4;
 	}
-	if (FAILED(folder->QueryInterface(IID_Folder2, (void**)&folder2))) {
+	if (FAILED(folder->QueryInterface(IID_Folder2, (void **) &folder2))) {
 		ATLTRACE(_T(" ** Enumerate isn't a Folder2 i=%ld"), i);
 		ok = FALSE;
 		goto fail5;
@@ -124,8 +126,7 @@ fail2:
 	return ok;
 }
 
-static BSTR UriToDosPath(BSTR uri)
-{
+static BSTR UriToDosPath(BSTR uri) {
 	DWORD size = INTERNET_MAX_URL_LENGTH;
 #pragma comment(lib, "urlmon")
 	// Using the SHLWAPI function is tempting, but it's broken with fancy
@@ -135,8 +136,7 @@ static BSTR UriToDosPath(BSTR uri)
 	return SysAllocString(strW);
 }
 
-static BOOL FileUriStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr)
-{
+static BOOL FileUriStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr) {
 	BSTR locationUrl, path;
 	BOOL ok;
 
@@ -157,8 +157,7 @@ fail2:
 }
 
 /* TODO: Convert to ATL wrappers */
-long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
-{
+long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	IShellWindows *windows;
 	long count, realCount, i;
 	CString physPath;
@@ -168,7 +167,13 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 		ATLTRACE(_T(" ** Enumerate can't init COM"));
 		return 1;
 	}
-	if (FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_ALL, IID_IShellWindows, (void**)&windows))) {
+	if (FAILED(CoCreateInstance(
+			CLSID_ShellWindows,
+			NULL,
+			CLSCTX_ALL,
+			IID_IShellWindows,
+			(void **) &windows
+		))) {
 		ATLTRACE(_T(" ** Enumerate can't create IShellWindows"));
 		return 2;
 	}
@@ -176,13 +181,13 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 		count = 0;
 	}
 	for (i = 0; i < count; i++) {
-		VARIANT v ;
-		v.vt = VT_I4 ;
+		VARIANT v;
+		v.vt = VT_I4;
 		V_I4(&v) = i;
 
 		IDispatch *wba_disp;
 		IWebBrowserApp *wba;
-		
+
 		BSTR pathBStr, nameBStr;
 		CString pathStr, nameStr;
 		COWItem item;
@@ -193,7 +198,8 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 			ATLTRACE(_T(" ** Enumerate isn't an item i=%ld"), i);
 			continue;
 		}
-		if (FAILED(wba_disp->QueryInterface(IID_IWebBrowserApp, (void**)&wba))) {
+		if (FAILED(wba_disp->QueryInterface(IID_IWebBrowserApp, (void **) &wba)
+			)) {
 			ATLTRACE(_T(" ** Enumerate isn't an IWebBrowserApp i=%ld"), i);
 			goto fail1;
 		}
@@ -211,11 +217,15 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 			ATLTRACE(_T(" ** Enumerate failed to get the HWND for i=%ld"), i);
 			goto fail1;
 		}
-		window = (HWND)windowPtr;
-		TraceHwnd((HWND)window, _T("received"));
+		window = (HWND) windowPtr;
+		TraceHwnd((HWND) window, _T("received"));
 
-		ATLTRACE(_T(" ** Enumerate i=%ld callerHwnd=%ld vs. receivedHwnd %ld"),
-			i, (long)callerWindow, window);
+		ATLTRACE(
+			_T(" ** Enumerate i=%ld callerHwnd=%ld vs. receivedHwnd %ld"),
+			i,
+			(long) callerWindow,
+			window
+		);
 		if (callerWindow == window) {
 			ATLTRACE(_T(" ** Enumerate windows are the same i=%ld"), i);
 			goto fail1;
@@ -228,7 +238,11 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 			parent = GetAncestor(callerWindow, GA_ROOTOWNER);
 			TraceHwnd(parent, _T("parent of caller"));
 			if (parent == window) {
-				ATLTRACE(_T(" ** Enumerate windows are the same (checking parent of caller) i=%ld"), i);
+				ATLTRACE(
+					_T(" ** Enumerate windows are the same (checking parent ")
+					_T("of caller) i=%ld"),
+					i
+				);
 				goto fail1;
 			}
 		}
@@ -239,13 +253,15 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 		if (!FolderItemStrategy(wba, i, &pathBStr)) {
 			ATLTRACE(_T(" ** Enumerate folder item strat failed i=%ld"), i);
 			if (!FileUriStrategy(wba, i, &pathBStr)) {
-				ATLTRACE(_T(" ** Enumerate file URI strat failed (bail) i=%ld"), i);
+				ATLTRACE(
+					_T(" ** Enumerate file URI strat failed (bail) i=%ld"), i
+				);
 				goto fail2;
 			}
 		}
 
-		// A common way to get the name, with any special flair Windows tends
-		// to put on it (like drive labels or the system a remote dir is on).
+		// The path the Explorer window is showing, in UNC format
+		// https://learn.microsoft.com/en-us/previous-versions//aa752129(v=vs.85)?redirectedfrom=MSDN
 		if (FAILED(wba->get_LocationName(&nameBStr))) {
 			ATLTRACE(_T(" ** Enumerate can't get name for i=%ld"), i);
 			goto fail3;
@@ -256,8 +272,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 		if (pathStr.GetLength() == 0) {
 			ATLTRACE(_T(" ** Enumerate empty path string i=%ld"), i);
 			goto fail4;
-		}
-		else if (pathBStr[0] == L':' && pathBStr[1] == L':') {
+		} else if (pathBStr[0] == L':' && pathBStr[1] == L':') {
 			// This path is some shell namespace world stuff. This on its own
 			// isn't inherently wrong, but it seems a bit random (or not, but
 			// maybe just finicky about path syntax) if it'll actually point
@@ -266,29 +281,37 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow)
 			// (Or make it toggleable?)
 			ATLTRACE(_T(" ** Enumerate skipping shell namespace i=%ld"), i);
 			goto fail4;
-		}
-		else if (pathStr == physPath) {
+		} else if (pathStr == physPath) {
 			// I hate this workaround around a workaround. The manifestation
 			// path is used to give a (fake) real FS location for programs silly
 			// enough to require one. This means if you have multiple of our NSE
-			// though, you get ugly "Temp/" entries. Skip them if we encounter one.
-			ATLTRACE(_T(" ** Enumerate path is the manifestation path i=%ld"), i);
+			// though, you get ugly "Temp/" entries. Skip them if we encounter
+			// one.
+			ATLTRACE(
+				_T(" ** Enumerate path is the manifestation path i=%ld"), i
+			);
 			goto fail4;
 		}
 
-		ATLTRACE(_T(" ** Enumerate caught i=%ld # %ld: %s <- %s"), i, realCount, nameStr, pathStr);
+		ATLTRACE(
+			_T(" ** Enumerate caught i=%ld # %ld: %s <- %s"),
+			i,
+			realCount,
+			nameStr,
+			pathStr
+		);
 		item.SetRank(realCount++);
 		item.SetName(nameBStr);
 		item.SetPath(pathBStr);
 		list->Add(item);
 
-fail4:
+	fail4:
 		SysFreeString(nameBStr);
-fail3:
+	fail3:
 		SysFreeString(pathBStr);
-fail2:
+	fail2:
 		wba->Release();
-fail1:
+	fail1:
 		wba_disp->Release();
 	}
 	windows->Release();

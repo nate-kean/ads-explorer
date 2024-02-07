@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADSExplorer", "ADSExplorer\ADSExplorer.vcxproj", "{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (register)|Win32 = Debug (register)|Win32
+		Debug (register)|x64 = Debug (register)|x64
+		Debug (run)|Win32 = Debug (run)|Win32
+		Debug (run)|x64 = Debug (run)|x64
+		Release|Win32 = Release|Win32
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (register)|Win32.ActiveCfg = Debug|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (register)|Win32.Build.0 = Debug|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (register)|x64.ActiveCfg = Debug|x64
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (register)|x64.Build.0 = Debug|x64
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (run)|Win32.ActiveCfg = Debug (run)|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (run)|Win32.Build.0 = Debug (run)|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (run)|x64.ActiveCfg = Debug (run)|x64
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Debug (run)|x64.Build.0 = Debug (run)|x64
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Release|Win32.ActiveCfg = Release|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Release|Win32.Build.0 = Release|Win32
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Release|x64.ActiveCfg = Release|x64
+		{6A5482C7-7B72-4A06-9A0F-FEE11B3733FD}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4D9C56CD-CB44-40EE-A241-A775D13F160B}
+	EndGlobalSection
+EndGlobal

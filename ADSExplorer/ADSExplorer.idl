@@ -1,0 +1,33 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(E3E7ED54-E8A2-4D6D-8E2B-76E28931673D),
+	
+	helpstring("IADSExplorerRootShellFolder Interface"),
+	pointer_default(unique)
+]
+interface IADSExplorerRootShellFolder : IUnknown
+{
+};
+
+[
+	uuid(2E9DDBF2-1FDB-4B1D-9411-F236F6998CD5),
+	version(1.0),
+	helpstring("ADSExplorer 1.0 Type Library")
+]
+library ADSEXPLORERLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(F74755E7-E951-4B20-B2F4-80B1B0340FA5),
+		helpstring("ADSExplorerRootShellFolder Class")
+	]
+	coclass ADSExplorerRootShellFolder
+	{
+		[default] interface IADSExplorerRootShellFolder;
+	};
+};

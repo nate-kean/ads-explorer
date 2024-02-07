@@ -2,13 +2,13 @@ HKCR
 {
     NoRemove CLSID
     {
-        ForceRemove {E477F21A-D9F6-4B44-AD43-A95D622D2910} = s 'Open Windows'
+        ForceRemove {F74755E7-E951-4B20-B2F4-80B1B0340FA5} = s 'ADS Explorer'
         {
             InprocServer32 = s '%MODULE%'
             {
                 val ThreadingModel = s 'Apartment'
             }
-            val InfoTip = s 'Shows open Windows Explorer windows'
+            val InfoTip = s 'Shows NTFS alternate data streams'
             DefaultIcon = s '%MODULE%,0'
             ShellFolder
             {
@@ -34,7 +34,7 @@ HKLM
                         {
                             NoRemove NameSpace
                             {
-                                ForceRemove {E477F21A-D9F6-4B44-AD43-A95D622D2910}
+                                ForceRemove {F74755E7-E951-4B20-B2F4-80B1B0340FA5}
                                 {
                                     val 'Removal Message' = s '@%MODULE%,-300'
                                 }

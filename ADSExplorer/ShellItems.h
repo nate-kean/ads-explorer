@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -24,17 +24,18 @@
 #ifndef __SHELLITEMS_H_
 #define __SHELLITEMS_H_
 
-#include "MPidlMgr.h"
-#include "CStringCopyTo.h"
-using namespace Mortimer;
+#include <comutil.h>
 
+#include "CStringCopyTo.h"
+#include "MPidlMgr.h"
+using namespace Mortimer;
 
 //========================================================================================
 
 // Used by SetReturnString.
-// Can also be used by anyone when the Shell Allocator is needed. Use the gloabl g_Malloc object which is a CMalloc.
-struct CMalloc
-{
+// Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
+// g_Malloc object which is a CMalloc.
+struct CMalloc {
 	CComPtr<IMalloc> m_MallocPtr;
 	CMalloc();
 };
@@ -46,24 +47,21 @@ bool SetReturnStringA(LPCSTR Source, STRRET &str);
 bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 
 #ifdef _UNICODE
-	#define SetReturnString SetReturnStringW
+#define SetReturnString SetReturnStringW
 #else
-	#define SetReturnString SetReturnStringA
+#define SetReturnString SetReturnStringA
 #endif
-
 
 //========================================================================================
 // This class handles our data that gets embedded in a pidl.
 
-class COWItem : public CPidlData
-{
-public:
-
+class COWItem : public CPidlData {
+   public:
 	//-------------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
-	enum { MAGIC = 0xAA000055 | ('OW'<<8) };
+	enum { MAGIC = 0xAA000055 | ('OW' << 8) };
 
 	// return the size of the pidl data. Not counting the mkid.cb member.
 	ULONG GetSize();
@@ -90,11 +88,13 @@ public:
 	static bool IsOwn(LPCITEMIDLIST pidl);
 
 	// Retrieve target path.
-	// The pidl MUST remain valid until the caller has finished with the returned string.
+	// The pidl MUST remain valid until the caller has finished with the
+	// returned string.
 	static LPOLESTR GetPath(LPCITEMIDLIST pidl);
 
 	// Retrieve display name.
-	// The pidl MUST remain valid until the caller has finished with the returned string.
+	// The pidl MUST remain valid until the caller has finished with the
+	// returned string.
 	static LPOLESTR GetName(LPCITEMIDLIST pidl);
 
 	// Retrieve the item rank
@@ -102,8 +102,9 @@ public:
 
 	//-------------------------------------------------------------------------------
 
-protected:
-	USHORT m_Padding; /* Pascal's example used an item type here, we don't care about that */
+   protected:
+	USHORT m_Padding; /* Pascal's example used an item type here, we don't care
+						 about that */
 	USHORT m_Rank;
 	// The old wtlstr CString is always TCHAR, not a templated version, and
 	// do we really want to reimplement that? For now, statically allocate
@@ -112,27 +113,70 @@ protected:
 	wchar_t m_Path[MAX_PATH];
 	wchar_t m_Name[MAX_PATH];
 };
-
-
-// Collection for our data
 typedef CSimpleArray<COWItem> COWItemList;
+
+class CADSXItem : public CPidlData {
+   public:
+	//-------------------------------------------------------------------------------
+	// used by the manager to embed data, previously set by clients, into a pidl
+
+	// New pidl signature for a new namespace extension
+	enum { MAGIC = 0xAAAA0055 | ('ADSX' << 8) };
+
+	// return the size of the pidl data. Not counting the mkid.cb member.
+	ULONG GetSize();
+
+	// copy the data to the target
+	void CopyTo(void *pTarget);
+
+	//-------------------------------------------------------------------------------
+	// Used by clients to set data
+
+	// Stream name as indicated by FindFirstStream/FindNextStream
+	void SetName(const BSTR const Name);
+
+	// Stream size as indicated by FindFirstStream/FindNextStream
+	void SetFilesize(LONGLONG Filesize);
+
+	//-------------------------------------------------------------------------------
+	// Used by clients to get data from a given pidl
+
+	// Is this pidl really one of ours?
+	static bool IsOwn(LPCITEMIDLIST pidl);
+
+	// Retrieve stream name.
+	// The pidl MUST remain valid until the caller has finished with the
+	// returned string.
+	static _bstr_t GetName(LPCITEMIDLIST pidl);
+
+	static LONGLONG GetFilesize(LPCITEMIDLIST pidl);
+
+	//-------------------------------------------------------------------------------
+
+   protected:
+	LONGLONG m_Filesize;
+	_bstr_t m_Name;
+};
+typedef CSimpleArray<CADSXItem> CADSXItemList;
 
 //========================================================================================
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.
-// It's purpose is simply to encapsulate the complete pidl for the item (remember it's a Favorite item)
-// into the IDataObject, so that the FileDialog can pass it further to our IShellFolder::BindToObject().
-// Because I'm only interested in the FileDialog behaviour, every methods returns E_NOTIMPL except GetData().
+// It's purpose is simply to encapsulate the complete pidl for the item
+// (remember it's a Favorite item) into the IDataObject, so that the FileDialog
+// can pass it further to our IShellFolder::BindToObject(). Because I'm only
+// interested in the FileDialog behaviour, every methods returns E_NOTIMPL
+// except GetData().
 
-class ATL_NO_VTABLE CDataObject :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDataObject, public IEnumFORMATETC
-{
-public:
+class ATL_NO_VTABLE CDataObject
+	: public CComObjectRootEx<CComSingleThreadModel>,
+	  public IDataObject,
+	  public IEnumFORMATETC {
+   public:
 	BEGIN_COM_MAP(CDataObject)
-		COM_INTERFACE_ENTRY_IID(IID_IDataObject, IDataObject)
-		COM_INTERFACE_ENTRY_IID(IID_IEnumFORMATETC, IEnumFORMATETC)
+	COM_INTERFACE_ENTRY_IID(IID_IDataObject, IDataObject)
+	COM_INTERFACE_ENTRY_IID(IID_IEnumFORMATETC, IEnumFORMATETC)
 	END_COM_MAP()
 
 	//-------------------------------------------------------------------------------
@@ -150,25 +194,25 @@ public:
 	//-------------------------------------------------------------------------------
 	// IDataObject methods
 
-	STDMETHOD(GetData) (LPFORMATETC pFE, LPSTGMEDIUM pStgMedium);
-	STDMETHOD(GetDataHere) (LPFORMATETC, LPSTGMEDIUM);
-	STDMETHOD(QueryGetData) (LPFORMATETC);
-	STDMETHOD(GetCanonicalFormatEtc) (LPFORMATETC, LPFORMATETC);
-	STDMETHOD(SetData) (LPFORMATETC, LPSTGMEDIUM, BOOL);
-	STDMETHOD(EnumFormatEtc) (DWORD, IEnumFORMATETC**);
-	STDMETHOD(DAdvise) (LPFORMATETC, DWORD, IAdviseSink*, LPDWORD);
-	STDMETHOD(DUnadvise) (DWORD dwConnection);
-	STDMETHOD(EnumDAdvise) (IEnumSTATDATA** ppEnumAdvise);
+	STDMETHOD(GetData)(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium);
+	STDMETHOD(GetDataHere)(LPFORMATETC, LPSTGMEDIUM);
+	STDMETHOD(QueryGetData)(LPFORMATETC);
+	STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC, LPFORMATETC);
+	STDMETHOD(SetData)(LPFORMATETC, LPSTGMEDIUM, BOOL);
+	STDMETHOD(EnumFormatEtc)(DWORD, IEnumFORMATETC **);
+	STDMETHOD(DAdvise)(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD);
+	STDMETHOD(DUnadvise)(DWORD dwConnection);
+	STDMETHOD(EnumDAdvise)(IEnumSTATDATA **ppEnumAdvise);
 
 	//-------------------------------------------------------------------------------
 	// IEnumFORMATETC members
 
-	STDMETHOD(Next) (ULONG, LPFORMATETC, ULONG*);
-	STDMETHOD(Skip) (ULONG);
-	STDMETHOD(Reset) ();
-	STDMETHOD(Clone) (LPENUMFORMATETC*);
+	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG *);
+	STDMETHOD(Skip)(ULONG);
+	STDMETHOD(Reset)();
+	STDMETHOD(Clone)(LPENUMFORMATETC *);
 
-protected:
+   protected:
 	CComPtr<IUnknown> m_UnkOwnerPtr;
 	CPidlMgr m_PidlMgr;
 
@@ -178,5 +222,4 @@ protected:
 	LPITEMIDLIST m_pidlParent;
 };
 
-
-#endif // __SHELLITEMS_H_
+#endif	// __SHELLITEMS_H_

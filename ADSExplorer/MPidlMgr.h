@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,55 +29,49 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+#endif	// _MSC_VER > 1000
 
 //========================================================================================
 // encapsulate these classes in a namespace
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-namespace Mortimer
-{
+namespace Mortimer {
 #endif
 
 //========================================================================================
 
-class CPidlData
-{
-public:
-//	CPidlData();
-//	CPidlData(const CPidlData &src);
-//	virtual CPidlData &operator=(const CPidlData &src);
+class CPidlData {
+   public:
+	//	CPidlData();
+	//	CPidlData(const CPidlData &src);
+	//	virtual CPidlData &operator=(const CPidlData &src);
 
 	virtual ULONG GetSize() = 0;
 	virtual void CopyTo(void *pTarget) = 0;
 };
 
-
-class CPidlMgr
-{
-public:
-	CPidlMgr()
-	{
+class CPidlMgr {
+   public:
+	CPidlMgr() {
 		HRESULT hr = SHGetMalloc(&m_MallocPtr);
 		ATLASSERT(SUCCEEDED(hr));
 	}
 
-	LPITEMIDLIST Create(CPidlData &Data)
-	{
+	LPITEMIDLIST Create(CPidlData &Data) {
 		// Total size of the PIDL, including SHITEMID
 		UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
 
 		// Also allocate memory for the final null SHITEMID.
-		LPITEMIDLIST pidlNew = (LPITEMIDLIST) m_MallocPtr->Alloc(TotalSize + sizeof(ITEMIDLIST));
-		if (pidlNew)
-		{
+		LPITEMIDLIST pidlNew =
+			(LPITEMIDLIST) m_MallocPtr->Alloc(TotalSize + sizeof(ITEMIDLIST));
+		if (pidlNew) {
 			LPITEMIDLIST pidlTemp = pidlNew;
 
 			// Prepares the PIDL to be filled with actual data
 			pidlTemp->mkid.cb = TotalSize;
 
 			// Fill the PIDL
-			Data.CopyTo((void*)pidlTemp->mkid.abID);
+			Data.CopyTo((void *) pidlTemp->mkid.abID);
 
 			// Set an empty PIDL at the end
 			pidlTemp = GetNextItem(pidlTemp);
@@ -88,49 +82,48 @@ public:
 		return pidlNew;
 	}
 
-	void Delete(LPITEMIDLIST pidl)
-	{
-		if (pidl)
+	void Delete(LPITEMIDLIST pidl) {
+		if (pidl) {
 			m_MallocPtr->Free(pidl);
+		}
 	}
 
-	LPITEMIDLIST GetNextItem(LPCITEMIDLIST pidl)
-	{
+	LPITEMIDLIST GetNextItem(LPCITEMIDLIST pidl) {
 		ATLASSERT(pidl != NULL);
-		if (!pidl)
+		if (!pidl) {
 			return NULL;
+		}
 
 		return LPITEMIDLIST(LPBYTE(pidl) + pidl->mkid.cb);
 	}
 
-	LPITEMIDLIST GetLastItem(LPCITEMIDLIST pidl)
-	{
+	LPITEMIDLIST GetLastItem(LPCITEMIDLIST pidl) {
 		LPITEMIDLIST pidlLast = NULL;
 
-		//get the PIDL of the last item in the list
-		while (pidl && pidl->mkid.cb)
-		{
-			pidlLast = (LPITEMIDLIST)pidl;
+		// get the PIDL of the last item in the list
+		while (pidl && pidl->mkid.cb) {
+			pidlLast = (LPITEMIDLIST) pidl;
 			pidl = GetNextItem(pidl);
 		}
 
 		return pidlLast;
 	}
 
-	LPITEMIDLIST Copy(LPCITEMIDLIST pidlSrc)
-	{
+	LPITEMIDLIST Copy(LPCITEMIDLIST pidlSrc) {
 		LPITEMIDLIST pidlTarget = NULL;
 		UINT Size = 0;
 
-		if (pidlSrc == NULL)
+		if (pidlSrc == NULL) {
 			return NULL;
+		}
 
 		// Allocate memory for the new PIDL.
 		Size = GetSize(pidlSrc);
 		pidlTarget = (LPITEMIDLIST) m_MallocPtr->Alloc(Size);
 
-		if (pidlTarget == NULL)
+		if (pidlTarget == NULL) {
 			return NULL;
+		}
 
 		// Copy the source PIDL to the target PIDL.
 		CopyMemory(pidlTarget, pidlSrc, Size);
@@ -138,20 +131,19 @@ public:
 		return pidlTarget;
 	}
 
-	UINT GetSize(LPCITEMIDLIST pidl)
-	{
+	UINT GetSize(LPCITEMIDLIST pidl) {
 		UINT Size = 0;
 		LPITEMIDLIST pidlTemp = (LPITEMIDLIST) pidl;
 
 		ATLASSERT(pidl != NULL);
-		if (!pidl)
+		if (!pidl) {
 			return 0;
+		}
 
-		while (pidlTemp->mkid.cb != 0)
-		{
+		while (pidlTemp->mkid.cb != 0) {
 			Size += pidlTemp->mkid.cb;
 			pidlTemp = GetNextItem(pidlTemp);
-		}  
+		}
 
 		// add the size of the NULL terminating ITEMIDLIST
 		Size += sizeof(ITEMIDLIST);
@@ -159,57 +151,52 @@ public:
 		return Size;
 	}
 
-	bool IsSingle(LPCITEMIDLIST pidl)
-	{
+	bool IsSingle(LPCITEMIDLIST pidl) {
 		LPITEMIDLIST pidlTemp = GetNextItem(pidl);
 		return pidlTemp->mkid.cb == 0;
 	}
 
-	CString StrRetToCString(STRRET *pStrRet, LPCITEMIDLIST pidl)
-	{
+	CString StrRetToCString(STRRET *pStrRet, LPCITEMIDLIST pidl) {
 		int Length = 0;
 		bool Unicode = false;
 		LPCSTR StringA = NULL;
 		LPCWSTR StringW = NULL;
 
-		switch (pStrRet->uType)
-		{
-		case STRRET_CSTR:
-			StringA = pStrRet->cStr;
-			Unicode = false;
-			Length = strlen(StringA);
-			break;
+		switch (pStrRet->uType) {
+			case STRRET_CSTR:
+				StringA = pStrRet->cStr;
+				Unicode = false;
+				Length = strlen(StringA);
+				break;
 
-		case STRRET_OFFSET:
-			StringA = (char*)pidl+pStrRet->uOffset;
-			Unicode = false;
-			Length = strlen(StringA);
-			break;
+			case STRRET_OFFSET:
+				StringA = (char *) pidl + pStrRet->uOffset;
+				Unicode = false;
+				Length = strlen(StringA);
+				break;
 
-		case STRRET_WSTR:
-			StringW = pStrRet->pOleStr;
-			Unicode = true;
-			Length = wcslen(StringW);
-			break;
+			case STRRET_WSTR:
+				StringW = pStrRet->pOleStr;
+				Unicode = true;
+				Length = wcslen(StringW);
+				break;
 		}
 
-		if (Length==0)
+		if (Length == 0) {
 			return CString();
+		}
 
 		CString Target;
 		LPTSTR pTarget = Target.GetBuffer(Length);
-		if (Unicode)
-		{
+		if (Unicode) {
 #ifdef _UNICODE
-			wcscpy(pTarget, StringW);
+			wcscpy_s(pTarget, static_cast<rsize_t>(Length) + 1, StringW);
 #else
-			wcstombs(pTarget, StringW, Length+1);
+			wcstombs(pTarget, StringW, Length + 1);
 #endif
-		}
-		else
-		{
+		} else {
 #ifdef _UNICODE
-			mbstowcs(pTarget, StringA, Length+1);
+			mbstowcs(pTarget, StringA, static_cast<size_t>(Length) + 1);
 #else
 			strcpy(pTarget, StringA);
 #endif
@@ -217,21 +204,19 @@ public:
 		Target.ReleaseBuffer();
 
 		// Release the OLESTR
-		if (pStrRet->uType == STRRET_WSTR)
-		{
+		if (pStrRet->uType == STRRET_WSTR) {
 			m_MallocPtr->Free(pStrRet->pOleStr);
 		}
 
 		return Target;
 	}
 
-protected:
+   protected:
 	CComPtr<IMalloc> m_MallocPtr;
 };
 
-
 //========================================================================================
 
-}; // namespace Mortimer
+};	// namespace Mortimer
 
-#endif // __MORTIMER_PIDLMGR_H__
+#endif	// __MORTIMER_PIDLMGR_H__

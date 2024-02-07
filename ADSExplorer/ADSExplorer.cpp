@@ -9,10 +9,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -22,69 +22,62 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// dllmain.cpp : Defines the entry point for the DLL application.
+// Entry point for the DLL
+
+// Better type safety for PIDLs
+//#define STRICT_TYPED_ITEMIDS
+
 #include "stdafx.h"
 
 #if _MSC_VER > 1200
-#include "OpenWindows_h.h"
+#include "ADSExplorer_h.h"
 #else
 // the IDL compiler on VC++6 puts it here instead. weird!
-#include "OpenWindows.h"
+#include "ADSExplorer.h"
 #endif
-#include "OpenWindows_i.c"
+#include "ADSExplorer_i.c"
 #include "RootShellFolder.h"
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-OBJECT_ENTRY(CLSID_OpenWindowsRootShellFolder, COWRootShellFolder)
+OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, COWRootShellFolder)
 END_OBJECT_MAP()
 
-BOOL APIENTRY DllMain( HINSTANCE hInstance,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
-					 )
-{
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-    {
-        _Module.Init(ObjectMap, hInstance, &LIBID_OPENWINDOWSLib);
-        DisableThreadLibraryCalls(hInstance);
-    }
-    else if (ul_reason_for_call == DLL_PROCESS_DETACH)
-        _Module.Term();
-    return TRUE;
+BOOL APIENTRY
+DllMain(HINSTANCE hInstance, DWORD ul_reason_for_call, LPVOID lpReserved) {
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+		_Module.Init(ObjectMap, hInstance, &LIBID_ADSEXPLORERLib);
+		DisableThreadLibraryCalls(hInstance);
+	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
+		_Module.Term();
+	}
+	return TRUE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Used to determine whether the DLL can be unloaded by OLE
 
-STDAPI DllCanUnloadNow(void)
-{
-    return (_Module.GetLockCount()==0) ? S_OK : S_FALSE;
+STDAPI DllCanUnloadNow(void) {
+	return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Returns a class factory to create an object of the requested type
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _Module.GetClassObject(rclsid, riid, ppv);
+STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) {
+	return _Module.GetClassObject(rclsid, riid, ppv);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
 
-STDAPI DllRegisterServer(void)
-{
-    // registers object, typelib and all interfaces in typelib
-    return _Module.RegisterServer(TRUE);
+STDAPI DllRegisterServer(void) {
+	// registers object, typelib and all interfaces in typelib
+	return _Module.RegisterServer(TRUE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
 
-STDAPI DllUnregisterServer(void)
-{
-    return _Module.UnregisterServer(TRUE);
-}
-
+STDAPI DllUnregisterServer(void) { return _Module.UnregisterServer(TRUE); }

@@ -31,7 +31,7 @@
 using namespace Mortimer;
 
 #include "ShellItems.h"
-#include "Enumerate.h"
+#include "EnumerateExplorerWindows.h"
 
 #include "CComEnumOnCArray.h"
 
@@ -51,7 +51,7 @@ enum
 
 class ATL_NO_VTABLE COWRootShellFolder : 
 	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<COWRootShellFolder, &CLSID_OpenWindowsRootShellFolder>,
+	public CComCoClass<COWRootShellFolder, &CLSID_ADSExplorerRootShellFolder>,
 	public IShellFolder2,
     public IPersistFolder2,
 	public IShellDetails
@@ -121,8 +121,6 @@ protected:
 	CPidlMgr m_PidlMgr;
 
 	LPITEMIDLIST m_pidlRoot;
-
-	COWItemList m_OpenedWindows;
 };
 
 #endif //__ROOTSHELLFOLDER_H_

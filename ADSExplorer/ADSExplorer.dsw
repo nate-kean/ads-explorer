@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "OpenWindows"=.\OpenWindows.dsp - Package Owner=<4>
+Project: "ADSExplorer"=.\ADSExplorer.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

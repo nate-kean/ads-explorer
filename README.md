@@ -1,4 +1,4 @@
-# OpenWindows
+# ADSExplorer
 
 *See [Staring into the COM Abyss](https://cmpct.info/~calvin/Articles/COMAbyss/)*
 
@@ -28,9 +28,9 @@ should be possible but API support gets slightly sketchier there.
 
 ## Installation
 
-Copy the DLL and TLB somehwere and run `regsvr32 OpenWindows.dll`.
+Copy the DLL and TLB somehwere and run `regsvr32 ADSExplorer.dll`.
 
-To uninstall, run `regsvr32 /u OpenWindows.dll`.
+To uninstall, run `regsvr32 /u ADSExplorer.dll`.
 
 This is going to worm its way into anything with a shell view, so it might
 cause stability issues. Caveat emptor.

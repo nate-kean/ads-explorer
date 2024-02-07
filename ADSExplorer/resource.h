@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by OpenWindows.rc
+// Used by ADSExplorer.rc
 //
 #define IDS_PROJNAME                    100
 #define IDR_ROOTSHELLFOLDER             102
