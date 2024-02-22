@@ -29,6 +29,10 @@
 
 #pragma once
 
+// Better type safety for PIDLs
+// Commented out because it caused more problems than it was worth >:(
+//#define STRICT_TYPED_ITEMIDS
+
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
 // XXX: Perhaps it could disable all of IShellFolder2 for really old SDKs?

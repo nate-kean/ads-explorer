@@ -24,9 +24,6 @@
 
 // Entry point for the DLL
 
-// Better type safety for PIDLs
-//#define STRICT_TYPED_ITEMIDS
-
 #include "stdafx.h"
 
 #if _MSC_VER > 1200
