@@ -81,9 +81,8 @@ static LPTSTR PidlToString(LPCITEMIDLIST pidl) {
 #define DUMPIID
 #endif
 
-//========================================================================================
-// Helper class for COWComEnumOnCArrays
-
+//==============================================================================
+// Copy policy for COWComEnumOnCArrays
 class CCopyItemPidl {
    public:
 	static void init(LPITEMIDLIST *p) {}
