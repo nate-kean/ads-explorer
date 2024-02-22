@@ -133,7 +133,10 @@ class CADSXItem : public CPidlData {
 	// Used by clients to set data
 
 	// Stream name as indicated by FindFirstStream/FindNextStream
-	void SetName(const BSTR const Name);
+	void SetName(const BSTR Name);
+
+	// TODO(garlic-os): Does this data have to contain the item's path?
+	// Or can we find that out some other way?
 
 	// Stream size as indicated by FindFirstStream/FindNextStream
 	void SetFilesize(LONGLONG Filesize);

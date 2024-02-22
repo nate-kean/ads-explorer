@@ -36,7 +36,7 @@ CMalloc::CMalloc() {
 CMalloc g_Malloc;
 
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
-	ULONG StringLen = strlen(Source) + 1;
+	size_t StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
 		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
@@ -44,12 +44,13 @@ bool SetReturnStringA(LPCSTR Source, STRRET &str) {
 		return false;
 	}
 
-	mbstowcs(str.pOleStr, Source, StringLen);
+	//mbstowcs(str.pOleStr, Source, StringLen);
+	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 
 bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
-	ULONG StringLen = wcslen(Source) + 1;
+	size_t StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
 		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
@@ -57,7 +58,8 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return false;
 	}
 
-	wcsncpy(str.pOleStr, Source, StringLen);
+	//wcsncpy(str.pOleStr, Source, StringLen);
+	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 
@@ -120,7 +122,7 @@ void CADSXItem::CopyTo(void *pTarget) {
 
 void CADSXItem::SetFilesize(LONGLONG Filesize) { m_Filesize = Filesize; }
 
-void CADSXItem::SetName(const BSTR const Name) { m_Name.Assign(Name); }
+void CADSXItem::SetName(const BSTR Name) { m_Name.Assign(Name); }
 
 bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
 	if ((pidl == NULL) || (pidl->mkid.cb < 4)) {
