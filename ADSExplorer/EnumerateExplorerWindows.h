@@ -23,5 +23,6 @@
 
 
 #include "RootShellFolder.h"
+#include "ShellItems.h"
 
 long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow);
