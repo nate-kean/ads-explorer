@@ -86,6 +86,9 @@
     <None Include="..\.clang-format">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ADSExplorer.dsp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
