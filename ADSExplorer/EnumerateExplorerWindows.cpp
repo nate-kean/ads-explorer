@@ -158,7 +158,7 @@ fail2:
 
 /* TODO: Convert to ATL wrappers */
 long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
-	IShellWindows *windows;
+	IShellWindows *psw;
 	long count, realCount, i;
 	CString physPath;
 	physPath = PhysicalManifestationPath();
@@ -172,12 +172,12 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			NULL,
 			CLSCTX_ALL,
 			IID_IShellWindows,
-			(void **) &windows
+			(void **) &psw
 		))) {
 		ATLTRACE(_T(" ** Enumerate can't create IShellWindows"));
 		return 2;
 	}
-	if (FAILED(windows->get_Count(&count))) {
+	if (FAILED(psw->get_Count(&count))) {
 		count = 0;
 	}
 	for (i = 0; i < count; i++) {
@@ -194,7 +194,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		HWND window, parent;
 		SHANDLE_PTR windowPtr;
 
-		if (FAILED(windows->Item(v, &wba_disp))) {
+		if (FAILED(psw->Item(v, &wba_disp))) {
 			ATLTRACE(_T(" ** Enumerate isn't an item i=%ld"), i);
 			continue;
 		}
@@ -314,6 +314,6 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	fail1:
 		wba_disp->Release();
 	}
-	windows->Release();
+	psw->Release();
 	return realCount;
 }
