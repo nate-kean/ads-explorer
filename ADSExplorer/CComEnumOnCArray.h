@@ -52,6 +52,7 @@ class ATL_NO_VTABLE IEnumOnCArrayImpl : public Base {
 	int m_iter;
 };
 
+// TODO(garlic-os): Are you SURE there's no better way to do this
 template <class Base, const IID *piid, class T, class Copy, class CollType>
 STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Next(
 	ULONG celt,
