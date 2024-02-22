@@ -31,6 +31,7 @@
 #endif
 #include "RootShellFolder.h"
 #include "RootShellView.h"
+#include "shtypes.h"
 
 //========================================================================================
 // Helpers
