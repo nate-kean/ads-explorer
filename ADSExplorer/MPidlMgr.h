@@ -196,7 +196,8 @@ class CPidlMgr {
 #endif
 		} else {
 #ifdef _UNICODE
-			mbstowcs(pTarget, StringA, static_cast<size_t>(Length) + 1);
+			//mbstowcs(pTarget, StringA, Length + 1);
+			mbstowcs_s(NULL, pTarget, Length, StringA, Length + 1);
 #else
 			strcpy(pTarget, StringA);
 #endif
