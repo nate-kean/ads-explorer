@@ -157,7 +157,7 @@ class CPidlMgr {
 	}
 
 	CString StrRetToCString(STRRET *pStrRet, LPCITEMIDLIST pidl) {
-		int Length = 0;
+		size_t Length = 0;
 		bool Unicode = false;
 		LPCSTR StringA = NULL;
 		LPCWSTR StringW = NULL;
@@ -187,10 +187,10 @@ class CPidlMgr {
 		}
 
 		CString Target;
-		LPTSTR pTarget = Target.GetBuffer(Length);
+		LPTSTR pTarget = Target.GetBuffer((int) Length);
 		if (Unicode) {
 #ifdef _UNICODE
-			wcscpy_s(pTarget, static_cast<rsize_t>(Length) + 1, StringW);
+			wcscpy_s(pTarget, Length + 1, StringW);
 #else
 			wcstombs(pTarget, StringW, Length + 1);
 #endif
