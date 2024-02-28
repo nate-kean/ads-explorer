@@ -25,7 +25,7 @@
 #include "stdafx.h"  // watch out: keep this one above all the other ones even if clang-format moves it
 #include "ShellItems.h"
 
-//========================================================================================
+//==============================================================================
 // Helper for STRRET
 
 CMalloc::CMalloc() {
@@ -44,6 +44,7 @@ bool SetReturnStringA(LPCSTR Source, STRRET &str) {
 		return false;
 	}
 
+
 	//mbstowcs(str.pOleStr, Source, StringLen);
 	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
 	return true;
@@ -58,12 +59,12 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return false;
 	}
 
-	//wcsncpy(str.pOleStr, Source, StringLen);
+	wcsncpy(str.pOleStr, Source, StringLen);
 	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // COWItem
 
 ULONG COWItem::GetSize() {
@@ -102,16 +103,16 @@ LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
 
 USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // CADSXItem
-// Tried to make the cursed pointer math I inherited with ADSExplorer the least
+// Tried to make the cursed pointer math I inherited with OpenWindows the least
 // awful possible, but it's still pointer math
 constexpr unsigned long long OFFSET_MAGIC = 0;
 constexpr unsigned long long OFFSET_FILESIZE = sizeof(CADSXItem::MAGIC);
 constexpr unsigned long long OFFSET_NAME =
 	OFFSET_FILESIZE + sizeof(LONGLONG);	 // m_Filesize
 
-// TODO(garlic-os): what is this supposed to be
+// TODO(garlic-os): what is this supposed to be when sizeof is a thing
 ULONG CADSXItem::GetSize() { return sizeof(CADSXItem); }
 
 void CADSXItem::CopyTo(void *pTarget) {

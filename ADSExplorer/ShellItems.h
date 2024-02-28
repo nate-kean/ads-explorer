@@ -30,7 +30,7 @@
 #include "MPidlMgr.h"
 using namespace Mortimer;
 
-//========================================================================================
+//==============================================================================
 
 // Used by SetReturnString.
 // Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
@@ -52,12 +52,11 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 #define SetReturnString SetReturnStringA
 #endif
 
-//========================================================================================
-// This class handles our data that gets embedded in a pidl.
-
+//==============================================================================
+// The structure of the type of item identifier that goes in our PIDLs.
 class COWItem : public CPidlData {
    public:
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
@@ -69,7 +68,7 @@ class COWItem : public CPidlData {
 	// copy the data to the target
 	void CopyTo(void *pTarget);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to set data
 
 	// The target path
@@ -81,7 +80,7 @@ class COWItem : public CPidlData {
 	// The rank (preferred items get low numbers, starting at 1)
 	void SetRank(USHORT Rank);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to get data from a given pidl
 
 	// Is this pidl really one of ours?
@@ -100,7 +99,7 @@ class COWItem : public CPidlData {
 	// Retrieve the item rank
 	static USHORT GetRank(LPCITEMIDLIST pidl);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
    protected:
 	USHORT m_Padding; /* Pascal's example used an item type here, we don't care
@@ -115,9 +114,10 @@ class COWItem : public CPidlData {
 };
 typedef CSimpleArray<COWItem> COWItemList;
 
+// The structure of the type of item identifier that goes in our PIDLs.
 class CADSXItem : public CPidlData {
    public:
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// New pidl signature for a new namespace extension
@@ -129,7 +129,7 @@ class CADSXItem : public CPidlData {
 	// copy the data to the target
 	void CopyTo(void *pTarget);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to set data
 
 	// Stream name as indicated by FindFirstStream/FindNextStream
@@ -141,7 +141,7 @@ class CADSXItem : public CPidlData {
 	// Stream size as indicated by FindFirstStream/FindNextStream
 	void SetFilesize(LONGLONG Filesize);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to get data from a given pidl
 
 	// Is this pidl really one of ours?
@@ -154,7 +154,7 @@ class CADSXItem : public CPidlData {
 
 	static LONGLONG GetFilesize(LPCITEMIDLIST pidl);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
    protected:
 	LONGLONG m_Filesize;
@@ -162,7 +162,7 @@ class CADSXItem : public CPidlData {
 };
 typedef CSimpleArray<CADSXItem> CADSXItemList;
 
-//========================================================================================
+//==============================================================================
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.
