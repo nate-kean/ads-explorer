@@ -156,7 +156,7 @@ fail2:
 	return ok;
 }
 
-/* TODO: Convert to ATL wrappers */
+/* TODO(NattyNarwhal): Convert to ATL wrappers */
 long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	IShellWindows *psw;
 	long count, realCount, i;
