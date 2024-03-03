@@ -132,7 +132,7 @@ _bstr_t CADSXItem::GetName(LPCITEMIDLIST pidl) {
 	return *((_bstr_t *) pidl + OFFSET_NAME);
 }
 
-//========================================================================================
+//==============================================================================
 // CDataObject
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
@@ -218,7 +218,7 @@ void CDataObject::SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl) {
 	m_pidl = m_PidlMgr.Copy(pidl);
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 	ATLTRACE("CDataObject::GetData()\n");
@@ -280,7 +280,7 @@ STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
 	return E_NOTIMPL;
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
 	ATLTRACE("CDataObject::Next()\n");
