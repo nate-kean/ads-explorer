@@ -1,73 +1,49 @@
-# ADSExplorer
+# ADS Explorer
 
-*See [Staring into the COM Abyss](https://cmpct.info/~calvin/Articles/COMAbyss/)*
+This is a shell namespace extension that lets you browse the Alternate Data
+Streams of a file or folder. It's inspired by Dave Plummer's ZipFolders
+and how he did the same for .zip archives. Imbues Windows Explorer with the
+ability to see and manage the Alternate Data Streams attached to all NTFS file
+objects that are otherwise invisible by usual means.
 
-This is a shell namespace extension that displays a list of opened Windows
-Explorer windows you have open. It's inspired by the OS/2 stock file dialogs
-and how they did the same for Workplace Shell windows. If you're the type of
-person who has a lot of Explorer windows open, and wish you could get to one
-from a save dialog, this is probably the extension for you.
-
-Shell namespace extensions are one of the hairiest parts of the already pretty
-baroque COM shell world due to the thin documentation on them and few debugger
-aids availabile. Good examples are even thinner. Hopefully, this provides an
-example of a shell extension that does something and has the least amount of
-untangling layers.
+If I have seen further, it is by standing on the shoulders of giants. This
+app would not have been possible without the work of better programmers than
+me, including [Calvin Buckley](https://github.com/NattyNarwhal/OpenWindows),
+[Pascal Hurni](https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample),
+[Dave Plummer](https://www.youtube.com/watch?v=aQUtUQ_L8Yk), and
+[Michael Dunn](https://www.codeproject.com/Articles/1649/The-Complete-Idiot-s-Guide-to-Writing-Namespace-Ex).
 
 ## Building
-
-This is a Visual C++ 2010 project. It'll build for x86 and amd64. It's been
-tested on 2000, ME, XP, Vista, and 10.
-
-The solution builds with VS 2010 and 2019. VC++6 is supported through its own
-project file. Other versions of VS after 6 should be fine but will likely
-require building a new project file.
-
-It should run on 98/NT4+ with the IE4+ (preferably 5+) shell used. Windows 95
-should be possible but API support gets slightly sketchier there.
+This is a Visual Studio 2022 project made for MSVC v143. It was developed and
+tested on Windows 10.
 
 ## Installation
-
-Copy the DLL and TLB somehwere and run `regsvr32 ADSExplorer.dll`.
+Copy the DLL and TLB to the same folder somewhere and run
+`regsvr32 ADSExplorer.dll`.
 
 To uninstall, run `regsvr32 /u ADSExplorer.dll`.
 
 This is going to worm its way into anything with a shell view, so it might
-cause stability issues. Caveat emptor.
+cause stability issues. _Caveat emptor._
 
 ## Known issues
-
-* The code isn't as 64-bit clean as it should be, and there are some unchecked
-  string handling functions used (2004 was a more innocent time).
-* The namespace alleges it has a physical manifestation. This is appearantly
-  to appease software that has custom dialogs checking for filesystem presence
-  such as... Microsoft Office. Oops! This is the system temp folder, so a
-  window opened there won't appear. Sorry! (It could be mitigated if we pick
-  an install path...)
-* We could have an installer which would register it and create paths.
+* An installer would be nice.
 * Modern property handling is very, very basic and intended just to appease
-  the tile view subtitles in Vista+. It should probably use fancier behaviour,
-  but for now it delegates as much as it can except the bare minimum to the
-  "classic" way of doing it.
-* The icon sucks, doesn't it?
-* There's probably a better way to do a lot of this, but again, it's a lot of
-  cargo culting. Eventually I did find some wrapper for this... after I was
-  well into the MVP. Mea culpa. (They prob wouldn't fit the needs very well,
-  since I suspect most people interested in NSEs want to materialize entities
-  that don't exist in the filesystem. Pascal's code did and provided a good
-  start.)
-* `Enumerate.cpp` started from a simple example, so it doesn't use ATL much.
+  the tile view subtitles in Vista+. It should probably use fancier behavior,
+  but as it is now it delegates as much as it can except the bare minimum to
+  the "classic" way of doing it.
+* There's probably a better way to do a lot of this, but the sheer obscurity
+  of the topic led to some cargo cult programming.
 
 ## Attributions
+See `LICENSE`.
 
-See `LICENSE.txt`.
+This is based off [OpenWindows by Calvin Buckley](https://github.com/NattyNarwhal/OpenWindows),
+which in turn is based off a [DOpus-style favorites manager by Pascal Hurni](https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample).
+The MIT License was inherited from Buckley who made it so with Hurni's
+blessing.
 
-This is based off of code by Pascal Hurni. I contacted him for clarifying the
-license of the derived code and he has approved of putting it under the MIT
-license.
+Buckley used some Microsoft code as a polyfill for full functionality when
+built with older SDKs, and as the cargo cult goes, this may still be the
+case but I don't actually know.
 
-This uses some Microsoft code as a polyfill for full functionality when built
-with older SDKs.
-
-Source (a DOpus favourites NSE):
-https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample

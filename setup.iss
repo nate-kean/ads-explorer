@@ -1,10 +1,10 @@
 [Setup]
-AppName=Open Windows
-AppCopyright=Copyright (c) 2020 Calvin Buckley
-AppPublisher=Calvin Buckley
-AppPublisherURL=https://github.com/NattyNarwhal/OpenWindows
-AppVersion=1.4.0.1
-DefaultDirName={pf}\Open Windows
+AppName=ADS Explorer
+AppCopyright=Copyright (c) 2024 Nate Kean
+AppPublisher=Nate Kean
+AppPublisherURL=https://github.com/garlic-os/ads-explorer
+AppVersion=1.0.0.0
+DefaultDirName={pf}\ADS Explorer
 DisableProgramGroupPage=yes
 DisableReadyMemo=yes
 DisableReadyPage=yes
