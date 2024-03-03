@@ -136,7 +136,7 @@ _bstr_t CADSXItem::GetName(LPCITEMIDLIST pidl) {
 // CDataObject
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
-HGLOBAL CreateShellIDList(
+static HGLOBAL CreateShellIDList(
 	LPCITEMIDLIST pidlParent,
 	LPCITEMIDLIST *aPidls,
 	UINT uItemCount
