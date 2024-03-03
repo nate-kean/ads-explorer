@@ -52,18 +52,13 @@ class CPidlData {
 
 class CPidlMgr {
    public:
-	CPidlMgr() {
-		HRESULT hr = SHGetMalloc(&m_MallocPtr);
-		ATLASSERT(SUCCEEDED(hr));
-	}
-
 	LPITEMIDLIST Create(CPidlData &Data) {
 		// Total size of the PIDL, including SHITEMID
 		UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
 
 		// Also allocate memory for the final null SHITEMID.
 		LPITEMIDLIST pidlNew =
-			(LPITEMIDLIST) m_MallocPtr->Alloc(TotalSize + sizeof(ITEMIDLIST));
+			(LPITEMIDLIST) CoTaskMemAlloc(TotalSize + sizeof(ITEMIDLIST));
 		if (pidlNew) {
 			LPITEMIDLIST pidlTemp = pidlNew;
 
@@ -84,7 +79,7 @@ class CPidlMgr {
 
 	void Delete(LPITEMIDLIST pidl) {
 		if (pidl) {
-			m_MallocPtr->Free(pidl);
+			CoTaskMemFree(pidl);
 		}
 	}
 
@@ -119,7 +114,7 @@ class CPidlMgr {
 
 		// Allocate memory for the new PIDL.
 		Size = GetSize(pidlSrc);
-		pidlTarget = (LPITEMIDLIST) m_MallocPtr->Alloc(Size);
+		pidlTarget = (LPITEMIDLIST) CoTaskMemAlloc(Size);
 
 		if (pidlTarget == NULL) {
 			return NULL;
@@ -206,14 +201,11 @@ class CPidlMgr {
 
 		// Release the OLESTR
 		if (pStrRet->uType == STRRET_WSTR) {
-			m_MallocPtr->Free(pStrRet->pOleStr);
+			CoTaskMemFree(pStrRet->pOleStr);
 		}
 
 		return Target;
 	}
-
-   protected:
-	CComPtr<IMalloc> m_MallocPtr;
 };
 
 //========================================================================================

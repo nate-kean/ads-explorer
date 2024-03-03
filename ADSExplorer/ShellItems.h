@@ -32,14 +32,6 @@ using namespace Mortimer;
 
 //==============================================================================
 
-// Used by SetReturnString.
-// Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
-// g_Malloc object which is a CMalloc.
-struct CMalloc {
-	CComPtr<IMalloc> m_MallocPtr;
-	CMalloc();
-};
-
 // Set the return string 'Source' in the STRRET struct.
 // Note that it always allocate a UNICODE copy of the string.
 // Returns false if memory allocation fails.

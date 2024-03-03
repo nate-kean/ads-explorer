@@ -27,19 +27,11 @@
 
 //==============================================================================
 // Helper for STRRET
-
-CMalloc::CMalloc() {
-	HRESULT hr = SHGetMalloc(&m_MallocPtr);
-	ATLASSERT(SUCCEEDED(hr));
-}
-
-CMalloc g_Malloc;
-
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
 	size_t StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
-		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
+		(LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
@@ -54,7 +46,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	size_t StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
-		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
+		(LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
