@@ -1,7 +1,8 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
- *
+ * Copyright (c) 2024 Nate Kean
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -118,7 +119,7 @@ void CADSXItem::SetFilesize(LONGLONG Filesize) { m_Filesize = Filesize; }
 void CADSXItem::SetName(const BSTR Name) { m_Name.Assign(Name); }
 
 bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
-	if ((pidl == NULL) || (pidl->mkid.cb < 4)) {
+	if (pidl == NULL || pidl->mkid.cb < sizeof(MAGIC)) {
 		return false;
 	}
 	return *((DWORD *) (pidl->mkid.abID)) == MAGIC;

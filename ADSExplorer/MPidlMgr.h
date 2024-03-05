@@ -60,18 +60,16 @@ class CPidlMgr {
 		LPITEMIDLIST pidlNew =
 			(LPITEMIDLIST) CoTaskMemAlloc(TotalSize + sizeof(ITEMIDLIST));
 		if (pidlNew) {
-			LPITEMIDLIST pidlTemp = pidlNew;
-
 			// Prepares the PIDL to be filled with actual data
-			pidlTemp->mkid.cb = TotalSize;
+			pidlNew->mkid.cb = TotalSize;
 
 			// Fill the PIDL
-			Data.CopyTo((void *) pidlTemp->mkid.abID);
+			Data.CopyTo((void *) pidlNew->mkid.abID);
 
 			// Set an empty PIDL at the end
-			pidlTemp = GetNextItem(pidlTemp);
-			pidlTemp->mkid.cb = 0;
-			pidlTemp->mkid.abID[0] = 0;
+			LPITEMIDLIST pidlLast = GetNextItem(pidlNew);
+			pidlLast->mkid.cb = 0;
+			pidlLast->mkid.abID[0] = NULL;
 		}
 
 		return pidlNew;
