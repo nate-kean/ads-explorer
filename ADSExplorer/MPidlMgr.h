@@ -56,7 +56,8 @@ class CPidlMgr {
 		// Total size of the PIDL, including SHITEMID
 		UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
 
-		// Also allocate memory for the final null SHITEMID.
+		// Also allocate memory for the PIDL, its SHITEMID, and the final null
+		// SHITEMID.
 		LPITEMIDLIST pidlNew =
 			(LPITEMIDLIST) CoTaskMemAlloc(TotalSize + sizeof(ITEMIDLIST));
 		if (pidlNew) {
