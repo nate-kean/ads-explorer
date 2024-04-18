@@ -242,7 +242,7 @@ STDMETHODIMP COWRootShellFolder::CompareIDs(
 		PidlToString(pidl2)
 	);
 
-	// First check if the pidl are ours
+	// First check if the pidls are ours
 	if (!COWItem::IsOwn(pidl1) || !COWItem::IsOwn(pidl2)) {
 		return E_INVALIDARG;
 	}

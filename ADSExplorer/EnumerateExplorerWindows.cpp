@@ -305,14 +305,14 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		item.SetPath(pathBStr);
 		list->Add(item);
 
-	fail4:
-		SysFreeString(nameBStr);
-	fail3:
-		SysFreeString(pathBStr);
-	fail2:
-		wba->Release();
-	fail1:
-		wba_disp->Release();
+		fail4:
+			SysFreeString(nameBStr);
+		fail3:
+			SysFreeString(pathBStr);
+		fail2:
+			wba->Release();
+		fail1:
+			wba_disp->Release();
 	}
 	psw->Release();
 	return realCount;
