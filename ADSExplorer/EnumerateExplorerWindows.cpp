@@ -160,8 +160,7 @@ fail2:
 long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	IShellWindows *psw;
 	long count, realCount, i;
-	CString physPath;
-	physPath = PhysicalManifestationPath();
+	CString physPath = PhysicalManifestationPath();
 	realCount = 0;
 	if (FAILED(CoInitialize(NULL))) {
 		ATLTRACE(_T(" ** Enumerate can't init COM"));
@@ -180,9 +179,10 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	if (FAILED(psw->get_Count(&count))) {
 		count = 0;
 	}
+	VARIANT v{};
+	v.vt = VT_I4;
+	COWItem item;
 	for (i = 0; i < count; i++) {
-		VARIANT v;
-		v.vt = VT_I4;
 		V_I4(&v) = i;
 
 		IDispatch *wba_disp;
@@ -190,7 +190,6 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 
 		BSTR pathBStr, nameBStr;
 		CString pathStr, nameStr;
-		COWItem item;
 		HWND window, parent;
 		SHANDLE_PTR windowPtr;
 
