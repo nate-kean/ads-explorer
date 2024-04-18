@@ -59,13 +59,22 @@
 ::::::::::::::::::::::::::::
 @echo on
 pushd ..\x64\Debug\
+
+:: Unregister DLL
+echo Unregistering DLL...
+taskkill /f /im explorer.exe
+regsvr32 /u ADSExplorer.dll /c /s || goto :error
+explorer
+
+:: Register DLL
+echo Registering DLL...
 copy ..\..\ADSExplorer\x64\Debug\ADSExplorer.tlb . || goto :error
-regsvr32 ADSExplorer.dll || goto :error
-goto :eof
+regsvr32 ADSExplorer.dll /c /s || goto :error
+goto eof
 
 :error
 echo.
-echo An error has occurred.
+echo Any error has occurred.
 echo Press any key to exit...
 pause > NUL
 
