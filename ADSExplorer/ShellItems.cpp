@@ -73,11 +73,17 @@ void COWItem::CopyTo(void *pTarget) {
 	wcscpy((OLECHAR *) pTarget + 4 + wcslen(m_Path) + 1, m_Name);
 }
 
-void COWItem::SetPath(LPCWSTR Path) { wcsncpy(m_Path, Path, MAX_PATH); }
-
-void COWItem::SetName(LPCWSTR Name) { wcsncpy(m_Name, Name, MAX_PATH); }
-
 void COWItem::SetRank(USHORT Rank) { m_Rank = Rank; }
+
+void COWItem::SetPath(LPCWSTR Path) {
+	//wcsncpy(m_Path, Path, MAX_PATH);
+	m_Path = Path;
+}
+
+void COWItem::SetName(LPCWSTR Name) {
+	//wcsncpy(m_Name, Name, MAX_PATH);
+	m_Name = Name;
+}
 
 bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
 	if ((pidl == NULL) || (pidl->mkid.cb < 4)) {
@@ -87,14 +93,23 @@ bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
 	return *((DWORD *) (pidl->mkid.abID)) == MAGIC;
 }
 
-LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) { return (OLECHAR *) pidl + 5; }
+USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
 
-LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
-	return (OLECHAR *) ((BYTE *) pidl + 10 +
-						(wcslen((OLECHAR *) pidl + 5) + 1) * sizeof(OLECHAR));
+LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) {
+	//return ((COWItem *) (pidl->mkid.abID))->m_Path - sizeof(OLECHAR);
+	//return (OLECHAR *) pidl + 5;
+	auto Path =
+		const_cast<_bstr_t *>(reinterpret_cast<const _bstr_t *>(pidl + 5));
+	return Path->GetBSTR();
 }
 
-USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
+LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
+	//return (OLECHAR *) ((BYTE *) pidl + 10 +
+	//					(wcslen(GetPath(pidl)) + 1) * sizeof(OLECHAR));
+	auto Name =
+		const_cast<_bstr_t *>(reinterpret_cast<const _bstr_t *>(pidl + 6));
+	return Name->GetBSTR();
+}
 
 //------------------------------------------------------------------------------
 // CADSXItem
@@ -110,13 +125,16 @@ ULONG CADSXItem::GetSize() { return sizeof(CADSXItem); }
 
 void CADSXItem::CopyTo(void *pTarget) {
 	*(DWORD *) pTarget = MAGIC;
-	*((LONGLONG *) pTarget + OFFSET_FILESIZE) = m_Filesize;
-	*((_bstr_t *) pTarget + OFFSET_NAME) = _bstr_t(m_Name);
+	((CADSXItem *) pTarget)->m_Filesize = m_Filesize;
+	((CADSXItem *) pTarget)->m_Name = _bstr_t(m_Name);
+	((CADSXItem *) pTarget)->m_Path = _bstr_t(m_Path);
 }
 
 void CADSXItem::SetFilesize(LONGLONG Filesize) { m_Filesize = Filesize; }
 
 void CADSXItem::SetName(const BSTR Name) { m_Name.Assign(Name); }
+
+void CADSXItem::SetPath(const BSTR Path) { m_Path.Assign(Path); }
 
 bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
 	if (pidl == NULL || pidl->mkid.cb < sizeof(MAGIC)) {
@@ -126,11 +144,18 @@ bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
 }
 
 LONGLONG CADSXItem::GetFilesize(LPCITEMIDLIST pidl) {
-	return *((LONGLONG *) pidl + OFFSET_FILESIZE);
+	return ((CADSXItem *) pidl)->m_Filesize;
 }
 
 _bstr_t CADSXItem::GetName(LPCITEMIDLIST pidl) {
-	return *((_bstr_t *) pidl + OFFSET_NAME);
+	return ((CADSXItem *) pidl)->m_Name;
+}
+
+// TODO(garlic-os): Surely this can be found some other way and doesn't have to
+// be stored per item; each item's parent is the same across any one EnumItems
+// call.
+_bstr_t CADSXItem::GetPath(LPCITEMIDLIST pidl) {
+	return ((CADSXItem *) pidl)->m_Path;
 }
 
 //==============================================================================

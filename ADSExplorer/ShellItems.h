@@ -101,12 +101,16 @@ class COWItem : public CPidlData {
 	// do we really want to reimplement that? For now, statically allocate
 	// MAX_PATH worth. On Windows 10, this can be larger, but we can truncate
 	// for now.
-	wchar_t m_Path[MAX_PATH];
-	wchar_t m_Name[MAX_PATH];
+	//wchar_t m_Path[MAX_PATH];
+	//wchar_t m_Name[MAX_PATH];
+	_bstr_t m_Name;
+	_bstr_t m_Path;
 };
 typedef CSimpleArray<COWItem> COWItemList;
 
 // The structure of the type of item identifier that goes in our PIDLs.
+// TODO(garlic-os): Convert to struct and access members by casting a PIDL's
+// data to this struct?
 class CADSXItem : public CPidlData {
    public:
 	//--------------------------------------------------------------------------
@@ -127,6 +131,8 @@ class CADSXItem : public CPidlData {
 	// Stream name as indicated by FindFirstStream/FindNextStream
 	void SetName(const BSTR Name);
 
+	void SetPath(const BSTR Path);
+
 	// TODO(garlic-os): Does this data have to contain the item's path?
 	// Or can we find that out some other way?
 
@@ -139,18 +145,20 @@ class CADSXItem : public CPidlData {
 	// Is this pidl really one of ours?
 	static bool IsOwn(LPCITEMIDLIST pidl);
 
+	static LONGLONG GetFilesize(LPCITEMIDLIST pidl);
+
 	// Retrieve stream name.
-	// The pidl MUST remain valid until the caller has finished with the
-	// returned string.
 	static _bstr_t GetName(LPCITEMIDLIST pidl);
 
-	static LONGLONG GetFilesize(LPCITEMIDLIST pidl);
+	static _bstr_t GetPath(LPCITEMIDLIST pidl);
+
 
 	//--------------------------------------------------------------------------
 
    protected:
 	LONGLONG m_Filesize;
 	_bstr_t m_Name;
+	_bstr_t m_Path;
 };
 typedef CSimpleArray<CADSXItem> CADSXItemList;
 
