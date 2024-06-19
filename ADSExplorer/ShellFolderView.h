@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-//========================================================================================
+//==============================================================================
 // Implements a IShellView like requested by IShellFolder::CreateViewObject().
 // Derive from this class and add an ATL message map to handle the SFVM_*
 // messages. When request to IShellView is made, construct your derived object

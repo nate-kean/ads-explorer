@@ -21,7 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-//----------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // An implementation for CComEnum that connects to a CSimpleArray<>
 // (much like CComEnumOnSTL works for STL collections)
 

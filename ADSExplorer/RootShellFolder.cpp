@@ -33,7 +33,7 @@
 #include "RootShellFolder.h"
 #include "RootShellView.h"
 
-//========================================================================================
+//==============================================================================
 // Helpers
 
 #ifdef _DEBUG
@@ -88,7 +88,7 @@ inline LPOLESTR iidToString(REFIID iid) {
 #define DUMPIID
 #endif
 
-//========================================================================================
+//==============================================================================
 // Helper class for the CComEnumOnCArray
 
 class CCopyItemPidl {
@@ -117,7 +117,7 @@ typedef CComEnumOnCArray<
 	COWItemList>
 	CEnumItemsIDList;
 
-//========================================================================================
+//==============================================================================
 // COWRootShellFolder
 
 COWRootShellFolder::COWRootShellFolder() : m_pidlRoot(NULL) {}

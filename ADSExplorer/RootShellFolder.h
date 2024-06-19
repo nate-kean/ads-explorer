@@ -33,7 +33,7 @@ using namespace Mortimer;
 #include "Enumerate.h"
 #include "ShellItems.h"
 
-//========================================================================================
+//==============================================================================
 
 enum {
 	DETAILS_COLUMN_NAME,
@@ -43,7 +43,7 @@ enum {
 	DETAILS_COLUMN_MAX
 };
 
-//========================================================================================
+//==============================================================================
 // COWRootShellFolder
 
 class ATL_NO_VTABLE COWRootShellFolder
@@ -69,18 +69,18 @@ class ATL_NO_VTABLE COWRootShellFolder
 	END_COM_MAP()
 
    public:
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IPersist
 
 	STDMETHOD(GetClassID)(CLSID *);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IPersistFolder(2)
 
 	STDMETHOD(Initialize)(LPCITEMIDLIST);
 	STDMETHOD(GetCurFolder)(LPITEMIDLIST *ppidl);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IShellFolder
 
 	STDMETHOD(BindToObject)(LPCITEMIDLIST, LPBC, REFIID, void **);
@@ -96,14 +96,14 @@ class ATL_NO_VTABLE COWRootShellFolder
 	(HWND, LPBC, LPOLESTR, LPDWORD, LPITEMIDLIST *, LPDWORD);
 	STDMETHOD(SetNameOf)(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IShellDetails
 
 	STDMETHOD(ColumnClick)(UINT iColumn);
 	STDMETHOD(GetDetailsOf)
 	(LPCITEMIDLIST pidl, UINT iColumn, LPSHELLDETAILS pDetails);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IShellFolder2
 
 	STDMETHOD(EnumSearches)(IEnumExtraSearch **ppEnum);
@@ -117,7 +117,7 @@ class ATL_NO_VTABLE COWRootShellFolder
 	// UINT iColumn, SHELLDETAILS *psd);
 	STDMETHOD(MapColumnToSCID)(UINT iColumn, SHCOLUMNID *pscid);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
    protected:
 	CPidlMgr m_PidlMgr;

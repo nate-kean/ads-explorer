@@ -25,7 +25,7 @@
 
 #include "stdafx.h"  // MUST be included first
 
-//----------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // CStringEx - String class extensions
 
 inline void CStringCopyTo(
