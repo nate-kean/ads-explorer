@@ -73,14 +73,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Calvin Buckley"
+            VALUE "CompanyName", "Nate Kean"
             VALUE "FileDescription", "Namespace for opened Explorer windows"
-            VALUE "FileVersion", "1.4.0.1"
-            VALUE "InternalName", "OpenWind.dll"
-            VALUE "LegalCopyright", "Copyright (C) Calvin Buckley 2020"
-            VALUE "OriginalFilename", "OpenWind.dll"
-            VALUE "ProductName", "Open Windows"
-            VALUE "ProductVersion", "1.4.0.1"
+            VALUE "FileVersion", "1.0.0.0"
+            VALUE "InternalName", "ADSExplorer.dll"
+            VALUE "LegalCopyright", "Copyright (C) Nate Kean 2024"
+            VALUE "OriginalFilename", "ADSExplorer.dll"
+            VALUE "ProductName", "ADS Explorer"
+            VALUE "ProductVersion", "1.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -106,7 +106,7 @@ IDI_OW_ROOT             ICON                    "icon1.ico"
 
 STRINGTABLE
 BEGIN
-    IDS_PROJNAME            "Open Windows"
+    IDS_PROJNAME            "ADS Explorer"
 END
 
 STRINGTABLE

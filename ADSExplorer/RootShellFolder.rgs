@@ -2,7 +2,7 @@ HKCR
 {
     NoRemove CLSID
     {
-        ForceRemove {F74755E7-E951-4B20-B2F4-80B1B0340FA5} = s 'ADS Explorer'
+        ForceRemove {ED383D11-6797-4103-85EF-CBDB8DEB50E2} = s 'ADS Explorer'
         {
             InprocServer32 = s '%MODULE%'
             {
@@ -33,7 +33,7 @@ HKLM
                         {
                             NoRemove NameSpace
                             {
-                                ForceRemove {F74755E7-E951-4B20-B2F4-80B1B0340FA5}
+                                ForceRemove {ED383D11-6797-4103-85EF-CBDB8DEB50E2}
                                 {
                                     val 'Removal Message' = s '@%MODULE%,-300'
                                 }
