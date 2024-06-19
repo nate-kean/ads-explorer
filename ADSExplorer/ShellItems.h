@@ -24,13 +24,19 @@
 #ifndef __SHELLITEMS_H_
 #define __SHELLITEMS_H_
 
-#include <comutil.h>
-
 #include "CStringCopyTo.h"
 #include "MPidlMgr.h"
 using namespace Mortimer;
 
-//==============================================================================
+//========================================================================================
+
+// Used by SetReturnString.
+// Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
+// g_Malloc object which is a CMalloc.
+struct CMalloc {
+	CComPtr<IMalloc> m_MallocPtr;
+	CMalloc();
+};
 
 // Set the return string 'Source' in the STRRET struct.
 // Note that it always allocate a UNICODE copy of the string.
@@ -44,11 +50,12 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 #define SetReturnString SetReturnStringA
 #endif
 
-//==============================================================================
-// The structure of the type of item identifier that goes in our PIDLs.
+//========================================================================================
+// This class handles our data that gets embedded in a pidl.
+
 class COWItem : public CPidlData {
    public:
-	//--------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
@@ -60,7 +67,7 @@ class COWItem : public CPidlData {
 	// copy the data to the target
 	void CopyTo(void *pTarget);
 
-	//--------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 	// Used by clients to set data
 
 	// The target path
@@ -72,7 +79,7 @@ class COWItem : public CPidlData {
 	// The rank (preferred items get low numbers, starting at 1)
 	void SetRank(USHORT Rank);
 
-	//--------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 	// Used by clients to get data from a given pidl
 
 	// Is this pidl really one of ours?
@@ -91,7 +98,7 @@ class COWItem : public CPidlData {
 	// Retrieve the item rank
 	static USHORT GetRank(LPCITEMIDLIST pidl);
 
-	//--------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------
 
    protected:
 	USHORT m_Padding; /* Pascal's example used an item type here, we don't care
@@ -101,68 +108,14 @@ class COWItem : public CPidlData {
 	// do we really want to reimplement that? For now, statically allocate
 	// MAX_PATH worth. On Windows 10, this can be larger, but we can truncate
 	// for now.
-	//wchar_t m_Path[MAX_PATH];
-	//wchar_t m_Name[MAX_PATH];
-	_bstr_t m_Name;
-	_bstr_t m_Path;
+	wchar_t m_Path[MAX_PATH];
+	wchar_t m_Name[MAX_PATH];
 };
+
+// Collection for our data
 typedef CSimpleArray<COWItem> COWItemList;
 
-// The structure of the type of item identifier that goes in our PIDLs.
-// TODO(garlic-os): Convert to struct and access members by casting a PIDL's
-// data to this struct?
-class CADSXItem : public CPidlData {
-   public:
-	//--------------------------------------------------------------------------
-	// used by the manager to embed data, previously set by clients, into a pidl
-
-	// New pidl signature for a new namespace extension
-	enum { MAGIC = 0xAAAA0055 | ('ADSX' << 8) };
-
-	// return the size of the pidl data. Not counting the mkid.cb member.
-	ULONG GetSize();
-
-	// copy the data to the target
-	void CopyTo(void *pTarget);
-
-	//--------------------------------------------------------------------------
-	// Used by clients to set data
-
-	// Stream name as indicated by FindFirstStream/FindNextStream
-	void SetName(const BSTR Name);
-
-	void SetPath(const BSTR Path);
-
-	// TODO(garlic-os): Does this data have to contain the item's path?
-	// Or can we find that out some other way?
-
-	// Stream size as indicated by FindFirstStream/FindNextStream
-	void SetFilesize(LONGLONG Filesize);
-
-	//--------------------------------------------------------------------------
-	// Used by clients to get data from a given pidl
-
-	// Is this pidl really one of ours?
-	static bool IsOwn(LPCITEMIDLIST pidl);
-
-	static LONGLONG GetFilesize(LPCITEMIDLIST pidl);
-
-	// Retrieve stream name.
-	static _bstr_t GetName(LPCITEMIDLIST pidl);
-
-	static _bstr_t GetPath(LPCITEMIDLIST pidl);
-
-
-	//--------------------------------------------------------------------------
-
-   protected:
-	LONGLONG m_Filesize;
-	_bstr_t m_Name;
-	_bstr_t m_Path;
-};
-typedef CSimpleArray<CADSXItem> CADSXItemList;
-
-//==============================================================================
+//========================================================================================
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.

@@ -29,7 +29,7 @@
 using namespace Mortimer;
 
 #include "CComEnumOnCArray.h"
-#include "EnumerateExplorerWindows.h"
+#include "Enumerate.h"
 #include "ShellItems.h"
 
 //========================================================================================
@@ -44,6 +44,7 @@ enum {
 
 //========================================================================================
 // COWRootShellFolder
+
 class ATL_NO_VTABLE COWRootShellFolder
 	: public CComObjectRootEx<CComSingleThreadModel>,
 	  public CComCoClass<COWRootShellFolder, &CLSID_ADSExplorerRootShellFolder>,
@@ -58,132 +59,71 @@ class ATL_NO_VTABLE COWRootShellFolder
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 	BEGIN_COM_MAP(COWRootShellFolder)
-		COM_INTERFACE_ENTRY(IShellFolder)
-		COM_INTERFACE_ENTRY(IShellFolder2)
-		COM_INTERFACE_ENTRY(IPersistFolder)
-		COM_INTERFACE_ENTRY(IPersistFolder2)
-		COM_INTERFACE_ENTRY(IPersist)
-		COM_INTERFACE_ENTRY_IID(IID_IShellDetails, IShellDetails)
+	COM_INTERFACE_ENTRY(IShellFolder)
+	COM_INTERFACE_ENTRY(IShellFolder2)
+	COM_INTERFACE_ENTRY(IPersistFolder)
+	COM_INTERFACE_ENTRY(IPersistFolder2)
+	COM_INTERFACE_ENTRY(IPersist)
+	COM_INTERFACE_ENTRY_IID(IID_IShellDetails, IShellDetails)
 	END_COM_MAP()
 
    public:
 	//-------------------------------------------------------------------------------
 	// IPersist
-	STDMETHOD(GetClassID)(CLSID *pClassID);
+
+	STDMETHOD(GetClassID)(CLSID *);
 
 	//-------------------------------------------------------------------------------
 	// IPersistFolder(2)
-	STDMETHOD(Initialize)(PCUIDLIST_ABSOLUTE pidl);
-	STDMETHOD(GetCurFolder)(PIDLIST_ABSOLUTE *ppidl);
+
+	STDMETHOD(Initialize)(LPCITEMIDLIST);
+	STDMETHOD(GetCurFolder)(LPITEMIDLIST *ppidl);
 
 	//-------------------------------------------------------------------------------
 	// IShellFolder
-	STDMETHOD(BindToObject) (
-		PCUIDLIST_RELATIVE pidl,
-		IBindCtx *pbcReserved,
-		REFIID riid,
-		void **ppvOut
-	);
-	STDMETHOD(CompareIDs) (
-		LPARAM lParam,
-		PCUIDLIST_RELATIVE pidl1,
-		PCUIDLIST_RELATIVE pidl2
-	);
-	STDMETHOD(CreateViewObject) (
-		HWND hwndOwner,
-		REFIID riid,
-		void **ppvOut
-	);
-	STDMETHOD(EnumObjects) (
-		HWND hwndOwner,
-		SHCONTF grfFlags,
-		IEnumIDList **ppEnumIDList
-	);
-	STDMETHOD(GetAttributesOf) (
-		UINT cidl,
-		PCUITEMID_CHILD_ARRAY apidl,
-		SFGAOF *rgfInOut
-	);
-	STDMETHOD(GetUIObjectOf) (
-		HWND hwndOwner,
-		UINT cidl,
-		PCUITEMID_CHILD_ARRAY apidl,
-		REFIID riid,
-		UINT *rgfReserved,
-		void **ppvOut
-	);
-	STDMETHOD(BindToStorage) (
-		PCUIDLIST_RELATIVE pidl,
-		IBindCtx *pbc,
-		REFIID riid,
-		void **ppvOut
-	);
-	STDMETHOD(GetDisplayNameOf)	(
-		PCUITEMID_CHILD pidl,
-		SHGDNF uFlags,
-		STRRET *pName
-	);
-	STDMETHOD(ParseDisplayName) (
-		HWND hwnd,
-		IBindCtx *pbc,
-		LPWSTR pszDisplayName,
-		ULONG *pchEaten,
-		PIDLIST_RELATIVE *ppidl,
-		ULONG *pdwAttributes
-	);
-	STDMETHOD(SetNameOf) (
-		HWND hwnd,
-		PCUITEMID_CHILD pidl,
-		LPCWSTR pszName,
-		SHGDNF uFlags,
-		PITEMID_CHILD *ppidlOut
-	);
+
+	STDMETHOD(BindToObject)(LPCITEMIDLIST, LPBC, REFIID, void **);
+	STDMETHOD(CompareIDs)(LPARAM, LPCITEMIDLIST, LPCITEMIDLIST);
+	STDMETHOD(CreateViewObject)(HWND, REFIID, void **);
+	STDMETHOD(EnumObjects)(HWND, DWORD, LPENUMIDLIST *);
+	STDMETHOD(GetAttributesOf)(UINT, LPCITEMIDLIST *, LPDWORD);
+	STDMETHOD(GetUIObjectOf)
+	(HWND, UINT, LPCITEMIDLIST *, REFIID, LPUINT, void **);
+	STDMETHOD(BindToStorage)(LPCITEMIDLIST, LPBC, REFIID, void **);
+	STDMETHOD(GetDisplayNameOf)(LPCITEMIDLIST, DWORD uFlags, LPSTRRET lpName);
+	STDMETHOD(ParseDisplayName)
+	(HWND, LPBC, LPOLESTR, LPDWORD, LPITEMIDLIST *, LPDWORD);
+	STDMETHOD(SetNameOf)(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *);
 
 	//-------------------------------------------------------------------------------
 	// IShellDetails
-	STDMETHOD(ColumnClick) (
-		UINT iColumn
-	);
-	STDMETHOD(GetDetailsOf) (
-		PCUITEMID_CHILD pidl,
-		UINT iColumn,
-		LPSHELLDETAILS pDetails
-	);
+
+	STDMETHOD(ColumnClick)(UINT iColumn);
+	STDMETHOD(GetDetailsOf)
+	(LPCITEMIDLIST pidl, UINT iColumn, LPSHELLDETAILS pDetails);
 
 	//-------------------------------------------------------------------------------
 	// IShellFolder2
-	STDMETHOD(EnumSearches) (
-		IEnumExtraSearch **ppEnum
-	);
-	STDMETHOD(GetDefaultColumn) (
-		DWORD dwReserved,
-		ULONG *pSort,
-		ULONG *pDisplay
-	);
-	STDMETHOD(GetDefaultColumnState) (
-		UINT iColumn,
-		SHCOLSTATEF *pcsFlags
-	);
-	STDMETHOD(GetDefaultSearchGUID) (
-		GUID *pguid
-	);
-	STDMETHOD(GetDetailsEx) (
-		PCUITEMID_CHILD pidl,
-		const SHCOLUMNID *pscid,
-		VARIANT *pv
-	);
+
+	STDMETHOD(EnumSearches)(IEnumExtraSearch **ppEnum);
+	STDMETHOD(GetDefaultColumn)
+	(DWORD dwReserved, ULONG *pSort, ULONG *pDisplay);
+	STDMETHOD(GetDefaultColumnState)(UINT iColumn, SHCOLSTATEF *pcsFlags);
+	STDMETHOD(GetDefaultSearchGUID)(GUID *pguid);
+	STDMETHOD(GetDetailsEx)
+	(LPCITEMIDLIST pidl, const SHCOLUMNID *pscid, VARIANT *pv);
 	// already in IShellDetails: STDMETHOD(GetDetailsOf) (LPCITEMIDLIST pidl,
 	// UINT iColumn, SHELLDETAILS *psd);
-	STDMETHOD(MapColumnToSCID) (
-		UINT iColumn,
-		SHCOLUMNID *pscid
-	);
+	STDMETHOD(MapColumnToSCID)(UINT iColumn, SHCOLUMNID *pscid);
 
 	//-------------------------------------------------------------------------------
 
    protected:
 	CPidlMgr m_PidlMgr;
-	PIDLIST_ABSOLUTE m_pidlRoot;
+
+	LPITEMIDLIST m_pidlRoot;
+
+	COWItemList m_OpenedWindows;
 };
 
 #endif	//__ROOTSHELLFOLDER_H_

@@ -21,10 +21,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "stdafx.h"
+
+#include "stdafx.h"  // MUST be included first
+
 #include "ShellItems.h"
 
-static CString PhysicalManifestationPath(void) {
+CString PhysicalManifestationPath(void) {
 	// Workaround. See COWRootShellFolder::GetDisplayNameOf.
 	CString str;
 	// yes, it really is the opposite
@@ -33,7 +35,7 @@ static CString PhysicalManifestationPath(void) {
 	return str;
 }
 
-static BOOL IsExplorerWindow(IWebBrowserApp *wba) {
+BOOL IsExplorerWindow(IWebBrowserApp *wba) {
 	BSTR appName;
 	wba->get_FullName(&appName);
 	CString appNameNormalized = CString(appName);
@@ -45,7 +47,7 @@ static BOOL IsExplorerWindow(IWebBrowserApp *wba) {
 }
 
 #if _DEBUG
-static void TraceHwndInner(HWND tracedWindow, TCHAR *desc) {
+void TraceHwndInner(HWND tracedWindow, TCHAR *desc) {
 	TCHAR name[255], klass[255];
 	GetClassName(tracedWindow, klass, 255);
 	GetWindowText(tracedWindow, name, 255);
@@ -156,11 +158,12 @@ fail2:
 	return ok;
 }
 
-/* TODO(NattyNarwhal): Convert to ATL wrappers */
+/* TODO: Convert to ATL wrappers */
 long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
-	IShellWindows *psw;
+	IShellWindows *windows;
 	long count, realCount, i;
-	CString physPath = PhysicalManifestationPath();
+	CString physPath;
+	physPath = PhysicalManifestationPath();
 	realCount = 0;
 	if (FAILED(CoInitialize(NULL))) {
 		ATLTRACE(_T(" ** Enumerate can't init COM"));
@@ -171,18 +174,17 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			NULL,
 			CLSCTX_ALL,
 			IID_IShellWindows,
-			(void **) &psw
+			(void **) &windows
 		))) {
 		ATLTRACE(_T(" ** Enumerate can't create IShellWindows"));
 		return 2;
 	}
-	if (FAILED(psw->get_Count(&count))) {
+	if (FAILED(windows->get_Count(&count))) {
 		count = 0;
 	}
-	VARIANT v{};
-	v.vt = VT_I4;
-	COWItem item;
 	for (i = 0; i < count; i++) {
+		VARIANT v;
+		v.vt = VT_I4;
 		V_I4(&v) = i;
 
 		IDispatch *wba_disp;
@@ -190,10 +192,11 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 
 		BSTR pathBStr, nameBStr;
 		CString pathStr, nameStr;
+		COWItem item;
 		HWND window, parent;
 		SHANDLE_PTR windowPtr;
 
-		if (FAILED(psw->Item(v, &wba_disp))) {
+		if (FAILED(windows->Item(v, &wba_disp))) {
 			ATLTRACE(_T(" ** Enumerate isn't an item i=%ld"), i);
 			continue;
 		}
@@ -259,8 +262,8 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			}
 		}
 
-		// The path the Explorer window is showing, in UNC format
-		// https://learn.microsoft.com/en-us/previous-versions//aa752129(v=vs.85)?redirectedfrom=MSDN
+		// A common way to get the name, with any special flair Windows tends
+		// to put on it (like drive labels or the system a remote dir is on).
 		if (FAILED(wba->get_LocationName(&nameBStr))) {
 			ATLTRACE(_T(" ** Enumerate can't get name for i=%ld"), i);
 			goto fail3;
@@ -304,15 +307,15 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		item.SetPath(pathBStr);
 		list->Add(item);
 
-		fail4:
-			SysFreeString(nameBStr);
-		fail3:
-			SysFreeString(pathBStr);
-		fail2:
-			wba->Release();
-		fail1:
-			wba_disp->Release();
+	fail4:
+		SysFreeString(nameBStr);
+	fail3:
+		SysFreeString(pathBStr);
+	fail2:
+		wba->Release();
+	fail1:
+		wba_disp->Release();
 	}
-	psw->Release();
+	windows->Release();
 	return realCount;
 }

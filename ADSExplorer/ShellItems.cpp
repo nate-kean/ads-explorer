@@ -2,7 +2,7 @@
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
  * Copyright (c) 2024 Nate Kean
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,42 +23,45 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "stdafx.h"  // watch out: keep this one above all the other ones even if clang-format moves it
+#include "stdafx.h"  // MUST be included first
+
 #include "ShellItems.h"
 
-//==============================================================================
+//========================================================================================
 // Helper for STRRET
+
+CMalloc::CMalloc() {
+	HRESULT hr = SHGetMalloc(&m_MallocPtr);
+	ATLASSERT(SUCCEEDED(hr));
+}
+
+CMalloc g_Malloc;
+
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
-	size_t StringLen = strlen(Source) + 1;
+	ULONG StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
-		(LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
 
-
-	//mbstowcs(str.pOleStr, Source, StringLen);
-	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
+	mbstowcs(str.pOleStr, Source, StringLen);
 	return true;
 }
 
 bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
-	size_t StringLen = wcslen(Source) + 1;
+	ULONG StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr =
-		(LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
 
 	wcsncpy(str.pOleStr, Source, StringLen);
-	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
-
-//------------------------------------------------------------------------------
-// COWItem
 
 ULONG COWItem::GetSize() {
 	return 4 + 2 + 2 + (wcslen(m_Path) + 1) * sizeof(OLECHAR) +
@@ -73,17 +76,15 @@ void COWItem::CopyTo(void *pTarget) {
 	wcscpy((OLECHAR *) pTarget + 4 + wcslen(m_Path) + 1, m_Name);
 }
 
+//-------------------------------------------------------------------------------
+
+void COWItem::SetPath(LPCWSTR Path) { wcsncpy(m_Path, Path, MAX_PATH); }
+
+void COWItem::SetName(LPCWSTR Name) { wcsncpy(m_Name, Name, MAX_PATH); }
+
 void COWItem::SetRank(USHORT Rank) { m_Rank = Rank; }
 
-void COWItem::SetPath(LPCWSTR Path) {
-	//wcsncpy(m_Path, Path, MAX_PATH);
-	m_Path = Path;
-}
-
-void COWItem::SetName(LPCWSTR Name) {
-	//wcsncpy(m_Name, Name, MAX_PATH);
-	m_Name = Name;
-}
+//-------------------------------------------------------------------------------
 
 bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
 	if ((pidl == NULL) || (pidl->mkid.cb < 4)) {
@@ -93,76 +94,20 @@ bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
 	return *((DWORD *) (pidl->mkid.abID)) == MAGIC;
 }
 
-USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
-
-LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) {
-	//return ((COWItem *) (pidl->mkid.abID))->m_Path - sizeof(OLECHAR);
-	//return (OLECHAR *) pidl + 5;
-	auto Path =
-		const_cast<_bstr_t *>(reinterpret_cast<const _bstr_t *>(pidl + 5));
-	return Path->GetBSTR();
-}
+LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) { return (OLECHAR *) pidl + 5; }
 
 LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
-	//return (OLECHAR *) ((BYTE *) pidl + 10 +
-	//					(wcslen(GetPath(pidl)) + 1) * sizeof(OLECHAR));
-	auto Name =
-		const_cast<_bstr_t *>(reinterpret_cast<const _bstr_t *>(pidl + 6));
-	return Name->GetBSTR();
+	return (OLECHAR *) ((BYTE *) pidl + 10 +
+						(wcslen((OLECHAR *) pidl + 5) + 1) * sizeof(OLECHAR));
 }
 
-//------------------------------------------------------------------------------
-// CADSXItem
-// Tried to make the cursed pointer math I inherited with OpenWindows the least
-// awful possible, but it's still pointer math
-constexpr unsigned long long OFFSET_MAGIC = 0;
-constexpr unsigned long long OFFSET_FILESIZE = sizeof(CADSXItem::MAGIC);
-constexpr unsigned long long OFFSET_NAME =
-	OFFSET_FILESIZE + sizeof(LONGLONG);	 // m_Filesize
+USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
 
-// TODO(garlic-os): what is this supposed to be when sizeof is a thing
-ULONG CADSXItem::GetSize() { return sizeof(CADSXItem); }
-
-void CADSXItem::CopyTo(void *pTarget) {
-	*(DWORD *) pTarget = MAGIC;
-	((CADSXItem *) pTarget)->m_Filesize = m_Filesize;
-	((CADSXItem *) pTarget)->m_Name = _bstr_t(m_Name);
-	((CADSXItem *) pTarget)->m_Path = _bstr_t(m_Path);
-}
-
-void CADSXItem::SetFilesize(LONGLONG Filesize) { m_Filesize = Filesize; }
-
-void CADSXItem::SetName(const BSTR Name) { m_Name.Assign(Name); }
-
-void CADSXItem::SetPath(const BSTR Path) { m_Path.Assign(Path); }
-
-bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
-	if (pidl == NULL || pidl->mkid.cb < sizeof(MAGIC)) {
-		return false;
-	}
-	return *((DWORD *) (pidl->mkid.abID)) == MAGIC;
-}
-
-LONGLONG CADSXItem::GetFilesize(LPCITEMIDLIST pidl) {
-	return ((CADSXItem *) pidl)->m_Filesize;
-}
-
-_bstr_t CADSXItem::GetName(LPCITEMIDLIST pidl) {
-	return ((CADSXItem *) pidl)->m_Name;
-}
-
-// TODO(garlic-os): Surely this can be found some other way and doesn't have to
-// be stored per item; each item's parent is the same across any one EnumItems
-// call.
-_bstr_t CADSXItem::GetPath(LPCITEMIDLIST pidl) {
-	return ((CADSXItem *) pidl)->m_Path;
-}
-
-//==============================================================================
+//========================================================================================
 // CDataObject
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
-static HGLOBAL CreateShellIDList(
+HGLOBAL CreateShellIDList(
 	LPCITEMIDLIST pidlParent,
 	LPCITEMIDLIST *aPidls,
 	UINT uItemCount
@@ -244,7 +189,7 @@ void CDataObject::SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl) {
 	m_pidl = m_PidlMgr.Copy(pidl);
 }
 
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 	ATLTRACE("CDataObject::GetData()\n");
@@ -306,7 +251,7 @@ STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
 	return E_NOTIMPL;
 }
 
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
 	ATLTRACE("CDataObject::Next()\n");

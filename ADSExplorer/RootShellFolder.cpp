@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
+ * Copyright (c) 2024 Nate Kean
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,7 +23,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "stdafx.h"
+#include "stdafx.h"  // MUST be included first
 #if _MSC_VER > 1200
 #include "ADSExplorer_h.h"
 #else
@@ -31,14 +32,13 @@
 #endif
 #include "RootShellFolder.h"
 #include "RootShellView.h"
-#include "shtypes.h"
 
-//==============================================================================
+//========================================================================================
 // Helpers
 
 #ifdef _DEBUG
 
-static LPTSTR PidlToString(LPCITEMIDLIST pidl) {
+LPTSTR PidlToString(LPCITEMIDLIST pidl) {
 	static int which = 0;
 	static TCHAR str1[200];
 	static TCHAR str2[200];
@@ -74,22 +74,30 @@ static LPTSTR PidlToString(LPCITEMIDLIST pidl) {
 	return str;
 }
 
+inline LPOLESTR iidToString(REFIID iid) {
+	LPOLESTR str;
+	StringFromIID(iid, &str);
+	return str;	 // TODO: BUG: This string SHOULD be freed, but it isn't !
+}
+
 #define DUMPIID(iid) AtlDumpIID(iid, NULL, S_OK)
 
 #else
 #define PidlToString
+#define iidToString
 #define DUMPIID
 #endif
 
-//==============================================================================
-// Copy policy for COWComEnumOnCArrays
+//========================================================================================
+// Helper class for the CComEnumOnCArray
+
 class CCopyItemPidl {
    public:
 	static void init(LPITEMIDLIST *p) {}
 
 	static HRESULT copy(LPITEMIDLIST *pTo, COWItem *pFrom) {
 		*pTo = s_PidlMgr.Create(*pFrom);
-		return (*pTo != NULL) ? S_OK : E_OUTOFMEMORY;
+		return (NULL != *pTo) ? S_OK : E_OUTOFMEMORY;
 	}
 
 	static void destroy(LPITEMIDLIST *p) { s_PidlMgr.Delete(*p); }
@@ -98,66 +106,66 @@ class CCopyItemPidl {
 	static CPidlMgr s_PidlMgr;
 };
 
-// TODO(garlic-os): what does this line do
 CPidlMgr CCopyItemPidl::s_PidlMgr;
 
-// This class implements the IEnumIDList for our OpenWindow items.
+// This class implements the IEnumIDList for our CDataFavo items.
 typedef CComEnumOnCArray<
 	IEnumIDList,
 	&IID_IEnumIDList,
 	LPITEMIDLIST,
 	CCopyItemPidl,
-	COWItemList
-> COWEnumItemsIDList;
+	COWItemList>
+	CEnumItemsIDList;
 
-//==============================================================================
+//========================================================================================
 // COWRootShellFolder
+
 COWRootShellFolder::COWRootShellFolder() : m_pidlRoot(NULL) {}
 
-STDMETHODIMP COWRootShellFolder::GetClassID(CLSID *pClassID) {
-	if (pClassID == NULL) {
+STDMETHODIMP COWRootShellFolder::GetClassID(CLSID *pClsid) {
+	if (NULL == pClsid) {
 		return E_POINTER;
 	}
 
 	// Return our GUID to the shell.
-	*pClassID = CLSID_ADSExplorerRootShellFolder;
+	*pClsid = CLSID_ADSExplorerRootShellFolder;
 
 	return S_OK;
 }
 
 // Initialize() is passed the PIDL of the folder where our extension is.
-STDMETHODIMP COWRootShellFolder::Initialize(PCUIDLIST_ABSOLUTE pidl) {
+STDMETHODIMP COWRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
 	ATLTRACE(
 		_T("COWRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n"),
 		this,
 		PidlToString(pidl)
 	);
 
-	m_pidlRoot = (PIDLIST_ABSOLUTE) m_PidlMgr.Copy(pidl);
+	m_pidlRoot = m_PidlMgr.Copy(pidl);
 
 	return S_OK;
 }
 
-STDMETHODIMP COWRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
+STDMETHODIMP COWRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
 	ATLTRACE(_T("COWRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
 
 	if (ppidl == NULL) {
 		return E_POINTER;
 	}
 
-	*ppidl = (PIDLIST_ABSOLUTE) m_PidlMgr.Copy(m_pidlRoot);
+	*ppidl = m_PidlMgr.Copy(m_pidlRoot);
 
 	return S_OK;
 }
 
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // IShellFolder
 
 // BindToObject() is called when a folder in our part of the namespace is being
 // browsed.
 STDMETHODIMP COWRootShellFolder::BindToObject(
-	PCUIDLIST_RELATIVE pidl,
-	IBindCtx *pbcReserved,
+	LPCITEMIDLIST pidl,
+	LPBC pbcReserved,
 	REFIID riid,
 	void **ppvOut
 ) {
@@ -172,26 +180,7 @@ STDMETHODIMP COWRootShellFolder::BindToObject(
 		return E_INVALIDARG;
 	}
 
-	HRESULT hr;
-	CComPtr<IShellFolder> psfDesktop;
-
-	hr = SHGetDesktopFolder(&psfDesktop);
-	if (FAILED(hr)) {
-		return hr;
-	}
-
-	PIDLIST_ABSOLUTE pidlAbsolute;
-	hr = psfDesktop->ParseDisplayName(
-		NULL,
-		pbcReserved,
-		COWItem::GetPath(pidl),
-		NULL,
-		(PIDLIST_RELATIVE *) &pidlAbsolute,
-		NULL
-	);
-	if (FAILED(hr)) {
-		return hr;
-	}
+	CComPtr<IShellFolder> DesktopPtr;
 
 	// We only support single-level pidl (coz subitems are, in reality, plain
 	// path to other locations) BUT, the modified Office FileDialog still uses
@@ -199,39 +188,65 @@ STDMETHODIMP COWRootShellFolder::BindToObject(
 	// Note that we also use multi-level pidl if "EnableFavoritesSubfolders" is
 	// enabled.
 	if (!m_PidlMgr.IsSingle(pidl)) {
-		// Bind to the root folder of the favorite folder
-		CComPtr<IShellFolder> psfRootFolder;
-		hr = psfDesktop->BindToObject(
-			pidlAbsolute, NULL, IID_IShellFolder, (void **) &psfRootFolder
+		HRESULT hr;
+		hr = SHGetDesktopFolder(&DesktopPtr);
+		if (FAILED(hr)) {
+			return hr;
+		}
+
+		LPITEMIDLIST pidlLocal;
+		hr = DesktopPtr->ParseDisplayName(
+			NULL, pbcReserved, COWItem::GetPath(pidl), NULL, &pidlLocal, NULL
 		);
-		ILFree(pidlAbsolute);
+		if (FAILED(hr)) {
+			return hr;
+		}
+
+		// Bind to the root folder of the favorite folder
+		CComPtr<IShellFolder> RootFolderPtr;
+		hr = DesktopPtr->BindToObject(
+			pidlLocal, NULL, IID_IShellFolder, (void **) &RootFolderPtr
+		);
+		ILFree(pidlLocal);
 		if (FAILED(hr)) {
 			return hr;
 		}
 
 		// And now bind to the sub-item of it
-		return psfRootFolder->BindToObject(
-			(PCUIDLIST_RELATIVE) m_PidlMgr.GetNextItem(pidl),
-			pbcReserved,
-			riid,
-			ppvOut
+		return RootFolderPtr->BindToObject(
+			m_PidlMgr.GetNextItem(pidl), pbcReserved, riid, ppvOut
 		);
 	}
 
 	// Okay, browsing into a favorite item will redirect to its real path.
-	hr = psfDesktop->BindToObject(pidlAbsolute, pbcReserved, riid, ppvOut);
-	ILFree(pidlAbsolute);
+	HRESULT hr;
+	hr = SHGetDesktopFolder(&DesktopPtr);
+	if (FAILED(hr)) {
+		return hr;
+	}
 
+	LPITEMIDLIST pidlLocal;
+	hr = DesktopPtr->ParseDisplayName(
+		NULL, pbcReserved, COWItem::GetPath(pidl), NULL, &pidlLocal, NULL
+	);
+	if (FAILED(hr)) {
+		return hr;
+	}
+
+	hr = DesktopPtr->BindToObject(pidlLocal, pbcReserved, riid, ppvOut);
+
+	ILFree(pidlLocal);
 	return hr;
-	// TODO(Pascal Hurni): Could also use ILCreateFromPath?
+
+	// could also use this one? ILCreateFromPathW
 }
 
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
 // lParam can be the 0-based Index of the details column
 STDMETHODIMP COWRootShellFolder::CompareIDs(
 	LPARAM lParam,
-	PCUIDLIST_RELATIVE pidl1,
-	PCUIDLIST_RELATIVE pidl2
+	LPCITEMIDLIST pidl1,
+	LPCITEMIDLIST pidl2
 ) {
 	ATLTRACE(
 		_T("COWRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], ")
@@ -242,7 +257,7 @@ STDMETHODIMP COWRootShellFolder::CompareIDs(
 		PidlToString(pidl2)
 	);
 
-	// First check if the pidls are ours
+	// First check if the pidl are ours
 	if (!COWItem::IsOwn(pidl1) || !COWItem::IsOwn(pidl2)) {
 		return E_INVALIDARG;
 	}
@@ -330,11 +345,7 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 		 {0x94, 0xDD, 0xAA, 0x25, 0x8A, 0x15, 0x54, 0x70}};
 
 	if (riid != unknownVistaGuid) {
-		LPOLESTR unkIid;
-		hr = StringFromIID(riid, &unkIid);
-		if (FAILED(hr)) {
-			return hr;
-		}
+		LPOLESTR unkIid = iidToString(riid);
 		ATLTRACE(_T(" ** CreateViewObject is unknown: %s"), unkIid);
 		CoTaskMemFree(unkIid);
 	}
@@ -347,13 +358,13 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 // EnumObjects() creates a COM object that implements IEnumIDList.
 STDMETHODIMP COWRootShellFolder::EnumObjects(
 	HWND hwndOwner,
-	SHCONTF grfFlags,
-	IEnumIDList **ppEnumIDList
+	DWORD dwFlags,
+	LPENUMIDLIST *ppEnumIDList
 ) {
 	ATLTRACE(
-		"COWRootShellFolder(0x%08x)::EnumObjects(grfFlags=0x%04x)\n",
+		"COWRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
 		this,
-		grfFlags
+		dwFlags
 	);
 
 	HRESULT hr;
@@ -365,18 +376,17 @@ STDMETHODIMP COWRootShellFolder::EnumObjects(
 	*ppEnumIDList = NULL;
 
 	// Enumerate DOpus Favorites and put them in an array
-	static COWItemList OpenWindows;
-	OpenWindows.RemoveAll();
+	m_OpenedWindows.RemoveAll();
 
-	EnumerateExplorerWindows(&OpenWindows, hwndOwner);
+	EnumerateExplorerWindows(&m_OpenedWindows, hwndOwner);
 
 	ATLTRACE(
-		_T(" ** EnumObjects: Now have %d items"), OpenWindows.GetSize()
+		_T(" ** EnumObjects: Now have %d items"), m_OpenedWindows.GetSize()
 	);
 
-	// Create an enumerator with COWComEnumOnCArray<> and our copy policy class.
-	CComObject<COWEnumItemsIDList> *pEnum;
-	hr = CComObject<COWEnumItemsIDList>::CreateInstance(&pEnum);
+	// Create an enumerator with CComEnumOnCArray<> and our copy policy class.
+	CComObject<CEnumItemsIDList> *pEnum;
+	hr = CComObject<CEnumItemsIDList>::CreateInstance(&pEnum);
 	if (FAILED(hr)) {
 		return hr;
 	}
@@ -384,10 +394,10 @@ STDMETHODIMP COWRootShellFolder::EnumObjects(
 	// AddRef() the object while we're using it.
 	pEnum->AddRef();
 
-	// Init the enumerator. Init() will AddRef() our IUnknown (obtained with
+	// Init the enumerator.  Init() will AddRef() our IUnknown (obtained with
 	// GetUnknown()) so this object will stay alive as long as the enumerator
 	// needs access to the collection m_Favorites.
-	hr = pEnum->Init(GetUnknown(), OpenWindows);
+	hr = pEnum->Init(GetUnknown(), m_OpenedWindows);
 
 	// Return an IEnumIDList interface to the caller.
 	if (SUCCEEDED(hr)) {
@@ -402,22 +412,24 @@ STDMETHODIMP COWRootShellFolder::EnumObjects(
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
 // in.
 STDMETHODIMP COWRootShellFolder::GetAttributesOf(
-	UINT cidl,
-	PCUITEMID_CHILD_ARRAY apidl,
-	SFGAOF *rgfInOut
+	UINT uCount,
+	LPCITEMIDLIST aPidls[],
+	LPDWORD pdwAttribs
 ) {
 #ifdef _DEBUG
-	if (cidl >= 1) {
+	if (uCount >= 1) {
 		ATLTRACE(
-			_T("COWRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d) ")
+			_T("COWRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d) ")
 			_T("pidl=[%s]\n"),
 			this,
-			cidl,
-			PidlToString(apidl[0])
+			uCount,
+			PidlToString(aPidls[0])
 		);
 	} else {
 		ATLTRACE(
-			"COWRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d)\n", this, cidl
+			"COWRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d)\n",
+			this,
+			uCount
 		);
 	}
 #endif
@@ -425,12 +437,12 @@ STDMETHODIMP COWRootShellFolder::GetAttributesOf(
 	// We limit the tree, by indicating that the favorites folder does not
 	// contain sub-folders
 
-	if ((cidl == 0) || (apidl[0]->mkid.cb == 0)) {
-		*rgfInOut &= SFGAO_HASSUBFOLDER | SFGAO_FOLDER | SFGAO_FILESYSTEM |
-					 SFGAO_FILESYSANCESTOR | SFGAO_BROWSABLE;
+	if ((uCount == 0) || (aPidls[0]->mkid.cb == 0)) {
+		*pdwAttribs &= SFGAO_HASSUBFOLDER | SFGAO_FOLDER | SFGAO_FILESYSTEM |
+					   SFGAO_FILESYSANCESTOR | SFGAO_BROWSABLE;
 	} else {
-		*rgfInOut &= SFGAO_FOLDER | SFGAO_FILESYSTEM | SFGAO_FILESYSANCESTOR |
-					 SFGAO_BROWSABLE | SFGAO_LINK;
+		*pdwAttribs &= SFGAO_FOLDER | SFGAO_FILESYSTEM | SFGAO_FILESYSANCESTOR |
+					   SFGAO_BROWSABLE | SFGAO_LINK;
 	}
 
 	return S_OK;
@@ -440,26 +452,26 @@ STDMETHODIMP COWRootShellFolder::GetAttributesOf(
 // IDataObject
 STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 	HWND hwndOwner,
-	UINT cidl,
-	PCUITEMID_CHILD_ARRAY apidl,
+	UINT uCount,
+	LPCITEMIDLIST *pPidl,
 	REFIID riid,
-	UINT *rgfReserved,
-	void **ppvOut
+	LPUINT puReserved,
+	void **ppvReturn
 ) {
 #ifdef _DEBUG
-	if (cidl >= 1) {
+	if (uCount >= 1) {
 		ATLTRACE(
 			_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d) ")
 			_T("pidl=[%s]"),
 			this,
-			cidl,
-			PidlToString(*apidl)
+			uCount,
+			PidlToString(*pPidl)
 		);
 	} else {
 		ATLTRACE(
 			_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)"),
 			this,
-			cidl
+			uCount
 		);
 	}
 	// DUMPIID(riid);
@@ -467,25 +479,25 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 
 	HRESULT hr;
 
-	if (ppvOut == NULL) {
+	if (ppvReturn == NULL) {
 		return E_POINTER;
 	}
 
-	*ppvOut = NULL;
+	*ppvReturn = NULL;
 
-	if (cidl == 0) {
+	if (uCount == 0) {
 		return E_INVALIDARG;
 	}
 
-	// Special case: DataObject -- when the FileDialog needs to embed some data
+	// Does the FileDialog need to embed some data?
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
-		if (cidl != 1) {
+		if (uCount != 1) {
 			return E_INVALIDARG;
 		}
 
 		// Is this really one of our item?
-		if (!COWItem::IsOwn(*apidl)) {
+		if (!COWItem::IsOwn(*pPidl)) {
 			return E_INVALIDARG;
 		}
 
@@ -496,92 +508,93 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 			return hr;
 		}
 
-		// Increment the object's refcount while we are working with it to keep
-		// it from being destroyed early
+		// AddRef it while we are working with it, this prevent from an early
+		// destruction.
 		pDataObject->AddRef();
 
-		// Tie its lifetime to this object (the IShellFolder object)
+		// Tight its lifetime with this object (the IShellFolder object)
 		pDataObject->Init(GetUnknown());
 
-		// Now embed the pidl into the data object
-		pDataObject->SetPidl(m_pidlRoot, *apidl);
+		// Okay, embed the pidl in the data
+		pDataObject->SetPidl(m_pidlRoot, *pPidl);
 
 		// Return the requested interface to the caller
-		hr = pDataObject->QueryInterface(riid, ppvOut);
+		hr = pDataObject->QueryInterface(riid, ppvReturn);
 
-		// Decrement the object's refcount (note: it's still not destroyed at
-		// this point because the QueryInterface above AddRef'd it)
+		// We do no more need our ref (note that the object will not die because
+		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
 		return hr;
 	}
 
 	// All other requests are delegated to the target path's IShellFolder
 
-	// Pascal Hurni: Because multiple items can point to different storages
-	// [sic], we choose not to handle groups of items.
-	if (cidl > 1) {
+	// because multiple items can point to different storages, we can't (easily)
+	// handle groups of items.
+	if (uCount > 1) {
 		return E_NOINTERFACE;
 	}
 
-	CComPtr<IShellFolder> psfParent;
-	CComPtr<IShellFolder> psfDesktop;
+	CComPtr<IShellFolder> TargetParentShellFolderPtr;
+	CComPtr<IShellFolder> DesktopPtr;
 
-	hr = SHGetDesktopFolder(&psfDesktop);
+	hr = SHGetDesktopFolder(&DesktopPtr);
 	if (FAILED(hr)) {
 		return hr;
 	}
 
-	PIDLIST_ABSOLUTE pidlAbsolute;
-	hr = psfDesktop->ParseDisplayName(
-		NULL,
-		NULL,
-		COWItem::GetPath(*apidl),
-		NULL,
-		(PIDLIST_RELATIVE *) &pidlAbsolute,
-		NULL
+	LPITEMIDLIST pidlLocal;
+	hr = DesktopPtr->ParseDisplayName(
+		NULL, NULL, COWItem::GetPath(*pPidl), NULL, &pidlLocal, NULL
 	);
 	if (FAILED(hr)) {
 		return hr;
 	}
 
-	PCUITEMID_CHILD pidlParent;
+	LPITEMIDLIST pidlRelative;
 
-	hr = SHBindToParent(
-		pidlAbsolute, IID_IShellFolder, (void **) &psfParent, &pidlParent
+	//------------------------------
+	// this block emulate the following line (not available to shell
+	// version 4.7x)
+	//		hr = SHBindToParent(pidlLocal, IID_IShellFolder,
+	//(void**)&pTargetParentShellFolder, &pidlRelative);
+	LPITEMIDLIST pidlTmp = ILFindLastID(pidlLocal);
+	pidlRelative = ILClone(pidlTmp);
+	ILRemoveLastID(pidlLocal);
+	hr = DesktopPtr->BindToObject(
+		pidlLocal, NULL, IID_IShellFolder, (void **) &TargetParentShellFolderPtr
 	);
-	ILFree(pidlAbsolute);
+	ILFree(pidlLocal);
 	if (FAILED(hr)) {
-		// ILFree(pidlParent);
+		ILFree(pidlRelative);
 		return hr;
 	}
 	//------------------------------
 
-	hr = psfParent->GetUIObjectOf(
-		hwndOwner, 1, &pidlParent, riid, rgfReserved, ppvOut
+	hr = TargetParentShellFolderPtr->GetUIObjectOf(
+		hwndOwner,
+		1,
+		(LPCITEMIDLIST *) &pidlRelative,
+		riid,
+		puReserved,
+		ppvReturn
 	);
 
-	// SHBindToParent does not allocate a new PIDL, it just derives a new
-	// pointer from pidlAbsolute, so pidlParent does not need to be freed.
-	// ILFree(pidlParent);
+	ILFree(pidlRelative);
 
 	return hr;
 }
 
 STDMETHODIMP
-COWRootShellFolder::BindToStorage(
-	PCUIDLIST_RELATIVE pidl,
-	IBindCtx *pbc,
-	REFIID riid,
-	void **ppvOut
-) {
+COWRootShellFolder::BindToStorage(LPCITEMIDLIST, LPBC, REFIID, void **) {
 	ATLTRACE("COWRootShellFolder(0x%08x)::BindToStorage()\n", this);
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
-	PCUITEMID_CHILD pidl,
-	SHGDNF uFlags,
-	STRRET *pName
+	LPCITEMIDLIST pidl,
+	DWORD uFlags,
+	LPSTRRET lpName
 ) {
 	ATLTRACE(
 		_T("COWRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) ")
@@ -591,7 +604,7 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 		PidlToString(pidl)
 	);
 
-	if ((pidl == NULL) || (pName == NULL)) {
+	if ((pidl == NULL) || (lpName == NULL)) {
 		return E_POINTER;
 	}
 
@@ -602,7 +615,7 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 												   // present in the regitry
 				// As stated in the SDK, we should return here our virtual
 				// junction point which is in the form "::{GUID}" So we should
-				// return "::{F74755E7-E951-4B20-B2F4-80B1B0340FA5}". This works
+				// return "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}". This works
 				// (well I guess it's never used) great except for the modified
 				// FileDialog of Office (97, 2000). Thanx to MS, they always
 				// have to tweak their own app. The drawback is that Office WILL
@@ -618,11 +631,11 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 					return E_FAIL;
 				}
 
-				return SetReturnString(TempPath, *pName) ? S_OK : E_FAIL;
+				return SetReturnString(TempPath, *lpName) ? S_OK : E_FAIL;
 
 				// See note above
 				// return
-				// SetReturnString(_T("::{F74755E7-E951-4B20-B2F4-80B1B0340FA5}"),
+				// SetReturnString(_T("::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}"),
 				// *lpName) ? S_OK : E_FAIL;
 		}
 		// We dont' handle other combinations of flags
@@ -637,8 +650,8 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
-			return SetReturnStringW(COWItem::GetPath(pidl), *pName) ? S_OK
-																	: E_FAIL;
+			return SetReturnStringW(COWItem::GetPath(pidl), *lpName) ? S_OK
+																	 : E_FAIL;
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
@@ -646,34 +659,30 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 	}
 
 	// Any other combination results in returning the name.
-	return SetReturnStringW(COWItem::GetName(pidl), *pName) ? S_OK : E_FAIL;
+	return SetReturnStringW(COWItem::GetName(pidl), *lpName) ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP COWRootShellFolder::ParseDisplayName(
-	HWND hwnd,
-	IBindCtx *pbc,
-	LPWSTR pszDisplayName,
-	ULONG *pchEaten,
-	PIDLIST_RELATIVE *ppidl,
-	ULONG *pdwAttributes
+	HWND,
+	LPBC,
+	LPOLESTR,
+	LPDWORD,
+	LPITEMIDLIST *,
+	LPDWORD
 ) {
 	ATLTRACE("COWRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP COWRootShellFolder::SetNameOf(
-	HWND hwnd,
-	PCUITEMID_CHILD pidl,
-	LPCWSTR pszName,
-	SHGDNF uFlags,
-	PITEMID_CHILD *ppidlOut
-) {
+STDMETHODIMP COWRootShellFolder::
+	SetNameOf(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *) {
 	ATLTRACE("COWRootShellFolder(0x%08x)::SetNameOf()\n", this);
 	return E_NOTIMPL;
 }
 
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // IShellDetails
+
 STDMETHODIMP COWRootShellFolder::ColumnClick(UINT iColumn) {
 	ATLTRACE(
 		"COWRootShellFolder(0x%08x)::ColumnClick(iColumn=%d)\n", this, iColumn
@@ -684,7 +693,7 @@ STDMETHODIMP COWRootShellFolder::ColumnClick(UINT iColumn) {
 }
 
 STDMETHODIMP COWRootShellFolder::GetDetailsOf(
-	PCUITEMID_CHILD pidl,
+	LPCITEMIDLIST pidl,
 	UINT iColumn,
 	LPSHELLDETAILS pDetails
 ) {
@@ -716,18 +725,18 @@ STDMETHODIMP COWRootShellFolder::GetDetailsOf(
 	}
 
 	// Okay, this time it's for a real item
-	TCHAR ReturnString[16];
+	TCHAR tmpStr[16];
 	switch (iColumn) {
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
-			pDetails->cxChar = (int) wcslen(COWItem::GetName(pidl));
+			pDetails->cxChar = wcslen(COWItem::GetName(pidl));
 			return SetReturnStringW(COWItem::GetName(pidl), pDetails->str)
 					   ? S_OK
 					   : E_OUTOFMEMORY;
 
 		case DETAILS_COLUMN_PATH:
 			pDetails->fmt = LVCFMT_LEFT;
-			pDetails->cxChar = (int) wcslen(COWItem::GetName(pidl));
+			pDetails->cxChar = wcslen(COWItem::GetName(pidl));
 			return SetReturnStringW(COWItem::GetPath(pidl), pDetails->str)
 					   ? S_OK
 					   : E_OUTOFMEMORY;
@@ -735,16 +744,17 @@ STDMETHODIMP COWRootShellFolder::GetDetailsOf(
 		case DETAILS_COLUMN_RANK:
 			pDetails->fmt = LVCFMT_RIGHT;
 			pDetails->cxChar = 6;
-			wsprintf(ReturnString, _T("%d"), COWItem::GetRank(pidl));
-			return SetReturnString(ReturnString, pDetails->str) ? S_OK
-																: E_OUTOFMEMORY;
+			wsprintf(tmpStr, _T("%d"), COWItem::GetRank(pidl));
+			return SetReturnString(tmpStr, pDetails->str) ? S_OK
+														  : E_OUTOFMEMORY;
 	}
 
 	return E_INVALIDARG;
 }
 
-//------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
 // IShellFolder2
+
 STDMETHODIMP COWRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
 	ATLTRACE("COWRootShellFolder(0x%08x)::EnumSearches()\n", this);
 	return E_NOTIMPL;
@@ -806,7 +816,7 @@ STDMETHODIMP COWRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
 }
 
 STDMETHODIMP COWRootShellFolder::GetDetailsEx(
-	PCUITEMID_CHILD pidl,
+	LPCITEMIDLIST pidl,
 	const SHCOLUMNID *pscid,
 	VARIANT *pv
 ) {

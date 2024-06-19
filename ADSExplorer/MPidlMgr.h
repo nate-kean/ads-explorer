@@ -52,25 +52,31 @@ class CPidlData {
 
 class CPidlMgr {
    public:
+	CPidlMgr() {
+		HRESULT hr = SHGetMalloc(&m_MallocPtr);
+		ATLASSERT(SUCCEEDED(hr));
+	}
+
 	LPITEMIDLIST Create(CPidlData &Data) {
 		// Total size of the PIDL, including SHITEMID
 		UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
 
-		// Also allocate memory for the PIDL, its SHITEMID, and the final null
-		// SHITEMID.
+		// Also allocate memory for the final null SHITEMID.
 		LPITEMIDLIST pidlNew =
-			(LPITEMIDLIST) CoTaskMemAlloc(TotalSize + sizeof(ITEMIDLIST));
+			(LPITEMIDLIST) m_MallocPtr->Alloc(TotalSize + sizeof(ITEMIDLIST));
 		if (pidlNew) {
+			LPITEMIDLIST pidlTemp = pidlNew;
+
 			// Prepares the PIDL to be filled with actual data
-			pidlNew->mkid.cb = TotalSize;
+			pidlTemp->mkid.cb = TotalSize;
 
 			// Fill the PIDL
-			Data.CopyTo((void *) pidlNew->mkid.abID);
+			Data.CopyTo((void *) pidlTemp->mkid.abID);
 
 			// Set an empty PIDL at the end
-			LPITEMIDLIST pidlLast = GetNextItem(pidlNew);
-			pidlLast->mkid.cb = 0;
-			pidlLast->mkid.abID[0] = NULL;
+			pidlTemp = GetNextItem(pidlTemp);
+			pidlTemp->mkid.cb = 0;
+			pidlTemp->mkid.abID[0] = 0;
 		}
 
 		return pidlNew;
@@ -78,7 +84,7 @@ class CPidlMgr {
 
 	void Delete(LPITEMIDLIST pidl) {
 		if (pidl) {
-			CoTaskMemFree(pidl);
+			m_MallocPtr->Free(pidl);
 		}
 	}
 
@@ -113,7 +119,7 @@ class CPidlMgr {
 
 		// Allocate memory for the new PIDL.
 		Size = GetSize(pidlSrc);
-		pidlTarget = (LPITEMIDLIST) CoTaskMemAlloc(Size);
+		pidlTarget = (LPITEMIDLIST) m_MallocPtr->Alloc(Size);
 
 		if (pidlTarget == NULL) {
 			return NULL;
@@ -151,7 +157,7 @@ class CPidlMgr {
 	}
 
 	CString StrRetToCString(STRRET *pStrRet, LPCITEMIDLIST pidl) {
-		size_t Length = 0;
+		int Length = 0;
 		bool Unicode = false;
 		LPCSTR StringA = NULL;
 		LPCWSTR StringW = NULL;
@@ -181,17 +187,16 @@ class CPidlMgr {
 		}
 
 		CString Target;
-		LPTSTR pTarget = Target.GetBuffer((int) Length);
+		LPTSTR pTarget = Target.GetBuffer(Length);
 		if (Unicode) {
 #ifdef _UNICODE
-			wcscpy_s(pTarget, Length + 1, StringW);
+			wcscpy(pTarget, StringW);
 #else
 			wcstombs(pTarget, StringW, Length + 1);
 #endif
 		} else {
 #ifdef _UNICODE
-			// mbstowcs(pTarget, StringA, Length + 1);
-			mbstowcs_s(NULL, pTarget, Length, StringA, Length + 1);
+			mbstowcs(pTarget, StringA, Length + 1);
 #else
 			strcpy(pTarget, StringA);
 #endif
@@ -200,11 +205,14 @@ class CPidlMgr {
 
 		// Release the OLESTR
 		if (pStrRet->uType == STRRET_WSTR) {
-			CoTaskMemFree(pStrRet->pOleStr);
+			m_MallocPtr->Free(pStrRet->pOleStr);
 		}
 
 		return Target;
 	}
+
+   protected:
+	CComPtr<IMalloc> m_MallocPtr;
 };
 
 //========================================================================================
