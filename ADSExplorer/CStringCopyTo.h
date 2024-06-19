@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -21,17 +21,22 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "stdafx.h"
+#include "stdafx.h"  // MUST be included first
 
 //----------------------------------------------------------------------------------------
 // CStringEx - String class extensions
 
-inline void CStringCopyTo(CString &Str, LPTSTR Target, UINT TargetMaxSize = -1)		// Yes -1 for UINT !
+inline void CStringCopyTo(
+	CString &Str,
+	LPTSTR Target,
+	UINT TargetMaxSize = -1
+)  // Yes -1 for UINT !
 {
 	UINT CopySize = Str.GetLength();
-	if (CopySize+1 > TargetMaxSize)
-		CopySize = TargetMaxSize-1;
+	if (CopySize + 1 > TargetMaxSize) {
+		CopySize = TargetMaxSize - 1;
+	}
 
-	memcpy(Target, (LPCTSTR)Str, CopySize*sizeof(TCHAR));
+	memcpy(Target, (LPCTSTR) Str, CopySize * sizeof(TCHAR));
 	Target[CopySize] = '\0';
 }

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "stdafx.h"  // MUST be included first
 
 #include "ShellItems.h"
 #include "ads.h"

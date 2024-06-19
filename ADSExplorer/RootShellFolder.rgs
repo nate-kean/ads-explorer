@@ -8,7 +8,6 @@ HKCR
             {
                 val ThreadingModel = s 'Apartment'
             }
-            val InfoTip = s 'Shows NTFS alternate data streams'
             DefaultIcon = s '%MODULE%,0'
             ShellFolder
             {

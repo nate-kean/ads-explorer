@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
+ * Copyright (c) 2024 Nate Kean
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,9 +23,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// Entry point for the DLL
-
-#include "stdafx.h"
+// dllmain.cpp : Defines the entry point for the DLL application.
+#include "stdafx.h"  // MUST be included first
 
 #if _MSC_VER > 1200
 #include "ADSExplorer_h.h"
