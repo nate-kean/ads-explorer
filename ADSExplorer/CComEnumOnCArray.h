@@ -25,6 +25,8 @@
 // An implementation for CComEnum that connects to a CSimpleArray<>
 // (much like CComEnumOnSTL works for STL collections)
 
+#include "stdafx.h"  // MUST be included first
+
 #ifdef __ATLBASE_H__
 
 template <class Base, const IID *piid, class T, class Copy, class CollType>
