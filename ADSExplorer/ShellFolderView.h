@@ -74,16 +74,10 @@
 //	In any of your message handler, you can use m_pISF which is a pointer to the
 //related IShellFolder.
 //
-//========================================================================================
+//==============================================================================
 
-#ifndef __SHELLFOLDERVIEW_H__
-#define __SHELLFOLDERVIEW_H__
-
-#if _MSC_VER > 1000
 #pragma once
-#endif	// _MSC_VER > 1000
 
-//========================================================================================
 
 class CShellFolderViewImpl : public CMessageMap,
 							 public CComObjectRoot,
@@ -139,6 +133,4 @@ class CShellFolderViewImpl : public CMessageMap,
 				  // handled by SHCreateShellFolderView()
 };
 
-//========================================================================================
-
-#endif	// __SHELLFOLDERVIEW_H__
+//==============================================================================

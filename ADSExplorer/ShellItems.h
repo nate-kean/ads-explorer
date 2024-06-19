@@ -21,8 +21,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __SHELLITEMS_H_
-#define __SHELLITEMS_H_
+#pragma once
 
 #include "CStringCopyTo.h"
 #include "MPidlMgr.h"
@@ -149,7 +148,6 @@ class ATL_NO_VTABLE CDataObject
 
 	//-------------------------------------------------------------------------------
 	// IDataObject methods
-
 	STDMETHOD(GetData)(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium);
 	STDMETHOD(GetDataHere)(LPFORMATETC, LPSTGMEDIUM);
 	STDMETHOD(QueryGetData)(LPFORMATETC);
@@ -162,7 +160,6 @@ class ATL_NO_VTABLE CDataObject
 
 	//-------------------------------------------------------------------------------
 	// IEnumFORMATETC members
-
 	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG *);
 	STDMETHOD(Skip)(ULONG);
 	STDMETHOD(Reset)();
@@ -177,5 +174,3 @@ class ATL_NO_VTABLE CDataObject
 	LPITEMIDLIST m_pidl;
 	LPITEMIDLIST m_pidlParent;
 };
-
-#endif	// __SHELLITEMS_H_

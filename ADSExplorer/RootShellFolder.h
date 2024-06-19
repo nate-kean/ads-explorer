@@ -21,8 +21,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __ROOTSHELLFOLDER_H_
-#define __ROOTSHELLFOLDER_H_
+#pragma once
+
+#include "stdafx.h"  // MUST be included first
 
 #include "MPidlMgr.h"
 #include "resource.h"  // main symbols
@@ -125,5 +126,3 @@ class ATL_NO_VTABLE COWRootShellFolder
 
 	COWItemList m_OpenedWindows;
 };
-
-#endif	//__ROOTSHELLFOLDER_H_

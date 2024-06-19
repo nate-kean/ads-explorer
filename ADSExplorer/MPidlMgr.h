@@ -24,14 +24,8 @@
 //========================================================================================
 // Greatly inspired from several examples from: Microsoft, Michael Dunn, ...
 
-#ifndef __MORTIMER_PIDLMGR_H__
-#define __MORTIMER_PIDLMGR_H__
-
-#if _MSC_VER > 1000
 #pragma once
-#endif	// _MSC_VER > 1000
 
-//========================================================================================
 // encapsulate these classes in a namespace
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -218,5 +212,3 @@ class CPidlMgr {
 //========================================================================================
 
 };	// namespace Mortimer
-
-#endif	// __MORTIMER_PIDLMGR_H__

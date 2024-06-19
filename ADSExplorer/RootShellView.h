@@ -21,6 +21,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#pragma once
+
 #include "ShellFolderView.h"
 
 // define some undocumented messages. See "shlext.h" from Henk Devos & Andrew Le
@@ -147,16 +149,16 @@ class COWRootShellView : public CShellFolderViewImpl {
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
 		ATLTRACE("COWRootShellView(%08x)::OnDefViewMode()\n", this);
-#ifdef FVM_CONTENT
-		/* Requires Windows 7+, by Gravis' request */
-		DWORD ver, maj, min;
-		ver = GetVersion();
-		maj = (DWORD) (LOBYTE(LOWORD(dwVersion)));
-		min = (DWORD) (HIBYTE(LOWORD(dwVersion)));
-		if (maj > 6 || (maj == 6 && min >= 1)) {
-			*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
-		}
-#endif
+		#ifdef FVM_CONTENT
+				/* Requires Windows 7+, by Gravis' request */
+				DWORD ver, maj, min;
+				ver = GetVersion();
+				maj = (DWORD) (LOBYTE(LOWORD(dwVersion)));
+				min = (DWORD) (HIBYTE(LOWORD(dwVersion)));
+				if (maj > 6 || (maj == 6 && min >= 1)) {
+					*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
+				}
+		#endif
 		return S_OK;
 	}
 
