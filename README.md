@@ -33,7 +33,7 @@ cause stability issues. _Caveat emptor._
   but as it is now it delegates as much as it can except the bare minimum to
   the "classic" way of doing it.
 * There's probably a better way to do a lot of this, but the sheer obscurity
-  of the topic led to some cargo cult programming.
+  of the topic led to some Cargo Cult programming.
 
 ## Attributions
 See `LICENSE`.
@@ -43,7 +43,6 @@ which in turn is based off a [DOpus-style favorites manager by Pascal Hurni](htt
 The MIT License was inherited from Buckley who made it so with Hurni's
 blessing.
 
-Buckley used some Microsoft code as a polyfill for full functionality when
-built with older SDKs, and as the cargo cult goes, this may still be the
-case but I don't actually know.
-
+Buckley used some Microsoft code (that is, code from outside the Win32 API
+itself) as a polyfill for full functionality when built with older SDKs, and as
+the Cargo Cult goes, this may still be the case but I don't actually know.
