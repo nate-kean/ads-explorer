@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include "stdafx.h"  // MUST be included first
+
 // encapsulate these classes in a namespace
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS

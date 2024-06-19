@@ -27,7 +27,7 @@
 #include "MPidlMgr.h"
 using namespace Mortimer;
 
-//========================================================================================
+//==============================================================================
 
 // Used by SetReturnString.
 // Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
@@ -49,12 +49,12 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 #define SetReturnString SetReturnStringA
 #endif
 
-//========================================================================================
+//==============================================================================
 // This class handles our data that gets embedded in a pidl.
 
 class COWItem : public CPidlData {
    public:
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
@@ -66,7 +66,7 @@ class COWItem : public CPidlData {
 	// copy the data to the target
 	void CopyTo(void *pTarget);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to set data
 
 	// The target path
@@ -78,7 +78,7 @@ class COWItem : public CPidlData {
 	// The rank (preferred items get low numbers, starting at 1)
 	void SetRank(USHORT Rank);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// Used by clients to get data from a given pidl
 
 	// Is this pidl really one of ours?
@@ -97,7 +97,7 @@ class COWItem : public CPidlData {
 	// Retrieve the item rank
 	static USHORT GetRank(LPCITEMIDLIST pidl);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
    protected:
 	USHORT m_Padding; /* Pascal's example used an item type here, we don't care
@@ -114,7 +114,7 @@ class COWItem : public CPidlData {
 // Collection for our data
 typedef CSimpleArray<COWItem> COWItemList;
 
-//========================================================================================
+//==============================================================================
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.
@@ -134,7 +134,7 @@ class ATL_NO_VTABLE CDataObject
 	COM_INTERFACE_ENTRY_IID(IID_IEnumFORMATETC, IEnumFORMATETC)
 	END_COM_MAP()
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 
 	CDataObject();
 	~CDataObject();
@@ -146,7 +146,7 @@ class ATL_NO_VTABLE CDataObject
 	// This member must be called before any IDataObject member.
 	void SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IDataObject methods
 	STDMETHOD(GetData)(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium);
 	STDMETHOD(GetDataHere)(LPFORMATETC, LPSTGMEDIUM);
@@ -158,7 +158,7 @@ class ATL_NO_VTABLE CDataObject
 	STDMETHOD(DUnadvise)(DWORD dwConnection);
 	STDMETHOD(EnumDAdvise)(IEnumSTATDATA **ppEnumAdvise);
 
-	//-------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
 	// IEnumFORMATETC members
 	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG *);
 	STDMETHOD(Skip)(ULONG);

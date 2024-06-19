@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "stdafx.h"  // MUST be included first
+
 #include "ShellFolderView.h"
 
 // define some undocumented messages. See "shlext.h" from Henk Devos & Andrew Le
