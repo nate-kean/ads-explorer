@@ -23,6 +23,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+// shellitems.cpp's security blanket. vscode says it doesn't need it but it
+// fails to compile without it
+#include "stdafx.h"
+
 #include "ShellItems.h"
 
 //==============================================================================
@@ -62,44 +66,51 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 }
 
 ULONG COWItem::GetSize() {
-	return 4 + 2 + 2 + (wcslen(m_Path) + 1) * sizeof(OLECHAR) +
-		   (wcslen(m_Name) + 1) * sizeof(OLECHAR);
+	return sizeof(COWItem);
 }
 
 void COWItem::CopyTo(void *pTarget) {
-	*(DWORD *) pTarget = MAGIC;
-	*((USHORT *) pTarget + 2) = 0;
-	*((USHORT *) pTarget + 3) = m_Rank;
-	wcscpy((OLECHAR *) pTarget + 4, m_Path);
-	wcscpy((OLECHAR *) pTarget + 4 + wcslen(m_Path) + 1, m_Name);
+	COWItem *pItemTarget = (COWItem *) &pTarget;
+	*(UINT32 *) pTarget = MAGIC;
+	wcscpy(pItemTarget->m_Path, m_Path);
+	wcscpy(pItemTarget->m_Name, m_Name);
 }
 
 //-------------------------------------------------------------------------------
 
-void COWItem::SetPath(LPCWSTR Path) { wcsncpy(m_Path, Path, MAX_PATH); }
+void COWItem::SetPath(LPCWSTR Path) {
+	// wcsncpy(m_Path, Path, MAX_PATH);
+	m_Path = Path;
+}
 
-void COWItem::SetName(LPCWSTR Name) { wcsncpy(m_Name, Name, MAX_PATH); }
+void COWItem::SetName(LPCWSTR Name) {
+	// wcsncpy(m_Name, Name, MAX_PATH);
+	m_Name = Name;
+}
 
-void COWItem::SetRank(USHORT Rank) { m_Rank = Rank; }
 
 //-------------------------------------------------------------------------------
 
 bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
-	if ((pidl == NULL) || (pidl->mkid.cb < 4)) {
+	if ((pidl == NULL) || (pidl->mkid.cb < sizeof(UINT32))) {
 		return false;
 	}
-
-	return *((DWORD *) (pidl->mkid.abID)) == MAGIC;
+	return *((UINT32 *) (pidl->mkid.abID)) == MAGIC;
 }
 
-LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) { return (OLECHAR *) pidl + 5; }
+LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) {
+	// return (OLECHAR *) pidl + 5;
+	_bstr_t sPath = ((COWItem *) (&pidl->mkid.abID))->m_Path;
+	return sPath.GetBSTR();
+}
 
 LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
-	return (OLECHAR *) ((BYTE *) pidl + 10 +
-						(wcslen((OLECHAR *) pidl + 5) + 1) * sizeof(OLECHAR));
+	// return (OLECHAR *) ((BYTE *) pidl + 10 +
+	// 					(wcslen((OLECHAR *) pidl + 5) + 1) * sizeof(OLECHAR));
+	_bstr_t sName = ((COWItem *) (&pidl->mkid.abID))->m_Name;
+	return sName.GetBSTR();
 }
 
-USHORT COWItem::GetRank(LPCITEMIDLIST pidl) { return *((USHORT *) pidl + 4); }
 
 //========================================================================================
 // CDataObject

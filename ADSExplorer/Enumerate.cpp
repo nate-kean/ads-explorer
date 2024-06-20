@@ -304,7 +304,6 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			nameStr,
 			pathStr
 		);
-		item.SetRank(realCount++);
 		item.SetName(nameBStr);
 		item.SetPath(pathBStr);
 		list->Add(item);

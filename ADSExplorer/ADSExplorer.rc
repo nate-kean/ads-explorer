@@ -113,7 +113,6 @@ STRINGTABLE
 BEGIN
     IDS_COLUMN_NAME         "Name"
     IDS_COLUMN_PATH         "Path"
-    IDS_COLUMN_RANK         "Rank"
 END
 
 STRINGTABLE

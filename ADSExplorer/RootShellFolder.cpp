@@ -90,7 +90,6 @@ inline LPOLESTR iidToString(REFIID iid) {
 
 //==============================================================================
 // Helper class for the CComEnumOnCArray
-
 class CCopyItemPidl {
    public:
 	static void init(LPITEMIDLIST *p) {}
@@ -119,7 +118,6 @@ typedef CComEnumOnCArray<
 
 //==============================================================================
 // COWRootShellFolder
-
 COWRootShellFolder::COWRootShellFolder() : m_pidlRoot(NULL) {}
 
 STDMETHODIMP COWRootShellFolder::GetClassID(CLSID *pClsid) {
@@ -276,9 +274,6 @@ STDMETHODIMP COWRootShellFolder::CompareIDs(
 			break;
 		case DETAILS_COLUMN_PATH:
 			Result = wcscmp(COWItem::GetPath(pidl1), COWItem::GetPath(pidl2));
-			break;
-		case DETAILS_COLUMN_RANK:
-			Result = COWItem::GetRank(pidl1) - COWItem::GetRank(pidl2);
 			break;
 		default:
 			return E_INVALIDARG;
@@ -712,14 +707,8 @@ STDMETHODIMP COWRootShellFolder::GetDetailsOf(
 	if (pidl == NULL) {
 		// Load the iColumn based string from the resource
 		CString ColumnName(MAKEINTRESOURCE(IDS_COLUMN_NAME + iColumn));
-
-		if (iColumn == DETAILS_COLUMN_RANK) {
-			pDetails->fmt = LVCFMT_RIGHT;
-			pDetails->cxChar = 6;
-		} else {
-			pDetails->fmt = LVCFMT_LEFT;
-			pDetails->cxChar = 32;
-		}
+		pDetails->fmt = LVCFMT_LEFT;
+		pDetails->cxChar = 32;
 		return SetReturnString(ColumnName, pDetails->str) ? S_OK
 														  : E_OUTOFMEMORY;
 	}
@@ -740,19 +729,12 @@ STDMETHODIMP COWRootShellFolder::GetDetailsOf(
 			return SetReturnStringW(COWItem::GetPath(pidl), pDetails->str)
 					   ? S_OK
 					   : E_OUTOFMEMORY;
-
-		case DETAILS_COLUMN_RANK:
-			pDetails->fmt = LVCFMT_RIGHT;
-			pDetails->cxChar = 6;
-			wsprintf(tmpStr, _T("%d"), COWItem::GetRank(pidl));
-			return SetReturnString(tmpStr, pDetails->str) ? S_OK
-														  : E_OUTOFMEMORY;
 	}
 
 	return E_INVALIDARG;
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // IShellFolder2
 
 STDMETHODIMP COWRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
@@ -771,7 +753,7 @@ STDMETHODIMP COWRootShellFolder::GetDefaultColumn(
 		return E_POINTER;
 	}
 
-	*pSort = DETAILS_COLUMN_RANK;
+	*pSort = DETAILS_COLUMN_NAME;
 	*pDisplay = DETAILS_COLUMN_NAME;
 
 	return S_OK;
@@ -799,9 +781,6 @@ COWRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
 			break;
 		case DETAILS_COLUMN_PATH:
 			*pcsFlags = SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT;
-			break;
-		case DETAILS_COLUMN_RANK:
-			*pcsFlags = SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT;
 			break;
 		default:
 			return E_INVALIDARG;
@@ -881,8 +860,6 @@ COWRootShellFolder::MapColumnToSCID(UINT iColumn, SHCOLUMNID *pscid) {
 		case DETAILS_COLUMN_PATH:
 			*pscid = PKEY_ItemPathDisplay;
 			return S_OK;
-			// We can seemingly skip rank and let it fall through to the legacy
-			// impl
 	}
 	return E_FAIL;
 #endif

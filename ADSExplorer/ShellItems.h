@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <comutil.h>
+
 #include "CStringCopyTo.h"
 #include "MPidlMgr.h"
 using namespace Mortimer;
@@ -73,7 +75,8 @@ class COWItem : public CPidlData {
 	// return the size of the pidl data. Not counting the mkid.cb member.
 	ULONG GetSize();
 
-	// copy the data to the target
+	// Copy this item somewhere else.
+	// E.g., to copy it to the data in some pidl, pass in (void *) pidl->mkid.abID.
 	void CopyTo(void *pTarget);
 
 	//--------------------------------------------------------------------------
@@ -84,9 +87,6 @@ class COWItem : public CPidlData {
 
 	// The display name (may contain any chars)
 	void SetName(LPCWSTR Name);
-
-	// The rank (preferred items get low numbers, starting at 1)
-	void SetRank(USHORT Rank);
 
 	//--------------------------------------------------------------------------
 	// Used by clients to get data from a given pidl
@@ -104,21 +104,11 @@ class COWItem : public CPidlData {
 	// returned string.
 	static LPOLESTR GetName(LPCITEMIDLIST pidl);
 
-	// Retrieve the item rank
-	static USHORT GetRank(LPCITEMIDLIST pidl);
-
 	//--------------------------------------------------------------------------
 
    protected:
-	USHORT m_Padding; /* Pascal's example used an item type here, we don't care
-						 about that */
-	USHORT m_Rank;
-	// The old wtlstr CString is always TCHAR, not a templated version, and
-	// do we really want to reimplement that? For now, statically allocate
-	// MAX_PATH worth. On Windows 10, this can be larger, but we can truncate
-	// for now.
-	wchar_t m_Path[MAX_PATH];
-	wchar_t m_Name[MAX_PATH];
+	_bstr_t m_Path;
+	_bstr_t m_Name;
 };
 
 // Collection for our data

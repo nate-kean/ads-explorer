@@ -23,22 +23,25 @@
 
 #pragma once
 
+
 #include "stdafx.h"  // MUST be included first
 
-#include "MPidlMgr.h"
-#include "resource.h"  // main symbols
-using namespace Mortimer;
+#include "ADSExplorer_h.h"
 
+#include "resource.h"  // main symbols
+#include "MPidlMgr.h"
 #include "CComEnumOnCArray.h"
 #include "Enumerate.h"
 #include "ShellItems.h"
+
+
+using namespace Mortimer;
 
 //==============================================================================
 
 enum {
 	DETAILS_COLUMN_NAME,
 	DETAILS_COLUMN_PATH,
-	DETAILS_COLUMN_RANK,
 
 	DETAILS_COLUMN_MAX
 };
