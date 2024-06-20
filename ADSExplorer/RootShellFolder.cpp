@@ -225,7 +225,7 @@ STDMETHODIMP COWRootShellFolder::BindToObject(
 		return hr;
 	}
 
-	LPITEMIDLIST pidlLocal;
+	LPITEMIDLIST pidlLocal = NULL;
 	hr = DesktopPtr->ParseDisplayName(
 		NULL, pbcReserved, COWItem::GetPath(pidl), NULL, &pidlLocal, NULL
 	);
