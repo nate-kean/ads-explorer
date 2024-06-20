@@ -195,8 +195,10 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		COWItem item;
 		HWND window, parent;
 		SHANDLE_PTR windowPtr;
+		HRESULT hr;
 
-		if (FAILED(windows->Item(v, &wba_disp))) {
+		hr = windows->Item(v, &wba_disp);
+		if (FAILED(hr) || wba_disp == NULL) {
 			ATLTRACE(_T(" ** Enumerate isn't an item i=%ld\n"), i);
 			continue;
 		}
