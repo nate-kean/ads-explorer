@@ -49,6 +49,16 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 #define SetReturnString SetReturnStringA
 #endif
 
+constexpr UINT32 ReverseBytes(UINT32 bytes) {
+	UINT32 aux = 0;
+	UINT8 byte = 0;
+	for (int i = 0; i < 32; i += 8) {
+		byte = (bytes >> i) & 0xff;
+		aux |= byte << (32 - 8 - i);
+	}
+	return aux;
+}
+
 //==============================================================================
 // This class handles our data that gets embedded in a pidl.
 
@@ -58,7 +68,7 @@ class COWItem : public CPidlData {
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
-	enum { MAGIC = 0xAA000055 | ('OW' << 8) };
+	enum { MAGIC = ReverseBytes('ADSX') };
 
 	// return the size of the pidl data. Not counting the mkid.cb member.
 	ULONG GetSize();
