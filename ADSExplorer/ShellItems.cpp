@@ -142,7 +142,8 @@ HGLOBAL CreateShellIDList(
 		return NULL;
 	}
 
-	if (pData = (LPIDA) GlobalLock(hGlobal)) {
+	pData = (LPIDA) GlobalLock(hGlobal);
+	if (pData != NULL) {
 		pData->cidl = uItemCount;
 		pData->aoffset[0] = iCurPos;
 
