@@ -6,6 +6,9 @@
 # IDE configuration files
 .vscode/
 
+# where i put the dll when im testing
+Active/
+
 # User-specific files
 *.rsuser
 *.suo
