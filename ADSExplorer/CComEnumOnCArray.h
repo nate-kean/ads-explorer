@@ -109,6 +109,25 @@ STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Skip(ULONG celt
 	return hr;
 }
 
+template <
+	class Base,
+	const IID *piid,
+	class T,
+	class Copy,
+	class CollType,
+	class ThreadModel = CComObjectThreadModel>
+class ATL_NO_VTABLE CComEnumOnCArray
+	: public IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>,
+	  public CComObjectRootEx<ThreadModel> {
+   public:
+	typedef CComEnumOnCArray<Base, piid, T, Copy, CollType, ThreadModel>
+		_CComEnum;
+	typedef IEnumOnCArrayImpl<Base, piid, T, Copy, CollType> _CComEnumBase;
+	BEGIN_COM_MAP(_CComEnum)
+	COM_INTERFACE_ENTRY_IID(*piid, _CComEnumBase)
+	END_COM_MAP()
+};
+
 template <class Base, const IID *piid, class T, class Copy, class CollType>
 STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Clone(
 	Base **ppEnum
@@ -132,24 +151,5 @@ STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Clone(
 	}
 	return hRes;
 }
-
-template <
-	class Base,
-	const IID *piid,
-	class T,
-	class Copy,
-	class CollType,
-	class ThreadModel = CComObjectThreadModel>
-class ATL_NO_VTABLE CComEnumOnCArray
-	: public IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>,
-	  public CComObjectRootEx<ThreadModel> {
-   public:
-	typedef CComEnumOnCArray<Base, piid, T, Copy, CollType, ThreadModel>
-		_CComEnum;
-	typedef IEnumOnCArrayImpl<Base, piid, T, Copy, CollType> _CComEnumBase;
-	BEGIN_COM_MAP(_CComEnum)
-	COM_INTERFACE_ENTRY_IID(*piid, _CComEnumBase)
-	END_COM_MAP()
-};
 
 #endif
