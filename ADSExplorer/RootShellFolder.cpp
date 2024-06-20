@@ -295,7 +295,7 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 	REFIID riid,
 	void **ppvOut
 ) {
-	ATLTRACE(_T("COWRootShellFolder(0x%08x)::CreateViewObject()"), this);
+	ATLTRACE(_T("COWRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
 	// DUMPIID(riid);
 
 	HRESULT hr;
@@ -308,7 +308,7 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
-		ATLTRACE(_T(" ** CreateViewObject for IShellView"));
+		ATLTRACE(_T(" ** CreateViewObject for IShellView\n"));
 
 		// Create a view object
 		CComObject<COWRootShellView> *pViewObject;
@@ -346,7 +346,7 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 
 	if (riid != unknownVistaGuid) {
 		LPOLESTR unkIid = iidToString(riid);
-		ATLTRACE(_T(" ** CreateViewObject is unknown: %s"), unkIid);
+		ATLTRACE(_T(" ** CreateViewObject is unknown: %s\n"), unkIid);
 		CoTaskMemFree(unkIid);
 	}
 #endif
@@ -381,7 +381,7 @@ STDMETHODIMP COWRootShellFolder::EnumObjects(
 	EnumerateExplorerWindows(&m_OpenedWindows, hwndOwner);
 
 	ATLTRACE(
-		_T(" ** EnumObjects: Now have %d items"), m_OpenedWindows.GetSize()
+		_T(" ** EnumObjects: Now have %d items\n"), m_OpenedWindows.GetSize()
 	);
 
 	// Create an enumerator with CComEnumOnCArray<> and our copy policy class.
@@ -462,14 +462,14 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 	if (uCount >= 1) {
 		ATLTRACE(
 			_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d) ")
-			_T("pidl=[%s]"),
+			_T("pidl=[%s]\n"),
 			this,
 			uCount,
 			PidlToString(*pPidl)
 		);
 	} else {
 		ATLTRACE(
-			_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)"),
+			_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)\n"),
 			this,
 			uCount
 		);
@@ -835,32 +835,32 @@ STDMETHODIMP COWRootShellFolder::GetDetailsEx(
 	 * only available on XP SP2+ on, so it won't harm 9x.
 	 */
 	if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
-		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_TileInfo"));
+		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_TileInfo\n"));
 		return SUCCEEDED(
 			InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 		);
 	} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
-		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo"));
+		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo\n"));
 		return SUCCEEDED(
 			InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 		);
 	} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
-		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_PreviewDetails"));
+		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_PreviewDetails\n"));
 		return SUCCEEDED(
 			InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 		);
 	} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
-		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_FullDetails"));
+		ATLTRACE(_T(" ** GetDetailsEx: PKEY_PropList_FullDetails\n"));
 		return SUCCEEDED(InitVariantFromString(
 			L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv
 		));
 	} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
-		ATLTRACE(_T(" ** GetDetailsEx: PKEY_ItemType"));
+		ATLTRACE(_T(" ** GetDetailsEx: PKEY_ItemType\n"));
 		return SUCCEEDED(InitVariantFromString(L"Directory", pv));
 	}
 #endif
 
-	ATLTRACE(_T(" ** GetDetailsEx: Not implemented"));
+	ATLTRACE(_T(" ** GetDetailsEx: Not implemented\n"));
 	return E_NOTIMPL;
 }
 
