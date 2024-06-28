@@ -816,7 +816,7 @@ inline CString::CString(LPCTSTR lpsz) {
 	if (lpsz != NULL && HIWORD(lpsz) == NULL) {
 		UINT nID = LOWORD((DWORD_PTR) lpsz);
 		if (!LoadString(nID)) {
-			ATLTRACE(
+			AtlTrace(
 				_T("Warning: implicit LoadString(%u) in CString failed\n"), nID
 			);
 		}
