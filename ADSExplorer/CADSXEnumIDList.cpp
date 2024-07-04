@@ -54,6 +54,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) return E_POINTER;
+	if (celt == 0) return S_OK;
 
 	ULONG nActual = 0;
 	PITEMID_CHILD *pelt = rgelt;
