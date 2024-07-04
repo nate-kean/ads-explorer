@@ -1,15 +1,8 @@
 # @pre: pwd is ${workspaceFolder}
 
-if (-not(Get-Command "msbuild.exe" -ErrorAction SilentlyContinue)) {
-    $RealPwd = $pwd
-    Import-Module "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-    Enter-VsDevShell fd4e7f29
-    Set-Location $RealPwd
-}
-
-msbuild ADSExplorer.sln /noLogo `
-    /p:Configuration=Debug `
-    /p:Platform=x64 `
+. "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" `
+    ADSExplorer.sln `
+    /noLogo /p:Configuration=Debug /p:Platform=x64 `
     | Tee-Object -Variable Output
 $Output = $Output.Replace("`r", "") -join "`n"
 if ($Output.Contains("Build FAILED.")) {
