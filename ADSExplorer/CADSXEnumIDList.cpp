@@ -38,7 +38,7 @@ HRESULT CADSXEnumIDList::Next(
 	/* [out] */ ULONG *pceltFetched
 ) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Next(celt=%lu)\n"), this, celt);
-	CADSXEnumIDList::FnConsume fnCbPushPidl = std::bind(
+	static CADSXEnumIDList::FnConsume fnCbPushPidl = std::bind(
 		&CADSXEnumIDList::PushPidl,
 		this,
 		std::placeholders::_1, std::placeholders::_2
@@ -119,7 +119,7 @@ HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD rgeltFake[1];
 
-	CADSXEnumIDList::FnConsume fnCbNoOp = std::bind(
+	static CADSXEnumIDList::FnConsume fnCbNoOp = std::bind(
 		&NoOp,
 		std::placeholders::_1, std::placeholders::_2
 	);
