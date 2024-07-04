@@ -51,9 +51,9 @@ void TraceHwndInner(HWND tracedWindow, TCHAR *desc) {
 	TCHAR name[255], klass[255];
 	GetClassName(tracedWindow, klass, 255);
 	GetWindowText(tracedWindow, name, 255);
-	ATLTRACE(
-		_T(" ** TraceHwnd %ld %s: name %s class %s\n"),
-		(long) tracedWindow,
+	AtlTrace(
+		_T(" ** TraceHwnd %lld %s: name %s class %s\n"),
+		tracedWindow,
 		desc,
 		name,
 		klass
@@ -82,35 +82,35 @@ static BOOL FolderItemStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr) {
 	// - get the name and path from the item
 	// Unfortunately, this requires quite a bit of COM casting :/
 	if (FAILED(wba->get_Document(&sfvd_disp))) {
-		ATLTRACE(_T(" ** Enumerate can't get document dispatch for i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate can't get document dispatch for i=%ld\n"), i);
 		ok = FALSE;
 		goto fail2;
 	}
 	if (FAILED(
 			sfvd_disp->QueryInterface(IID_IShellFolderViewDual, (void **) &sfvd)
 		)) {
-		ATLTRACE(_T(" ** Enumerate isn't an IShellFolderViewDual i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate isn't an IShellFolderViewDual i=%ld\n"), i);
 		ok = FALSE;
 		goto fail3;
 	}
 	if (FAILED(sfvd->get_Folder(&folder))) {
-		ATLTRACE(_T(" ** Enumerate can't get folder i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate can't get folder i=%ld\n"), i);
 		ok = FALSE;
 		goto fail4;
 	}
 	if (FAILED(folder->QueryInterface(IID_Folder2, (void **) &folder2))) {
-		ATLTRACE(_T(" ** Enumerate isn't a Folder2 i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate isn't a Folder2 i=%ld\n"), i);
 		ok = FALSE;
 		goto fail5;
 	}
 	// This part seems to fail on Me, possibly other 9x with 0xC0000005.
 	if (FAILED(folder2->get_Self(&selfItem))) {
-		ATLTRACE(_T(" ** Enumerate can't get FolderItem i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate can't get FolderItem i=%ld\n"), i);
 		ok = FALSE;
 		goto fail6;
 	}
 	if (FAILED(selfItem->get_Path(pathBStr))) {
-		ATLTRACE(_T(" ** Enumerate doesn't have folder path i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate doesn't have folder path i=%ld\n"), i);
 		ok = FALSE;
 		goto fail7;
 	}
@@ -145,7 +145,7 @@ static BOOL FileUriStrategy(IWebBrowserApp *wba, int i, BSTR *pathBStr) {
 	ok = TRUE;
 
 	if (FAILED(wba->get_LocationURL(&locationUrl))) {
-		ATLTRACE(_T(" ** Enumerate can't get location for i=%ld\n"), i);
+		AtlTrace(_T(" ** Enumerate can't get location for i=%ld\n"), i);
 		ok = FALSE;
 		goto fail2;
 	}
@@ -166,7 +166,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 	physPath = PhysicalManifestationPath();
 	realCount = 0;
 	if (FAILED(CoInitialize(NULL))) {
-		ATLTRACE(_T(" ** Enumerate can't init COM\n"));
+		AtlTrace(_T(" ** Enumerate can't init COM\n"));
 		return 1;
 	}
 	if (FAILED(CoCreateInstance(
@@ -176,7 +176,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			IID_IShellWindows,
 			(void **) &windows
 		))) {
-		ATLTRACE(_T(" ** Enumerate can't create IShellWindows\n"));
+		AtlTrace(_T(" ** Enumerate can't create IShellWindows\n"));
 		return 2;
 	}
 	if (FAILED(windows->get_Count(&count))) {
@@ -199,17 +199,17 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 
 		hr = windows->Item(v, &wba_disp);
 		if (FAILED(hr) || wba_disp == NULL) {
-			ATLTRACE(_T(" ** Enumerate isn't an item i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate isn't an item i=%ld\n"), i);
 			continue;
 		}
 		if (FAILED(wba_disp->QueryInterface(IID_IWebBrowserApp, (void **) &wba)
 			)) {
-			ATLTRACE(_T(" ** Enumerate isn't an IWebBrowserApp i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate isn't an IWebBrowserApp i=%ld\n"), i);
 			goto fail1;
 		}
 		// Is this even a Windows Explorer window?
 		if (!IsExplorerWindow(wba)) {
-			ATLTRACE(_T(" ** Enumerate isn't an explorer window i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate isn't an explorer window i=%ld\n"), i);
 			goto fail1;
 		}
 
@@ -218,20 +218,20 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		// display this NSE when you refresh.)
 		TraceHwnd(callerWindow, _T("caller"));
 		if (FAILED(wba->get_HWND(&windowPtr))) {
-			ATLTRACE(_T(" ** Enumerate failed to get the HWND for i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate failed to get the HWND for i=%ld\n"), i);
 			goto fail1;
 		}
 		window = (HWND) windowPtr;
 		TraceHwnd((HWND) window, _T("received"));
 
-		ATLTRACE(
-			_T(" ** Enumerate i=%ld callerHwnd=%ld vs. receivedHwnd %ld\n"),
+		AtlTrace(
+			_T(" ** Enumerate i=%ld callerHwnd=%ld vs. receivedHwnd %lld\n"),
 			i,
-			(long) callerWindow,
+			callerWindow,
 			window
 		);
 		if (callerWindow == window) {
-			ATLTRACE(_T(" ** Enumerate windows are the same i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate windows are the same i=%ld\n"), i);
 			goto fail1;
 		}
 		// On Vista, we don't get a CabinetWClass as the caller, but a
@@ -242,7 +242,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			parent = GetAncestor(callerWindow, GA_ROOTOWNER);
 			TraceHwnd(parent, _T("parent of caller"));
 			if (parent == window) {
-				ATLTRACE(
+				AtlTrace(
 					_T(" ** Enumerate windows are the same (checking parent ")
 					_T("of caller) i=%ld\n"),
 					i
@@ -255,9 +255,9 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		// it has issues on Me. Fall back to the file:// URI strategy
 		// if it fails.
 		if (!FolderItemStrategy(wba, i, &pathBStr)) {
-			ATLTRACE(_T(" ** Enumerate folder item strat failed i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate folder item strat failed i=%ld\n"), i);
 			if (!FileUriStrategy(wba, i, &pathBStr)) {
-				ATLTRACE(
+				AtlTrace(
 					_T(" ** Enumerate file URI strat failed (bail) i=%ld\n"), i
 				);
 				goto fail2;
@@ -267,14 +267,14 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 		// A common way to get the name, with any special flair Windows tends
 		// to put on it (like drive labels or the system a remote dir is on).
 		if (FAILED(wba->get_LocationName(&nameBStr))) {
-			ATLTRACE(_T(" ** Enumerate can't get name for i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate can't get name for i=%ld\n"), i);
 			goto fail3;
 		}
 
 		nameStr = CString(nameBStr);
 		pathStr = CString(pathBStr);
 		if (pathStr.GetLength() == 0) {
-			ATLTRACE(_T(" ** Enumerate empty path string i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate empty path string i=%ld\n"), i);
 			goto fail4;
 		} else if (pathBStr[0] == L':' && pathBStr[1] == L':') {
 			// This path is some shell namespace world stuff. This on its own
@@ -283,7 +283,7 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			// to the object, or be inert. Unless we figure out a good way
 			// to deal with this, for now, we can just ignore them.
 			// (Or make it toggleable?)
-			ATLTRACE(_T(" ** Enumerate skipping shell namespace i=%ld\n"), i);
+			AtlTrace(_T(" ** Enumerate skipping shell namespace i=%ld\n"), i);
 			goto fail4;
 		} else if (pathStr == physPath) {
 			// I hate this workaround around a workaround. The manifestation
@@ -291,18 +291,18 @@ long EnumerateExplorerWindows(COWItemList *list, HWND callerWindow) {
 			// enough to require one. This means if you have multiple of our NSE
 			// though, you get ugly "Temp/" entries. Skip them if we encounter
 			// one.
-			ATLTRACE(
+			AtlTrace(
 				_T(" ** Enumerate path is the manifestation path i=%ld\n"), i
 			);
 			goto fail4;
 		}
 
-		ATLTRACE(
+		AtlTrace(
 			_T(" ** Enumerate caught i=%ld # %ld: %s <- %s\n"),
 			i,
 			realCount,
-			nameStr,
-			pathStr
+			nameStr.GetBuffer(),
+			pathStr.GetBuffer()
 		);
 		item.SetName(nameBStr);
 		item.SetPath(pathBStr);

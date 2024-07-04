@@ -23,45 +23,37 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// shellitems.cpp's security blanket. vscode says it doesn't need it but it
+// ShellItems.cpp's security blanket. vscode says it doesn't need it but it
 // fails to compile without it
 #include "stdafx.h"
 
 #include "ShellItems.h"
+#include <combaseapi.h>
 
 //==============================================================================
 // Helper for STRRET
 
-CMalloc::CMalloc() {
-	HRESULT hr = SHGetMalloc(&m_MallocPtr);
-	ATLASSERT(SUCCEEDED(hr));
-}
-
-CMalloc g_Malloc;
-
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
-	ULONG StringLen = strlen(Source) + 1;
+	SIZE_T StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
-	str.pOleStr =
-		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
+	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
 
-	mbstowcs(str.pOleStr, Source, StringLen);
+	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 
 bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
-	ULONG StringLen = wcslen(Source) + 1;
+	SIZE_T StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
-	str.pOleStr =
-		(LPOLESTR) g_Malloc.m_MallocPtr->Alloc(StringLen * sizeof(OLECHAR));
+	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
 	if (!str.pOleStr) {
 		return false;
 	}
 
-	wcsncpy(str.pOleStr, Source, StringLen);
+	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 
@@ -69,46 +61,44 @@ ULONG COWItem::GetSize() {
 	return sizeof(COWItem);
 }
 
+// @pre: pTarget is a buffer of at least GetSize() bytes
 void COWItem::CopyTo(void *pTarget) {
-	COWItem *pItemTarget = (COWItem *) &pTarget;
-	*(UINT32 *) pTarget = MAGIC;
-	wcscpy(pItemTarget->m_Path, m_Path);
-	wcscpy(pItemTarget->m_Name, m_Name);
+	*((DWORD *) pTarget) = MAGIC;
+	COWItem *pNewItem = (COWItem *) pTarget;
+	new (&pNewItem->m_Path) _bstr_t();
+	new (&pNewItem->m_Name) _bstr_t();
+	pNewItem->m_Path = m_Path;
+	pNewItem->m_Name = m_Name;
 }
 
 //-------------------------------------------------------------------------------
 
 void COWItem::SetPath(LPCWSTR Path) {
-	// wcsncpy(m_Path, Path, MAX_PATH);
 	m_Path = Path;
 }
 
 void COWItem::SetName(LPCWSTR Name) {
-	// wcsncpy(m_Name, Name, MAX_PATH);
 	m_Name = Name;
 }
-
 
 //-------------------------------------------------------------------------------
 
 bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
-	if ((pidl == NULL) || (pidl->mkid.cb < sizeof(UINT32))) {
-		return false;
-	}
-	return *((UINT32 *) (pidl->mkid.abID)) == MAGIC;
+	return
+		pidl != NULL &&
+		pidl->mkid.cb == sizeof(COWItem) + sizeof(ITEMIDLIST) &&
+		// pidl->mkid.cb >= sizeof(COWItem) &&
+		*((DWORD *) pidl->mkid.abID) == MAGIC;
 }
 
 LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) {
-	// return (OLECHAR *) pidl + 5;
-	_bstr_t sPath = ((COWItem *) (&pidl->mkid.abID))->m_Path;
-	return sPath.GetBSTR();
+	auto that = (COWItem *) &pidl->mkid.abID;
+	return that->m_Path.GetBSTR();
 }
 
 LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
-	// return (OLECHAR *) ((BYTE *) pidl + 10 +
-	// 					(wcslen((OLECHAR *) pidl + 5) + 1) * sizeof(OLECHAR));
-	_bstr_t sName = ((COWItem *) (&pidl->mkid.abID))->m_Name;
-	return sName.GetBSTR();
+	auto that = (COWItem *) &pidl->mkid.abID;
+	return that->m_Name.GetBSTR();
 }
 
 
@@ -126,14 +116,13 @@ HGLOBAL CreateShellIDList(
 	UINT iCurPos;
 	UINT cbPidl;
 	UINT i;
-	CPidlMgr PidlMgr;
 
 	// get the size of the parent folder's PIDL
-	cbPidl = PidlMgr.GetSize(pidlParent);
+	cbPidl = PidlMgr::GetSize(pidlParent);
 
 	// get the total size of all of the PIDLs
 	for (i = 0; i < uItemCount; i++) {
-		cbPidl += PidlMgr.GetSize(aPidls[i]);
+		cbPidl += PidlMgr::GetSize(aPidls[i]);
 	}
 
 	// Find the end of the CIDA structure. This is the size of the
@@ -159,13 +148,13 @@ HGLOBAL CreateShellIDList(
 		pData->aoffset[0] = iCurPos;
 
 		// add the PIDL for the parent folder
-		cbPidl = PidlMgr.GetSize(pidlParent);
+		cbPidl = PidlMgr::GetSize(pidlParent);
 		CopyMemory((LPBYTE) (pData) + iCurPos, (LPBYTE) pidlParent, cbPidl);
 		iCurPos += cbPidl;
 
 		for (i = 0; i < uItemCount; i++) {
 			// get the size of the PIDL
-			cbPidl = PidlMgr.GetSize(aPidls[i]);
+			cbPidl = PidlMgr::GetSize(aPidls[i]);
 
 			// fill out the members of the CIDA structure.
 			pData->aoffset[i + 1] = iCurPos;
@@ -188,21 +177,21 @@ CDataObject::CDataObject() : m_pidl(NULL), m_pidlParent(NULL) {
 }
 
 CDataObject::~CDataObject() {
-	m_PidlMgr.Delete(m_pidl);
-	m_PidlMgr.Delete(m_pidlParent);
+	PidlMgr::Delete(m_pidl);
+	PidlMgr::Delete(m_pidlParent);
 }
 
 void CDataObject::Init(IUnknown *pUnkOwner) { m_UnkOwnerPtr = pUnkOwner; }
 
 void CDataObject::SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl) {
-	m_pidlParent = m_PidlMgr.Copy(pidlParent);
-	m_pidl = m_PidlMgr.Copy(pidl);
+	m_pidlParent = PidlMgr::Copy(pidlParent);
+	m_pidl = PidlMgr::Copy(pidl);
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
-	ATLTRACE("CDataObject::GetData()\n");
+	AtlTrace("CDataObject::GetData()\n");
 
 	if (pFE->cfFormat == m_cfShellIDList) {
 		pStgMedium->hGlobal =
@@ -222,63 +211,63 @@ STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC, LPSTGMEDIUM) {
-	ATLTRACE("CDataObject::GetDataHere()\n");
+	AtlTrace("CDataObject::GetDataHere()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC) {
-	ATLTRACE("CDataObject::QueryGetData()\n");
+	AtlTrace("CDataObject::QueryGetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC, LPFORMATETC) {
-	ATLTRACE("CDataObject::GetCanonicalFormatEtc()\n");
+	AtlTrace("CDataObject::GetCanonicalFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::SetData(LPFORMATETC, LPSTGMEDIUM, BOOL) {
-	ATLTRACE("CDataObject::SetData()\n");
+	AtlTrace("CDataObject::SetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC **) {
-	ATLTRACE("CDataObject::EnumFormatEtc()\n");
+	AtlTrace("CDataObject::EnumFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD) {
-	ATLTRACE("CDataObject::DAdvise()\n");
+	AtlTrace("CDataObject::DAdvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
-	ATLTRACE("CDataObject::DUnadvise()\n");
+	AtlTrace("CDataObject::DUnadvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
-	ATLTRACE("CDataObject::EnumDAdvise()\n");
+	AtlTrace("CDataObject::EnumDAdvise()\n");
 	return E_NOTIMPL;
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
-	ATLTRACE("CDataObject::Next()\n");
+	AtlTrace("CDataObject::Next()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Skip(ULONG) {
-	ATLTRACE("CDataObject::Skip()\n");
+	AtlTrace("CDataObject::Skip()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Reset() {
-	ATLTRACE("CDataObject::Reset()\n");
+	AtlTrace("CDataObject::Reset()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
-	ATLTRACE("CDataObject::Clone()\n");
+	AtlTrace("CDataObject::Clone()\n");
 	return E_NOTIMPL;
 }

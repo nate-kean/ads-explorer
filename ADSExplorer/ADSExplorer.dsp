@@ -139,7 +139,7 @@ SOURCE=.\Enumerate.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\MPidlMgr.h
+SOURCE=.\PidlMgr.h
 # End Source File
 # Begin Source File
 

@@ -23,21 +23,13 @@
 
 #pragma once
 
+#include <combaseapi.h>
 #include <comutil.h>
 
 #include "CStringCopyTo.h"
-#include "MPidlMgr.h"
-using namespace Mortimer;
+#include "PidlMgr.h"
 
 //==============================================================================
-
-// Used by SetReturnString.
-// Can also be used by anyone when the Shell Allocator is needed. Use the gloabl
-// g_Malloc object which is a CMalloc.
-struct CMalloc {
-	CComPtr<IMalloc> m_MallocPtr;
-	CMalloc();
-};
 
 // Set the return string 'Source' in the STRRET struct.
 // Note that it always allocate a UNICODE copy of the string.
@@ -51,32 +43,22 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 #define SetReturnString SetReturnStringA
 #endif
 
-constexpr UINT32 ReverseBytes(UINT32 bytes) {
-	UINT32 aux = 0;
-	UINT8 byte = 0;
-	for (int i = 0; i < 32; i += 8) {
-		byte = (bytes >> i) & 0xff;
-		aux |= byte << (32 - 8 - i);
-	}
-	return aux;
-}
 
 //==============================================================================
 // This class handles our data that gets embedded in a pidl.
 
-class COWItem : public CPidlData {
+class COWItem : public IPidlData {
    public:
 	//--------------------------------------------------------------------------
 	// used by the manager to embed data, previously set by clients, into a pidl
 
 	// The pidl signature
-	enum { MAGIC = ReverseBytes('ADSX') };
+	enum { MAGIC = 'ADSX' };
 
 	// return the size of the pidl data. Not counting the mkid.cb member.
 	ULONG GetSize();
 
 	// Copy this item somewhere else.
-	// E.g., to copy it to the data in some pidl, pass in (void *) pidl->mkid.abID.
 	void CopyTo(void *pTarget);
 
 	//--------------------------------------------------------------------------
@@ -167,7 +149,6 @@ class ATL_NO_VTABLE CDataObject
 
    protected:
 	CComPtr<IUnknown> m_UnkOwnerPtr;
-	CPidlMgr m_PidlMgr;
 
 	UINT m_cfShellIDList;
 

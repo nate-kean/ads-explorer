@@ -29,19 +29,18 @@
 #include "ADSExplorer_h.h"
 
 #include "resource.h"  // main symbols
-#include "MPidlMgr.h"
+#include "PidlMgr.h"
 #include "CComEnumOnCArray.h"
 #include "Enumerate.h"
 #include "ShellItems.h"
 
 
-using namespace Mortimer;
 
 //==============================================================================
 
 enum {
 	DETAILS_COLUMN_NAME,
-	DETAILS_COLUMN_PATH,
+	DETAILS_COLUMN_FILESIZE,
 
 	DETAILS_COLUMN_MAX
 };
@@ -74,18 +73,15 @@ class ATL_NO_VTABLE COWRootShellFolder
    public:
 	//--------------------------------------------------------------------------
 	// IPersist
-
 	STDMETHOD(GetClassID)(CLSID *);
 
 	//--------------------------------------------------------------------------
 	// IPersistFolder(2)
-
 	STDMETHOD(Initialize)(LPCITEMIDLIST);
 	STDMETHOD(GetCurFolder)(LPITEMIDLIST *ppidl);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder
-
 	STDMETHOD(BindToObject)(LPCITEMIDLIST, LPBC, REFIID, void **);
 	STDMETHOD(CompareIDs)(LPARAM, LPCITEMIDLIST, LPCITEMIDLIST);
 	STDMETHOD(CreateViewObject)(HWND, REFIID, void **);
@@ -101,14 +97,12 @@ class ATL_NO_VTABLE COWRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// IShellDetails
-
 	STDMETHOD(ColumnClick)(UINT iColumn);
 	STDMETHOD(GetDetailsOf)
 	(LPCITEMIDLIST pidl, UINT iColumn, LPSHELLDETAILS pDetails);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder2
-
 	STDMETHOD(EnumSearches)(IEnumExtraSearch **ppEnum);
 	STDMETHOD(GetDefaultColumn)
 	(DWORD dwReserved, ULONG *pSort, ULONG *pDisplay);
@@ -123,9 +117,5 @@ class ATL_NO_VTABLE COWRootShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
-	CPidlMgr m_PidlMgr;
-
 	LPITEMIDLIST m_pidlRoot;
-
-	COWItemList m_OpenedWindows;
 };

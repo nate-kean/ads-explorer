@@ -56,7 +56,7 @@
 #define BEGIN_TRACE_MSG_NAME() switch (uMsg) {
 #define END_TRACE_MSG_NAME()                                    \
 	default:                                                    \
-		ATLTRACE(                                               \
+		AtlTrace(                                               \
 			"COWRootShellView(%08x) Msg: %2d:%2x w=%d, l=%d\n", \
 			this,                                               \
 			uMsg,                                               \
@@ -67,7 +67,7 @@
 		}
 #define TRACE_MSG_NAME(name)                                  \
 	case name:                                                \
-		ATLTRACE("COWRootShellView(%08x) %s\n", this, #name); \
+		AtlTrace("COWRootShellView(%08x) %s\n", this, #name); \
 		break;
 
 // This class does very little but it trace the messages.
@@ -75,11 +75,11 @@
 class COWRootShellView : public CShellFolderViewImpl {
    public:
 	COWRootShellView() {
-		ATLTRACE("COWRootShellView(%08x) CONSTRUCTOR\n", this);
+		AtlTrace("COWRootShellView(%08x) CONSTRUCTOR\n", this);
 	}
 
 	~COWRootShellView() {
-		ATLTRACE("COWRootShellView(%08x) DESTRUCTOR\n", this);
+		AtlTrace("COWRootShellView(%08x) DESTRUCTOR\n", this);
 	}
 
 	// If called, the passed object will be held (AddRef()'ed) until the View
@@ -150,7 +150,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		ATLTRACE("COWRootShellView(%08x)::OnDefViewMode()\n", this);
+		AtlTrace("COWRootShellView(%08x)::OnDefViewMode()\n", this);
 		#ifdef FVM_CONTENT
 				/* Requires Windows 7+, by Gravis' request */
 				DWORD ver, maj, min;
@@ -167,7 +167,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 	// When a user clicks on a column header in details mode
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		ATLTRACE(
+		AtlTrace(
 			"COWRootShellView(%08x)::OnColumnClick(iColumn=%d)\n", this, wParam
 		);
 
@@ -184,7 +184,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 		int iColumn = (int) wParam;
 		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
 
-		ATLTRACE(
+		AtlTrace(
 			"COWRootShellView(%08x)::OnGetDetailsOf(iColumn=%d)\n",
 			this,
 			iColumn
