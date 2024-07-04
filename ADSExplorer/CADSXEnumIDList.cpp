@@ -30,10 +30,12 @@ void CADSXEnumIDList::Init(IUnknown *pUnkOwner, const BSTR pszPath) {
 }
 
 
+// Find one or more items with NextInternal and push them to the
+// output array rgelt with PushPidl.
 HRESULT CADSXEnumIDList::Next(
-	/* [in]  */ ULONG celt,            // number of pidls requested
-	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
-	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
+	/* [in]  */ ULONG celt,
+	/* [out] */ PITEMID_CHILD *rgelt,
+	/* [out] */ ULONG *pceltFetched
 ) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Next(celt=%lu)\n"), this, celt);
 	CADSXEnumIDList::FnConsume fnCbPushPidl = std::bind(
@@ -46,7 +48,7 @@ HRESULT CADSXEnumIDList::Next(
 
 
 HRESULT CADSXEnumIDList::NextInternal(
-	/* [in]  */ CADSXEnumIDList::FnConsume fnConsume,
+	/* [in]  */ FnConsume fnConsume,   // callback on item found
 	/* [in]  */ ULONG celt,            // number of pidls requested
 	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
 	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
@@ -58,7 +60,8 @@ HRESULT CADSXEnumIDList::NextInternal(
 	bool bPushPidlSuccess;
 
 	// Initialize the finder if it hasn't been already with a call to
-	// FindFirstStream instead of FindNextStream
+	// FindFirstStream instead of FindNextStream.
+	// Call the callback on this first item.
 	if (m_hFinder == NULL) {
 		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &m_fsd, 0);
 		SysFreeString(m_pszPath);  // it has served its purpose
@@ -75,6 +78,8 @@ HRESULT CADSXEnumIDList::NextInternal(
 		if (!bPushPidlSuccess) return HRESULT_FROM_WIN32(GetLastError());
 	}
 
+	// The main loop body that the rest of the calls to Next will skip to.
+	// Each loop calls the callback on another stream.
 	bool bFindStreamDone = false;
 	while (!bFindStreamDone && nActual < celt) {
 		bFindStreamDone = !FindNextStreamW(m_hFinder, &m_fsd);
@@ -103,12 +108,13 @@ HRESULT CADSXEnumIDList::Reset() {
 	return S_OK;
 }
 
+// Find one or more items with NextInternal and discard them.
 bool NoOp(PITEMID_CHILD *pelt, ULONG *nActual) {
 	UNREFERENCED_PARAMETER(pelt);
 	UNREFERENCED_PARAMETER(nActual);
 	return true;
 }
-HRESULT CADSXEnumIDList::Skip(ULONG celt) {
+HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Skip(celt=%lu)\n"), this, celt);
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD rgeltFake[1];
@@ -121,23 +127,22 @@ HRESULT CADSXEnumIDList::Skip(ULONG celt) {
 }
 
 
-HRESULT CADSXEnumIDList::Clone(IEnumIDList **ppenum) {
+HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Clone()\n"), this);
-	if (ppenum == NULL) return E_POINTER;
+	if (ppEnum == NULL) return E_POINTER;
 
-	CComObject<CADSXEnumIDList> *pEnum;
-	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
+	CComObject<CADSXEnumIDList> *pNewEnum;
+	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pNewEnum);
 	if (FAILED(hr)) return hr;
 
-	pEnum->Init(m_pUnkOwner, m_pszPath);
+	pNewEnum->Init(m_pUnkOwner, m_pszPath);
 	
 	// Unforuntately I don't see any more an efficient way to do this with
 	// the Find Stream API :(
-	pEnum->Skip(m_nTotalFetched);
+	pNewEnum->Skip(m_nTotalFetched);
 
-	hr = pEnum->QueryInterface(IID_IEnumIDList, (void **)ppenum);
+	hr = pNewEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnum);
 	if (FAILED(hr)) return hr;
-
 	return S_OK;
 }
 

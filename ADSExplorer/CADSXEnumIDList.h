@@ -15,7 +15,9 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	CADSXEnumIDList();
 	virtual ~CADSXEnumIDList();
 	
-	// Ensure the owner object is not freed before this one
+	// Initialization logic in a method separate because COM object constructors
+	// are called in a weird way that makes it so that, AFAIK, they can't have
+	// parameters.
 	void Init(IUnknown *pUnkOwner, const BSTR pszPath);
 
 	// IEnumIDList
@@ -24,16 +26,22 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	STDMETHOD(Reset)(void);
 	STDMETHOD(Clone)(IEnumIDList **);
 
-  private:
-  	using FnConsume = std::function<bool(PITEMID_CHILD *, ULONG *)>;
-	HRESULT NextInternal(FnConsume fnConsume, ULONG celt, PITEMID_CHILD *rgelt, ULONG *pceltFetched);
+  protected:
+	using FnConsume = std::function<bool(PITEMID_CHILD *, ULONG *)>;
+	HRESULT NextInternal(
+		FnConsume fnConsume,
+		ULONG celt,
+		PITEMID_CHILD *rgelt,
+		ULONG *pceltFetched
+	);
 	bool PushPidl(PITEMID_CHILD * pelt, ULONG *nActual);
 
-  protected:
+	// A sentinel COM object to represent the lifetime of the owner object.
+	// This exists to prevent the owner object from being freed before this one.
 	CComPtr<IUnknown> m_pUnkOwner;
 
-	BSTR m_pszPath;
+	BSTR m_pszPath;  // path on which to find streams
 	HANDLE m_hFinder;
 	WIN32_FIND_STREAM_DATA m_fsd;
-	ULONG m_nTotalFetched;
+	ULONG m_nTotalFetched;  // just to bring a clone up to speed
 };
