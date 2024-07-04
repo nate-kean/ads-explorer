@@ -17,6 +17,7 @@
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -51,14 +52,15 @@ END
 
 IDR_ROOTSHELLFOLDER     REGISTRY                "RootShellFolder.rgs"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,4,0,1
- PRODUCTVERSION 1,4,0,1
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -75,12 +77,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Nate Kean"
             VALUE "FileDescription", "Namespace for opened Explorer windows"
-            VALUE "FileVersion", "1.0.0.0"
+            VALUE "FileVersion", "1.0.0"
             VALUE "InternalName", "ADSExplorer.dll"
             VALUE "LegalCopyright", "Copyright (C) Nate Kean 2024"
             VALUE "OriginalFilename", "ADSExplorer.dll"
             VALUE "ProductName", "ADS Explorer"
-            VALUE "ProductVersion", "1.0.0.0"
+            VALUE "ProductVersion", "1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -99,6 +101,7 @@ END
 // remains consistent on all systems.
 IDI_OW_ROOT             ICON                    "icon1.ico"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -112,7 +115,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_COLUMN_NAME         "Name"
-    IDS_COLUMN_PATH         "Path"
+    IDS_COLUMN_FILESIZE     "Size"
 END
 
 STRINGTABLE
