@@ -29,7 +29,7 @@
 
 #ifdef __ATLBASE_H__
 
-template <class Base, const IID *piid, class T, class Copy, class CollType>
+template <class Base, const IID *piid, class T, class CopyStrategy, class CollType>
 class ATL_NO_VTABLE IEnumOnCArrayImpl : public Base {
    public:
 	HRESULT Init(IUnknown *pUnkForRelease, CollType &collection) {
@@ -55,8 +55,9 @@ class ATL_NO_VTABLE IEnumOnCArrayImpl : public Base {
 };
 
 // TODO(garlic-os): Are you SURE there's no better way to do this
-template <class Base, const IID *piid, class T, class Copy, class CollType>
-STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Next(
+// Personal note: repeatedly offended by this code every time I see it
+template <class Base, const IID *piid, class T, class CopyStrategy, class CollType>
+STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, CopyStrategy, CollType>::Next(
 	ULONG celt,
 	T *rgelt,
 	ULONG *pceltFetched
@@ -73,10 +74,10 @@ STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Next(
 	T *pelt = rgelt;
 	while (SUCCEEDED(hr) && m_iter != m_pcollection->GetSize() && nActual < celt
 	) {
-		hr = Copy::copy(pelt, &m_pcollection->operator[](m_iter));
+		hr = CopyStrategy::copy(pelt, &m_pcollection->operator[](m_iter));
 		if (FAILED(hr)) {
 			while (rgelt < pelt) {
-				Copy::destroy(rgelt++);
+				CopyStrategy::destroy(rgelt++);
 			}
 			nActual = 0;
 		} else {
@@ -94,8 +95,8 @@ STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Next(
 	return hr;
 }
 
-template <class Base, const IID *piid, class T, class Copy, class CollType>
-STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>::Skip(ULONG celt
+template <class Base, const IID *piid, class T, class CopyStrategy, class CollType>
+STDMETHODIMP IEnumOnCArrayImpl<Base, piid, T, CopyStrategy, CollType>::Skip(ULONG celt
 ) {
 	HRESULT hr = S_OK;
 	while (celt--) {
@@ -113,16 +114,16 @@ template <
 	class Base,
 	const IID *piid,
 	class T,
-	class Copy,
+	class CopyStrategy,
 	class CollType,
 	class ThreadModel = CComObjectThreadModel>
 class ATL_NO_VTABLE CComEnumOnCArray
-	: public IEnumOnCArrayImpl<Base, piid, T, Copy, CollType>,
+	: public IEnumOnCArrayImpl<Base, piid, T, CopyStrategy, CollType>,
 	  public CComObjectRootEx<ThreadModel> {
    public:
-	typedef CComEnumOnCArray<Base, piid, T, Copy, CollType, ThreadModel>
+	typedef CComEnumOnCArray<Base, piid, T, CopyStrategy, CollType, ThreadModel>
 		_CComEnum;
-	typedef IEnumOnCArrayImpl<Base, piid, T, Copy, CollType> _CComEnumBase;
+	typedef IEnumOnCArrayImpl<Base, piid, T, CopyStrategy, CollType> _CComEnumBase;
 	BEGIN_COM_MAP(_CComEnum)
 	COM_INTERFACE_ENTRY_IID(*piid, _CComEnumBase)
 	END_COM_MAP()

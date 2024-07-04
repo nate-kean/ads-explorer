@@ -21,7 +21,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MPidlMgr.h">
+    <ClInclude Include="PidlMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShellItems.h">
@@ -51,6 +51,15 @@
     <ClInclude Include="wtlstr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="defer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CADSXEnumIDList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CADSXItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -66,6 +75,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RootShellFolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CADSXEnumIDList.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CADSXItem.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PidlMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

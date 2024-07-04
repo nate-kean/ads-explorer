@@ -29,10 +29,14 @@
 
 #pragma once
 
+// #ifndef _UNICODE
+// 	#define _UNICODE
+// #endif
+
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
 // XXX: Perhaps it could disable all of IShellFolder2 for really old SDKs?
-#define OW_PKEYS_SUPPORT
+#define ADSX_PKEYS_SUPPORT
 
 #include "targetver.h"
 
@@ -57,11 +61,11 @@ extern CComModule _Module;
 #include <atlwin.h>
 
 #include "wtlstr.h"
-#if defined(OW_PKEYS_SUPPORT) && VER_PRODUCTBUILD >= 6000
+#if defined(ADSX_PKEYS_SUPPORT) && VER_PRODUCTBUILD >= 6000
 // These are probably supportable on 2600 in some obscure WDS SDK
 #include <propkey.h>
 #include <propvarutil.h>
-#elif defined(OW_PKEYS_SUPPORT)
+#elif defined(ADSX_PKEYS_SUPPORT)
 // Create polyfills for these (which don't link to anything, are just header
 // magic) definitions. The DEFINE one is typedef' PROPERTYKEY in the real SDK,
 // but we'll just save a line and define it to SHCOLUMNID for those old SDKs.
