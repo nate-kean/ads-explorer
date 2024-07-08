@@ -71,7 +71,7 @@
 				wcscat_s(str, AtlStrLen(str) + AtlStrLen(L"::"), L"::");
 			} else {
 				bool success = false;
-				success = SHGetPathFromIDListW(pidl, str);
+				// success = SHGetPathFromIDListW(pidl, str);
 				if (!success) {
 					str[0] = '\0';
 					WCHAR tmp[16];
