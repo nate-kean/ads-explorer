@@ -81,14 +81,21 @@ HRESULT CADSXEnumIDList::NextInternal(
 
 	// The main loop body that the rest of the calls to Next will skip to.
 	// Each loop calls the callback on another stream.
-	bool bFindStreamDone = false;
-	while (!bFindStreamDone && nActual < celt) {
-		bFindStreamDone = !FindNextStreamW(m_hFinder, &m_fsd);
-		if (bFindStreamDone && GetLastError() != ERROR_HANDLE_EOF) {
-			return HRESULT_FROM_WIN32(GetLastError());
+	bool bFindStreamStopped = false;
+	while (!bFindStreamStopped && nActual < celt) {
+		bFindStreamStopped = !FindNextStreamW(m_hFinder, &m_fsd);
+		if (bFindStreamStopped) {
+			if (GetLastError() == ERROR_HANDLE_EOF) {
+				// Do nothing and let the loop end
+			} else {
+				// Stream has stopped expectedly
+				return HRESULT_FROM_WIN32(GetLastError());
+			}
+		} else {
+			// Consume stream
+			bPushPidlSuccess = fnConsume(pelt, &nActual);
+			if (!bPushPidlSuccess) return HRESULT_FROM_WIN32(GetLastError());
 		}
-		bPushPidlSuccess = fnConsume(pelt, &nActual);
-		if (!bPushPidlSuccess) return HRESULT_FROM_WIN32(GetLastError());
 	}
 	if (pceltFetched != NULL) {  // Bookkeeping
 		*pceltFetched = nActual;
