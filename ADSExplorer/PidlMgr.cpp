@@ -3,7 +3,7 @@
 #include "PidlMgr.h"
 
 
-LPITEMIDLIST PidlMgr::Create(IPidlData &Data) {
+LPITEMIDLIST PidlMgr::Create(const IPidlData &Data) {
 	// Total size of the PIDL, including SHITEMID
 	// TODO(garlic-os): one byte larger than it needs to be?
 	// UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize() - sizeof(BYTE);

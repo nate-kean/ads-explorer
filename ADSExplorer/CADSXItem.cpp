@@ -3,12 +3,12 @@
 #include "CADSXItem.h"
 
 
-ULONG CADSXItem::GetSize() {
+ULONG CADSXItem::GetSize() const {
 	return sizeof(CADSXItem);
 }
 
 
-void CADSXItem::CopyTo(void *pTarget) {
+void CADSXItem::CopyTo(void *pTarget) const {
 	new (pTarget) CADSXItem();
 	auto p = (CADSXItem *) pTarget;
 	p->m_Path = m_Path;

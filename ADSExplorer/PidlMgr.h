@@ -35,12 +35,12 @@ class IPidlData {
 	//	IPidlData(const IPidlData &src);
 	//	virtual IPidlData &operator=(const IPidlData &src);
 
-	virtual ULONG GetSize() = 0;
-	virtual void CopyTo(void *pTarget) = 0;
+	virtual ULONG GetSize() const = 0;
+	virtual void CopyTo(void *pTarget) const = 0;
 };
 
 namespace PidlMgr {
-	LPITEMIDLIST Create(IPidlData &Data);
+	LPITEMIDLIST Create(const IPidlData &Data);
 	LPITEMIDLIST Copy(LPCITEMIDLIST pidlSrc);
 	LPITEMIDLIST GetNextItem(LPCITEMIDLIST pidl);
 	LPITEMIDLIST GetLastItem(LPCITEMIDLIST pidl);

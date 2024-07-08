@@ -21,6 +21,6 @@ class CADSXItem : public IPidlData {
 	static CADSXItem *Get(LPCITEMIDLIST pidl);
 
 	// From IPidlData
-	ULONG GetSize();
-	void CopyTo(void *pTarget);
+	ULONG GetSize() const;
+	void CopyTo(void *pTarget) const;
 };
