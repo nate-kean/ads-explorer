@@ -55,50 +55,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	return true;
 }
 
-ULONG COWItem::GetSize() {
-	return sizeof(COWItem);
-}
-
-// @pre: pTarget is a buffer of at least GetSize() bytes
-void COWItem::CopyTo(void *pTarget) {
-	*((DWORD *) pTarget) = MAGIC;
-	COWItem *pNewItem = (COWItem *) pTarget;
-	new (&pNewItem->m_Path) _bstr_t();
-	new (&pNewItem->m_Name) _bstr_t();
-	pNewItem->m_Path = m_Path;
-	pNewItem->m_Name = m_Name;
-}
-
-//-------------------------------------------------------------------------------
-
-void COWItem::SetPath(LPCWSTR Path) {
-	m_Path = Path;
-}
-
-void COWItem::SetName(LPCWSTR Name) {
-	m_Name = Name;
-}
-
-//-------------------------------------------------------------------------------
-
-bool COWItem::IsOwn(LPCITEMIDLIST pidl) {
-	return
-		pidl != NULL &&
-		pidl->mkid.cb == sizeof(COWItem) + sizeof(ITEMIDLIST) &&
-		// pidl->mkid.cb >= sizeof(COWItem) &&
-		*((DWORD *) pidl->mkid.abID) == MAGIC;
-}
-
-LPOLESTR COWItem::GetPath(LPCITEMIDLIST pidl) {
-	auto that = (COWItem *) &pidl->mkid.abID;
-	return that->m_Path.GetBSTR();
-}
-
-LPOLESTR COWItem::GetName(LPCITEMIDLIST pidl) {
-	auto that = (COWItem *) &pidl->mkid.abID;
-	return that->m_Name.GetBSTR();
-}
-
 
 //========================================================================================
 // CDataObject

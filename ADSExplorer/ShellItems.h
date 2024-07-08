@@ -45,58 +45,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 
 
 //==============================================================================
-// This class handles our data that gets embedded in a pidl.
-
-class COWItem : public IPidlData {
-   public:
-	//--------------------------------------------------------------------------
-	// used by the manager to embed data, previously set by clients, into a pidl
-
-	// The pidl signature
-	enum { MAGIC = 'ADSX' };
-
-	// return the size of the pidl data. Not counting the mkid.cb member.
-	ULONG GetSize();
-
-	// Copy this item somewhere else.
-	void CopyTo(void *pTarget);
-
-	//--------------------------------------------------------------------------
-	// Used by clients to set data
-
-	// The target path
-	void SetPath(LPCWSTR Path);
-
-	// The display name (may contain any chars)
-	void SetName(LPCWSTR Name);
-
-	//--------------------------------------------------------------------------
-	// Used by clients to get data from a given pidl
-
-	// Is this pidl really one of ours?
-	static bool IsOwn(LPCITEMIDLIST pidl);
-
-	// Retrieve target path.
-	// The pidl MUST remain valid until the caller has finished with the
-	// returned string.
-	static LPOLESTR GetPath(LPCITEMIDLIST pidl);
-
-	// Retrieve display name.
-	// The pidl MUST remain valid until the caller has finished with the
-	// returned string.
-	static LPOLESTR GetName(LPCITEMIDLIST pidl);
-
-	//--------------------------------------------------------------------------
-
-   protected:
-	_bstr_t m_Path;
-	_bstr_t m_Name;
-};
-
-// Collection for our data
-typedef CSimpleArray<COWItem> COWItemList;
-
-//==============================================================================
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.
