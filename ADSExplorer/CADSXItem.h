@@ -8,8 +8,7 @@
 
 class CADSXItem : public IPidlData {
    public:
-	// The pidl signature
-	enum { MAGIC = 'ADSX' };
+	enum { SIGNATURE = 'ADSX' };
 
 	LONGLONG m_Filesize;
 	_bstr_t m_Path;
