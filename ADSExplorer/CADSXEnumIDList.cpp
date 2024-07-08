@@ -26,7 +26,7 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 // @post: this takes ownership of pszPath
 void CADSXEnumIDList::Init(IUnknown *pUnkOwner, const BSTR pszPath) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Init()\n"), this);
-	m_pUnkOwner = pUnkOwner;  // the macguffin
+	m_pUnkOwner = pUnkOwner;
 	m_pszPath = pszPath;
 }
 

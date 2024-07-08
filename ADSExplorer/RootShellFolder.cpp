@@ -521,19 +521,17 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 			// point which is in the form "::{GUID}" So we should return
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
-				return SetReturnString(
-					_T("::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}"),
+				return SetReturnStringW(
+					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
 					*lpName
 				) ? S_OK : E_FAIL;
 		}
-		// We don't handle other combinations of flags
+		// We don't handle other combinations of flags for the root pidl
 		return E_FAIL;
 	}
 
 	// At this stage, the pidl should be one of ours
-	if (!CADSXItem::IsOwn(pidl)) {
-		return E_INVALIDARG;
-	}
+	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
 	auto Item = CADSXItem::Get(pidl);
 
@@ -545,7 +543,7 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
-			return E_FAIL;	// Can't rename!
+			return E_FAIL;  // Can't rename!
 	}
 
 	// Any other combination results in returning the name.

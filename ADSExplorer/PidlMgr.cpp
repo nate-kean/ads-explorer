@@ -29,20 +29,13 @@ LPITEMIDLIST PidlMgr::Create(IPidlData &Data) {
 }
 
 LPITEMIDLIST PidlMgr::Copy(LPCITEMIDLIST pidlSrc) {
-	LPITEMIDLIST pidlTarget = NULL;
-	UINT cbSize = 0;
-
-	if (pidlSrc == NULL) {
-		return NULL;
-	}
+	if (pidlSrc == NULL) return NULL;
 
 	// Allocate memory for the new PIDL.
-	cbSize = PidlMgr::GetSize(pidlSrc);
-	pidlTarget = (LPITEMIDLIST) CoTaskMemAlloc(cbSize);
+	UINT cbSize = PidlMgr::GetSize(pidlSrc);
+	LPITEMIDLIST pidlTarget = (LPITEMIDLIST) CoTaskMemAlloc(cbSize);
 
-	if (pidlTarget == NULL) {
-		return NULL;
-	}
+	if (pidlTarget == NULL) return NULL;
 
 	// Copy the source PIDL to the target PIDL.
 	CopyMemory(pidlTarget, pidlSrc, cbSize);
@@ -52,9 +45,7 @@ LPITEMIDLIST PidlMgr::Copy(LPCITEMIDLIST pidlSrc) {
 
 LPITEMIDLIST PidlMgr::GetNextItem(LPCITEMIDLIST pidl) {
 	ATLASSERT(pidl != NULL);
-	if (!pidl) {
-		return NULL;
-	}
+	if (!pidl) return NULL;
 	return LPITEMIDLIST(LPBYTE(pidl) + pidl->mkid.cb);
 }
 
@@ -80,9 +71,7 @@ UINT PidlMgr::GetSize(LPCITEMIDLIST pidl) {
 	LPITEMIDLIST pidlTemp = (LPITEMIDLIST) pidl;
 
 	ATLASSERT(pidl != NULL);
-	if (!pidl) {
-		return 0;
-	}
+	if (!pidl) return 0;
 
 	while (pidlTemp->mkid.cb != 0) {
 		cbSize += pidlTemp->mkid.cb;

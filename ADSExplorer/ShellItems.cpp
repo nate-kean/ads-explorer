@@ -49,9 +49,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	SIZE_T StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
-	if (!str.pOleStr) {
-		return false;
-	}
+	if (!str.pOleStr) return false;
 
 	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;

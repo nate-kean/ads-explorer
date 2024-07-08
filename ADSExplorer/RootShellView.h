@@ -152,14 +152,14 @@ class COWRootShellView : public CShellFolderViewImpl {
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
 		AtlTrace("COWRootShellView(%08x)::OnDefViewMode()\n", this);
 		#ifdef FVM_CONTENT
-				/* Requires Windows 7+, by Gravis' request */
-				DWORD ver, maj, min;
-				ver = GetVersion();
-				maj = (DWORD) (LOBYTE(LOWORD(dwVersion)));
-				min = (DWORD) (HIBYTE(LOWORD(dwVersion)));
-				if (maj > 6 || (maj == 6 && min >= 1)) {
-					*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
-				}
+			/* Requires Windows 7+, by Gravis' request */
+			DWORD ver, maj, min;
+			ver = GetVersion();
+			maj = (DWORD) (LOBYTE(LOWORD(dwVersion)));
+			min = (DWORD) (HIBYTE(LOWORD(dwVersion)));
+			if (maj > 6 || (maj == 6 && min >= 1)) {
+				*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
+			}
 		#endif
 		return S_OK;
 	}
@@ -190,24 +190,18 @@ class COWRootShellView : public CShellFolderViewImpl {
 			iColumn
 		);
 
-		if (!pDi) {
-			return E_POINTER;
-		}
+		if (!pDi) return E_POINTER;
 
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;
 
 		IShellDetails *pISD;
 		hr = m_pISF->QueryInterface(IID_IShellDetails, (void **) &pISD);
-		if (FAILED(hr)) {
-			return hr;
-		}
+		if (FAILED(hr)) return hr;
 
 		hr = pISD->GetDetailsOf(pDi->pidl, iColumn, &ShellDetails);
 		pISD->Release();
-		if (FAILED(hr)) {
-			return hr;
-		}
+		if (FAILED(hr)) return hr;
 
 		pDi->cxChar = ShellDetails.cxChar;
 		pDi->fmt = ShellDetails.fmt;
