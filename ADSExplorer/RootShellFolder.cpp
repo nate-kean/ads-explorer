@@ -93,19 +93,19 @@
 
 
 //==============================================================================
-// COWRootShellFolder
-COWRootShellFolder::COWRootShellFolder() : m_pidlRoot(NULL) {}
+// CADSXRootShellFolder
+CADSXRootShellFolder::CADSXRootShellFolder() : m_pidlRoot(NULL) {}
 
-STDMETHODIMP COWRootShellFolder::GetClassID(CLSID *pClsid) {
+STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pClsid) {
 	if (NULL == pClsid) return E_POINTER;
 	*pClsid = CLSID_ADSExplorerRootShellFolder;
 	return S_OK;
 }
 
 // Initialize() is passed the PIDL of the folder where our extension is.
-STDMETHODIMP COWRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
+STDMETHODIMP CADSXRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n"),
+		_T("CADSXRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n"),
 		this,
 		PidlToString(pidl)
 	);
@@ -113,8 +113,8 @@ STDMETHODIMP COWRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
 	return S_OK;
 }
 
-STDMETHODIMP COWRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
-	AtlTrace(_T("COWRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
+STDMETHODIMP CADSXRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
+	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = PidlMgr::Copy(m_pidlRoot);
 	return S_OK;
@@ -125,14 +125,14 @@ STDMETHODIMP COWRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
 
 // BindToObject() is called when a folder in our part of the namespace is being
 // browsed.
-STDMETHODIMP COWRootShellFolder::BindToObject(
+STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	LPCITEMIDLIST pidl,
 	LPBC pbcReserved,
 	REFIID riid,
 	void **ppvOut
 ) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n"),
+		_T("CADSXRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n"),
 		this,
 		PidlToString(pidl)
 	);
@@ -166,13 +166,13 @@ STDMETHODIMP COWRootShellFolder::BindToObject(
 
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
 // lParam can be the 0-based Index of the details column
-STDMETHODIMP COWRootShellFolder::CompareIDs(
+STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	LPARAM lParam,
 	LPCITEMIDLIST pidl1,
 	LPCITEMIDLIST pidl2
 ) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], ")
+		_T("CADSXRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], ")
 		_T("pidl2=[%s]\n"),
 		this,
 		lParam,
@@ -215,12 +215,12 @@ STDMETHODIMP COWRootShellFolder::CompareIDs(
 }
 
 // CreateViewObject() creates a new COM object that implements IShellView.
-STDMETHODIMP COWRootShellFolder::CreateViewObject(
+STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	HWND hwndOwner,
 	REFIID riid,
 	void **ppvOut
 ) {
-	AtlTrace(_T("COWRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
+	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
 	// DUMPIID(riid);
 
 	HRESULT hr;
@@ -282,13 +282,13 @@ STDMETHODIMP COWRootShellFolder::CreateViewObject(
 }
 
 // EnumObjects() creates a COM object that implements IEnumIDList.
-STDMETHODIMP COWRootShellFolder::EnumObjects(
+STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	HWND hwndOwner,
 	DWORD dwFlags,
 	LPENUMIDLIST *ppEnumIDList
 ) {
 	AtlTrace(
-		"COWRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
+		"CADSXRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
 		this,
 		dwFlags
 	);
@@ -319,7 +319,7 @@ STDMETHODIMP COWRootShellFolder::EnumObjects(
 
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
 // in.
-STDMETHODIMP COWRootShellFolder::GetAttributesOf(
+STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	UINT uCount,
 	PCUITEMID_CHILD aPidls[],
 	LPDWORD pdwAttribs
@@ -327,7 +327,7 @@ STDMETHODIMP COWRootShellFolder::GetAttributesOf(
 	#ifdef _DEBUG
 		if (uCount >= 1) {
 			AtlTrace(
-				_T("COWRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d) ")
+				_T("CADSXRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d) ")
 				_T("pidl=[%s]\n"),
 				this,
 				uCount,
@@ -335,7 +335,7 @@ STDMETHODIMP COWRootShellFolder::GetAttributesOf(
 			);
 		} else {
 			AtlTrace(
-				"COWRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d)\n",
+				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d)\n",
 				this,
 				uCount
 			);
@@ -369,7 +369,7 @@ STDMETHODIMP COWRootShellFolder::GetAttributesOf(
 
 // GetUIObjectOf() is called to get several sub-objects like IExtractIcon and
 // IDataObject
-STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
+STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	HWND hwndOwner,
 	UINT uCount,
 	LPCITEMIDLIST *pPidl,
@@ -380,7 +380,7 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 	#ifdef _DEBUG
 		if (uCount >= 1) {
 			AtlTrace(
-				_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d) ")
+				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d) ")
 				_T("pidl=[%s]\n"),
 				this,
 				uCount,
@@ -388,7 +388,7 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 			);
 		} else {
 			AtlTrace(
-				_T("COWRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)\n"),
+				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)\n"),
 				this,
 				uCount
 			);
@@ -493,18 +493,18 @@ STDMETHODIMP COWRootShellFolder::GetUIObjectOf(
 }
 
 STDMETHODIMP
-COWRootShellFolder::BindToStorage(LPCITEMIDLIST, LPBC, REFIID, void **) {
-	AtlTrace("COWRootShellFolder(0x%08x)::BindToStorage()\n", this);
+CADSXRootShellFolder::BindToStorage(LPCITEMIDLIST, LPBC, REFIID, void **) {
+	AtlTrace("CADSXRootShellFolder(0x%08x)::BindToStorage()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
+STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	LPCITEMIDLIST pidl,
 	DWORD uFlags,
 	LPSTRRET lpName
 ) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) ")
+		_T("CADSXRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) ")
 		_T("pidl=[%s]\n"),
 		this,
 		uFlags,
@@ -550,7 +550,7 @@ STDMETHODIMP COWRootShellFolder::GetDisplayNameOf(
 	return SetReturnStringW(Item->m_Name, *lpName) ? S_OK : E_FAIL;
 }
 
-STDMETHODIMP COWRootShellFolder::ParseDisplayName(
+STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	HWND,
 	LPBC,
 	LPOLESTR,
@@ -558,35 +558,35 @@ STDMETHODIMP COWRootShellFolder::ParseDisplayName(
 	LPITEMIDLIST *,
 	LPDWORD
 ) {
-	AtlTrace("COWRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
+	AtlTrace("CADSXRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP COWRootShellFolder::
+STDMETHODIMP CADSXRootShellFolder::
 	SetNameOf(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *) {
-	AtlTrace("COWRootShellFolder(0x%08x)::SetNameOf()\n", this);
+	AtlTrace("CADSXRootShellFolder(0x%08x)::SetNameOf()\n", this);
 	return E_NOTIMPL;
 }
 
 //-------------------------------------------------------------------------------
 // IShellDetails
 
-STDMETHODIMP COWRootShellFolder::ColumnClick(UINT iColumn) {
+STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT iColumn) {
 	AtlTrace(
-		"COWRootShellFolder(0x%08x)::ColumnClick(iColumn=%d)\n", this, iColumn
+		"CADSXRootShellFolder(0x%08x)::ColumnClick(iColumn=%d)\n", this, iColumn
 	);
 
 	// The caller must sort the column itself
 	return S_FALSE;
 }
 
-STDMETHODIMP COWRootShellFolder::GetDetailsOf(
+STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	LPCITEMIDLIST pidl,
 	UINT iColumn,
 	LPSHELLDETAILS pDetails
 ) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::GetDetailsOf(iColumn=%d) pidl=[%s]\n"),
+		_T("CADSXRootShellFolder(0x%08x)::GetDetailsOf(iColumn=%d) pidl=[%s]\n"),
 		this,
 		iColumn,
 		PidlToString(pidl)
@@ -632,17 +632,17 @@ STDMETHODIMP COWRootShellFolder::GetDetailsOf(
 //------------------------------------------------------------------------------
 // IShellFolder2
 
-STDMETHODIMP COWRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
-	AtlTrace("COWRootShellFolder(0x%08x)::EnumSearches()\n", this);
+STDMETHODIMP CADSXRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
+	AtlTrace("CADSXRootShellFolder(0x%08x)::EnumSearches()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP COWRootShellFolder::GetDefaultColumn(
+STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 	DWORD dwReserved,
 	ULONG *pSort,
 	ULONG *pDisplay
 ) {
-	AtlTrace("COWRootShellFolder(0x%08x)::GetDefaultColumn()\n", this);
+	AtlTrace("CADSXRootShellFolder(0x%08x)::GetDefaultColumn()\n", this);
 
 	if (!pSort || !pDisplay) {
 		return E_POINTER;
@@ -655,9 +655,9 @@ STDMETHODIMP COWRootShellFolder::GetDefaultColumn(
 }
 
 STDMETHODIMP
-COWRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
+CADSXRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
 	AtlTrace(
-		"COWRootShellFolder(0x%08x)::GetDefaultColumnState(iColumn=%d)\n",
+		"CADSXRootShellFolder(0x%08x)::GetDefaultColumnState(iColumn=%d)\n",
 		this,
 		iColumn
 	);
@@ -684,18 +684,18 @@ COWRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
 	return S_OK;
 }
 
-STDMETHODIMP COWRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
-	AtlTrace("COWRootShellFolder(0x%08x)::GetDefaultSearchGUID()\n", this);
+STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
+	AtlTrace("CADSXRootShellFolder(0x%08x)::GetDefaultSearchGUID()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP COWRootShellFolder::GetDetailsEx(
+STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 	LPCITEMIDLIST pidl,
 	const SHCOLUMNID *pscid,
 	VARIANT *pv
 ) {
 	AtlTrace(
-		_T("COWRootShellFolder(0x%08x)::GetDetailsEx(pscid->pid=%d) ")
+		_T("CADSXRootShellFolder(0x%08x)::GetDetailsEx(pscid->pid=%d) ")
 		_T("pidl=[%s]\n"),
 		this,
 		pscid->pid,
@@ -739,9 +739,9 @@ STDMETHODIMP COWRootShellFolder::GetDetailsEx(
 }
 
 STDMETHODIMP
-COWRootShellFolder::MapColumnToSCID(UINT iColumn, SHCOLUMNID *pscid) {
+CADSXRootShellFolder::MapColumnToSCID(UINT iColumn, SHCOLUMNID *pscid) {
 	AtlTrace(
-		"COWRootShellFolder(0x%08x)::MapColumnToSCID(iColumn=%d)\n",
+		"CADSXRootShellFolder(0x%08x)::MapColumnToSCID(iColumn=%d)\n",
 		this,
 		iColumn
 	);

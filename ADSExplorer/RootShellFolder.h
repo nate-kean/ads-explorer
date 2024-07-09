@@ -44,22 +44,22 @@ enum {
 };
 
 //==============================================================================
-// COWRootShellFolder
+// CADSXRootShellFolder
 
-class ATL_NO_VTABLE COWRootShellFolder
+class ATL_NO_VTABLE CADSXRootShellFolder
 	: public CComObjectRootEx<CComSingleThreadModel>,
-	  public CComCoClass<COWRootShellFolder, &CLSID_ADSExplorerRootShellFolder>,
+	  public CComCoClass<CADSXRootShellFolder, &CLSID_ADSExplorerRootShellFolder>,
 	  public IShellFolder2,
 	  public IPersistFolder2,
 	  public IShellDetails {
    public:
-	COWRootShellFolder();
+	CADSXRootShellFolder();
 
 	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(COWRootShellFolder)
+	BEGIN_COM_MAP(CADSXRootShellFolder)
 	COM_INTERFACE_ENTRY(IShellFolder)
 	COM_INTERFACE_ENTRY(IShellFolder2)
 	COM_INTERFACE_ENTRY(IPersistFolder)
