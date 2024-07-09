@@ -27,9 +27,6 @@
     <ClInclude Include="ShellItems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CStringCopyTo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RootShellView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -40,12 +37,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CComEnumOnCArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Enumerate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wtlstr.h">
@@ -66,9 +57,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ADSExplorer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Enumerate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ShellItems.cpp">

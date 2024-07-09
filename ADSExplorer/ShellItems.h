@@ -26,7 +26,6 @@
 #include <combaseapi.h>
 #include <comutil.h>
 
-#include "CStringCopyTo.h"
 #include "PidlMgr.h"
 
 //==============================================================================

@@ -211,10 +211,7 @@
   <ItemGroup>
     <ClInclude Include="CADSXEnumIDList.h" />
     <ClInclude Include="CADSXItem.h" />
-    <ClInclude Include="CComEnumOnCArray.h" />
-    <ClInclude Include="CStringCopyTo.h" />
     <ClInclude Include="defer.h" />
-    <ClInclude Include="Enumerate.h" />
     <ClInclude Include="PidlMgr.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="RootShellFolder.h" />
@@ -248,7 +245,6 @@
     </ClCompile>
     <ClCompile Include="CADSXEnumIDList.cpp" />
     <ClCompile Include="CADSXItem.cpp" />
-    <ClCompile Include="Enumerate.cpp" />
     <ClCompile Include="PidlMgr.cpp" />
     <ClCompile Include="RootShellFolder.cpp" />
     <ClCompile Include="ShellItems.cpp" />

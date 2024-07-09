@@ -30,8 +30,6 @@
 
 #include "resource.h"  // main symbols
 #include "PidlMgr.h"
-#include "CComEnumOnCArray.h"
-#include "Enumerate.h"
 #include "ShellItems.h"
 
 
