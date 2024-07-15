@@ -22,11 +22,11 @@ void CADSXItem::CopyTo(void *pTarget) const {
 
 bool CADSXItem::IsOwn(LPCITEMIDLIST pidl) {
   return pidl != NULL &&
-		 pidl->mkid.cb == sizeof(CADSXItem) &&
 		 pidl->mkid.abID[0] == 'A' &&
 		 pidl->mkid.abID[1] == 'D' &&
 		 pidl->mkid.abID[2] == 'S' &&
 		 pidl->mkid.abID[3] == 'X';
+		 pidl->mkid.cb == sizeof(ITEMIDLIST) + sizeof(CADSXItem) - sizeof(BYTE) &&
 }
 
 
