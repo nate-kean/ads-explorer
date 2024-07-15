@@ -21,6 +21,7 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 	if (m_hFinder != NULL) {
 		FindClose(m_hFinder);
 	}
+	SysFreeString(m_pszPath);
 }
 
 // @post: this takes ownership of pszPath
@@ -66,7 +67,6 @@ HRESULT CADSXEnumIDList::NextInternal(
 	// Call the callback on this first item.
 	if (m_hFinder == NULL) {
 		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &m_fsd, 0);
-		SysFreeString(m_pszPath);  // it has served its purpose
 		if (m_hFinder == INVALID_HANDLE_VALUE) {
 			m_hFinder = NULL;
 			if (GetLastError() == ERROR_SUCCESS) {
