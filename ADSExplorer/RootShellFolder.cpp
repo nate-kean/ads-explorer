@@ -88,9 +88,9 @@
 // CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder() : m_pidlRoot(NULL) {}
 
-STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pClsid) {
-	if (pClsid == NULL) return E_POINTER;
-	*pClsid = CLSID_ADSExplorerRootShellFolder;
+STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
+	if (pclsid == NULL) return E_POINTER;
+	*pclsid = CLSID_ADSExplorerRootShellFolder;
 	return S_OK;
 }
 
