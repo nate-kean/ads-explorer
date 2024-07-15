@@ -153,10 +153,9 @@ STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 
 		if (pStgMedium->hGlobal) {
 			pStgMedium->tymed = TYMED_HGLOBAL;
-			pStgMedium->pUnkForRelease =
-				NULL;  // Even if our tymed is HGLOBAL, WinXP calls
-					   // ReleaseStgMedium() which tries to call
-					   // pUnkForRelease->Release() : BANG!
+			// Even if our tymed is HGLOBAL, WinXP calls ReleaseStgMedium()
+			// which tries to call pUnkForRelease->Release() -- BANG!
+			pStgMedium->pUnkForRelease = NULL;
 			return S_OK;
 		}
 	}

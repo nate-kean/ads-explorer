@@ -47,7 +47,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str);
 // Light implementation of IDataObject.
 //
 // This object is used when you double-click on an item in the FileDialog.
-// It's purpose is simply to encapsulate the complete pidl for the item
+// Its purpose is simply to encapsulate the complete pidl for the item
 // (remember it's a Favorite item) into the IDataObject, so that the FileDialog
 // can pass it further to our IShellFolder::BindToObject(). Because I'm only
 // interested in the FileDialog behaviour, every methods returns E_NOTIMPL
