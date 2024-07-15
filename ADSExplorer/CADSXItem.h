@@ -11,8 +11,10 @@ class CADSXItem : public IPidlData {
 	enum { SIGNATURE = 'ADSX' };
 
 	LONGLONG m_Filesize;
-	_bstr_t m_Path;
+	_bstr_t m_Path;  // TODO(garlic-os): remove
 	_bstr_t m_Name;
+
+	CADSXItem();  // TODO(garlic-os): remove
 
 	// Check if a PIDL contains a CADSXItem
 	static bool IsOwn(LPCITEMIDLIST pidl);

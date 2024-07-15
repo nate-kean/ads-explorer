@@ -3,6 +3,9 @@
 #include "CADSXItem.h"
 
 
+CADSXItem::CADSXItem() : m_Path("PlaceholderPath") {}
+
+
 ULONG CADSXItem::GetSize() const {
 	return sizeof(CADSXItem);
 }
