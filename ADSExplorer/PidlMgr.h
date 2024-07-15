@@ -46,5 +46,5 @@ namespace PidlMgr {
 	LPITEMIDLIST GetLastItem(LPCITEMIDLIST pidl);
 	void Delete(LPITEMIDLIST pidl);
 	UINT GetSize(LPCITEMIDLIST pidl);
-	bool IsSingle(LPCITEMIDLIST pidl);
+	bool IsChild(LPCITEMIDLIST pidl);
 };

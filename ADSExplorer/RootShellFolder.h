@@ -71,49 +71,44 @@ class ATL_NO_VTABLE CADSXRootShellFolder
    public:
 	//--------------------------------------------------------------------------
 	// IPersist
-	STDMETHOD(GetClassID)(CLSID *);
+	STDMETHOD(GetClassID)(CLSID*);
 
 	//--------------------------------------------------------------------------
 	// IPersistFolder(2)
-	STDMETHOD(Initialize)(LPCITEMIDLIST);
-	STDMETHOD(GetCurFolder)(LPITEMIDLIST *ppidl);
+	STDMETHOD(Initialize)(PCIDLIST_ABSOLUTE);
+	STDMETHOD(GetCurFolder)(PIDLIST_ABSOLUTE*);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder
-	STDMETHOD(BindToObject)(LPCITEMIDLIST, LPBC, REFIID, void **);
-	STDMETHOD(CompareIDs)(LPARAM, LPCITEMIDLIST, LPCITEMIDLIST);
-	STDMETHOD(CreateViewObject)(HWND, REFIID, void **);
-	STDMETHOD(EnumObjects)(HWND, DWORD, LPENUMIDLIST *);
-	STDMETHOD(GetAttributesOf)(UINT, LPCITEMIDLIST *, LPDWORD);
-	STDMETHOD(GetUIObjectOf)
-	(HWND, UINT, LPCITEMIDLIST *, REFIID, LPUINT, void **);
-	STDMETHOD(BindToStorage)(LPCITEMIDLIST, LPBC, REFIID, void **);
-	STDMETHOD(GetDisplayNameOf)(LPCITEMIDLIST, DWORD uFlags, LPSTRRET lpName);
-	STDMETHOD(ParseDisplayName)
-	(HWND, LPBC, LPOLESTR, LPDWORD, LPITEMIDLIST *, LPDWORD);
-	STDMETHOD(SetNameOf)(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *);
+	STDMETHOD(BindToObject)(PCUIDLIST_RELATIVE, IBindCtx*, REFIID, void**);
+	STDMETHOD(CompareIDs)(LPARAM, PCUIDLIST_RELATIVE, PCUIDLIST_RELATIVE);
+	STDMETHOD(CreateViewObject)(HWND, REFIID, void**);
+	STDMETHOD(EnumObjects)(HWND, SHCONTF, IEnumIDList**);
+	STDMETHOD(GetAttributesOf)(UINT, PCUITEMID_CHILD_ARRAY, SFGAOF*);
+	STDMETHOD(GetUIObjectOf)(HWND, UINT, PCUITEMID_CHILD_ARRAY, REFIID, UINT*, void **);
+	STDMETHOD(BindToStorage)(PCUIDLIST_RELATIVE, IBindCtx*, REFIID, void**);
+	STDMETHOD(GetDisplayNameOf)(PCUITEMID_CHILD, SHGDNF, STRRET*);
+	STDMETHOD(ParseDisplayName)(HWND, IBindCtx*, LPWSTR, ULONG*, PIDLIST_RELATIVE*, ULONG*);
+	STDMETHOD(SetNameOf)(HWND, PCUITEMID_CHILD, LPCWSTR, SHGDNF, PITEMID_CHILD*);
 
 	//--------------------------------------------------------------------------
 	// IShellDetails
 	STDMETHOD(ColumnClick)(UINT iColumn);
-	STDMETHOD(GetDetailsOf)
-	(LPCITEMIDLIST pidl, UINT iColumn, LPSHELLDETAILS pDetails);
+	STDMETHOD(GetDetailsOf)	(PCUITEMID_CHILD, UINT, SHELLDETAILS*);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder2
-	STDMETHOD(EnumSearches)(IEnumExtraSearch **ppEnum);
-	STDMETHOD(GetDefaultColumn)
-	(DWORD dwReserved, ULONG *pSort, ULONG *pDisplay);
-	STDMETHOD(GetDefaultColumnState)(UINT iColumn, SHCOLSTATEF *pcsFlags);
-	STDMETHOD(GetDefaultSearchGUID)(GUID *pguid);
-	STDMETHOD(GetDetailsEx)
-	(LPCITEMIDLIST pidl, const SHCOLUMNID *pscid, VARIANT *pv);
-	// already in IShellDetails: STDMETHOD(GetDetailsOf) (LPCITEMIDLIST pidl,
-	// UINT iColumn, SHELLDETAILS *psd);
-	STDMETHOD(MapColumnToSCID)(UINT iColumn, SHCOLUMNID *pscid);
+	STDMETHOD(EnumSearches)(IEnumExtraSearch**);
+	STDMETHOD(GetDefaultColumn)(DWORD, ULONG*, ULONG*);
+	STDMETHOD(GetDefaultColumnState)(UINT, SHCOLSTATEF*);
+	STDMETHOD(GetDefaultSearchGUID)(GUID*);
+	STDMETHOD(GetDetailsEx)(PCUITEMID_CHILD, const SHCOLUMNID*, VARIANT*);
+	// Already in IShellDetails:
+	// STDMETHOD(GetDetailsOf) (PCUITEMID_CHILD, UINT, SHELLDETAILS*);
+	STDMETHOD(MapColumnToSCID)(UINT, SHCOLUMNID*);
 
 	//--------------------------------------------------------------------------
 
    protected:
-	LPITEMIDLIST m_pidlRoot;
+	PIDLIST_ABSOLUTE m_pidlRoot;
 };

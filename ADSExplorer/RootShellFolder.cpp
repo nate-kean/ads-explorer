@@ -24,7 +24,9 @@
  */
 
 #include <Shlwapi.h>
+#include <objidl.h>
 #include <shobjidl_core.h>
+#include <shtypes.h>
 #include "stdafx.h"  // MUST be included first
 
 #if _MSC_VER > 1200
@@ -97,13 +99,13 @@
 CADSXRootShellFolder::CADSXRootShellFolder() : m_pidlRoot(NULL) {}
 
 STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pClsid) {
-	if (NULL == pClsid) return E_POINTER;
+	if (pClsid == NULL) return E_POINTER;
 	*pClsid = CLSID_ADSExplorerRootShellFolder;
 	return S_OK;
 }
 
 // Initialize() is passed the PIDL of the folder where our extension is.
-STDMETHODIMP CADSXRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
+STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	AtlTrace(
 		_T("CADSXRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n"),
 		this,
@@ -113,7 +115,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(LPCITEMIDLIST pidl) {
 	return S_OK;
 }
 
-STDMETHODIMP CADSXRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
+STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = PidlMgr::Copy(m_pidlRoot);
@@ -126,10 +128,10 @@ STDMETHODIMP CADSXRootShellFolder::GetCurFolder(LPITEMIDLIST *ppidl) {
 // BindToObject() is called when a folder in our part of the namespace is being
 // browsed.
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
-	LPCITEMIDLIST pidl,
-	LPBC pbcReserved,
-	REFIID riid,
-	void **ppvOut
+	/* [in]  */ PCUIDLIST_RELATIVE pidl,
+	/* [in]  */ IBindCtx *pbc,
+	/* [in]  */ REFIID riid,
+	/* [out] */ void **ppvOut
 ) {
 	AtlTrace(
 		_T("CADSXRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n"),
@@ -141,7 +143,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
 	// I'll support multi-level PIDLs when I implement pseudofolders
-	if (!PidlMgr::IsSingle(pidl)) return E_NOTIMPL;
+	if (!PidlMgr::IsChild(pidl)) return E_NOTIMPL;
 
 	HRESULT hr;
 	CComPtr<IShellFolder> psfDesktop;
@@ -149,16 +151,16 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	hr = SHGetDesktopFolder(&psfDesktop);
 	if (FAILED(hr)) return hr;
 
-	LPITEMIDLIST pidlLocal = NULL;
+	PIDLIST_ABSOLUTE pidlAbsolute = NULL;
 	auto Item = CADSXItem::Get(pidl);
 	hr = psfDesktop->ParseDisplayName(
-		NULL, pbcReserved, Item->m_Path, NULL, &pidlLocal, NULL
+		NULL, pbc, Item->m_Path, NULL, &pidlAbsolute, NULL
 	);
 	if (FAILED(hr)) return hr;
-	defer({ ILFree(pidlLocal); });
+	defer({ ILFree(pidlAbsolute); });
 
 	// Okay, browsing into a favorite item will redirect to its real path.
-	hr = psfDesktop->BindToObject(pidlLocal, pbcReserved, riid, ppvOut);
+	hr = psfDesktop->BindToObject(pidlAbsolute, pbc, riid, ppvOut);
 	return hr;
 
 	// could also use this one? ILCreateFromPathW
@@ -167,9 +169,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
 // lParam can be the 0-based Index of the details column
 STDMETHODIMP CADSXRootShellFolder::CompareIDs(
-	LPARAM lParam,
-	LPCITEMIDLIST pidl1,
-	LPCITEMIDLIST pidl2
+	/* [in] */ LPARAM lParam,
+	/* [in] */ PCUIDLIST_RELATIVE pidl1,
+	/* [in] */ PCUIDLIST_RELATIVE pidl2
 ) {
 	AtlTrace(
 		_T("CADSXRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], ")
@@ -187,7 +189,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	// Now check if the pidl are one or multi level, in case they are
 	// multi-level, return non-equality
-	if (!PidlMgr::IsSingle(pidl1) || !PidlMgr::IsSingle(pidl2)) {
+	if (!PidlMgr::IsChild(pidl1) || !PidlMgr::IsChild(pidl2)) {
 		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 1);
 	}
 
@@ -216,9 +218,9 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 // CreateViewObject() creates a new COM object that implements IShellView.
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
-	HWND hwndOwner,
-	REFIID riid,
-	void **ppvOut
+	/* [in]  */ HWND hwndOwner,
+	/* [in]  */ REFIID riid,
+	/* [out] */ void **ppvOut
 ) {
 	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
 	// DUMPIID(riid);
@@ -283,9 +285,9 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 // EnumObjects() creates a COM object that implements IEnumIDList.
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
-	HWND hwndOwner,
-	DWORD dwFlags,
-	LPENUMIDLIST *ppEnumIDList
+	/* [in]  */ HWND hwndOwner,
+	/* [in]  */ SHCONTF dwFlags,
+	/* [out] */ IEnumIDList **ppEnumIDList
 ) {
 	AtlTrace(
 		"CADSXRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
@@ -320,9 +322,9 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
 // in.
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
-	UINT uCount,
-	PCUITEMID_CHILD aPidls[],
-	LPDWORD pdwAttribs
+	/* [in]      */ UINT cidl,
+	/* [in]      */ PCUITEMID_CHILD_ARRAY aPidls,
+	/* [in, out] */ SFGAOF *pfAttribs
 ) {
 	#ifdef _DEBUG
 		if (uCount >= 1) {
@@ -344,24 +346,34 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 
 	// We limit the tree by indicating that the favorites folder does not
 	// contain sub-folders
-	if (uCount == 0 || aPidls[0]->mkid.cb == 0) {
+	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
 		// Root folder attributes
-		*pdwAttribs &= SFGAO_HASSUBFOLDER |
-		               SFGAO_FOLDER |
-		               SFGAO_FILESYSTEM |
-		               SFGAO_FILESYSANCESTOR |
-		               SFGAO_BROWSABLE |
-		               SFGAO_NONENUMERATED;
+	    *pfAttribs &= SFGAO_HASSUBFOLDER |
+					  SFGAO_FOLDER |
+					  SFGAO_FILESYSTEM |
+					  SFGAO_FILESYSANCESTOR |
+					  SFGAO_BROWSABLE;
+		// *pdwAttribs &= SFGAO_HASSUBFOLDER |
+		//                SFGAO_FOLDER |
+		//                SFGAO_FILESYSTEM |
+		//                SFGAO_FILESYSANCESTOR |
+		//                SFGAO_BROWSABLE |
+		//                SFGAO_NONENUMERATED;
 	} else {
 		// Child folder attributes
-		*pdwAttribs &= SFGAO_FILESYSTEM |
-		            //    SFGAO_FOLDER |
-		            //    SFGAO_BROWSABLE |
-		               SFGAO_STREAM |
-		               SFGAO_CANCOPY |
-		               SFGAO_CANMOVE |
-		               SFGAO_CANRENAME |
-		               SFGAO_CANDELETE;
+	    *pfAttribs &= SFGAO_FOLDER |
+					  SFGAO_FILESYSTEM |
+					  SFGAO_FILESYSANCESTOR |
+					  SFGAO_BROWSABLE |
+					  SFGAO_LINK;
+		// *pdwAttribs &= SFGAO_FILESYSTEM |
+		//             //    SFGAO_FOLDER |
+		//             //    SFGAO_BROWSABLE |
+		//                SFGAO_STREAM |
+		//                SFGAO_CANCOPY |
+		//                SFGAO_CANMOVE |
+		//                SFGAO_CANRENAME |
+		//                SFGAO_CANDELETE;
 	}
 
 	return S_OK;
@@ -371,10 +383,10 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 // IDataObject
 STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	HWND hwndOwner,
-	UINT uCount,
-	LPCITEMIDLIST *pPidl,
+	UINT cidl,
+	PCUITEMID_CHILD_ARRAY aPidls,
 	REFIID riid,
-	LPUINT puReserved,
+	UINT *rgfReserved,
 	void **ppvReturn
 ) {
 	#ifdef _DEBUG
@@ -404,17 +416,17 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	*ppvReturn = NULL;
 
-	if (uCount == 0) {
+	if (cidl == 0) {
 		return E_INVALIDARG;
 	}
 
 	// Does the FileDialog need to embed some data?
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
-		if (uCount != 1) return E_INVALIDARG;
+		if (cidl != 1) return E_INVALIDARG;
 
 		// Is this really one of our item?
-		if (!CADSXItem::IsOwn(*pPidl)) return E_INVALIDARG;
+		if (!CADSXItem::IsOwn(*aPidls)) return E_INVALIDARG;
 
 		// Create a COM object that exposes IDataObject
 		CComObject<CDataObject> *pDataObject;
@@ -429,7 +441,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		pDataObject->Init(GetUnknown());
 
 		// Okay, embed the pidl in the data
-		pDataObject->SetPidl(m_pidlRoot, *pPidl);
+		pDataObject->SetPidl(m_pidlRoot, *aPidls);
 
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppvReturn);
@@ -443,9 +455,9 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// Bbecause multiple items can point to different storages, we can't (easily)
 	// handle groups of items.
 	// TODO(garlic-os): Still current?
-	if (uCount > 1) return E_NOINTERFACE;
+	if (cidl > 1) return E_NOINTERFACE;
 
-	if (!CADSXItem::IsOwn(*pPidl)) return E_NOINTERFACE;
+	if (!CADSXItem::IsOwn(*aPidls)) return E_NOINTERFACE;
 
 	CComPtr<IShellFolder> psfTargetParent;
 	CComPtr<IShellFolder> psfDesktop;
@@ -453,29 +465,28 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	hr = SHGetDesktopFolder(&psfDesktop);
 	if (FAILED(hr)) return hr;
 
-	LPITEMIDLIST pidlLocal;
-	auto Item = CADSXItem::Get(*pPidl);
+	PIDLIST_ABSOLUTE pidlAbsolute = NULL;
+	auto Item = CADSXItem::Get(*aPidls);
 	hr = psfDesktop->ParseDisplayName(
-		NULL, NULL, Item->m_Path, NULL, &pidlLocal, NULL
+		NULL, NULL, Item->m_Path, NULL, &pidlAbsolute, NULL
 	);
 	if (FAILED(hr)) return hr;
-	defer({ ILFree(pidlLocal); });
+	defer({ ILFree(pidlAbsolute); });
 
 	//------------------------------
-	// this block emulates the following line
+	// polyfill for the following line
 	// (not available to shell version 4.7x):
 	//   hr = SHBindToParent(
-	//   	pidlLocal,
+	//   	pidlAbsolute,
 	//   	IID_IShellFolder,
 	//   	(void**) &pTargetParentShellFolder,
-	//   	&pidlRelative
+	//   	&pidlChild
 	//   );
-	LPITEMIDLIST pidlTmp = ILFindLastID(pidlLocal);
-	LPITEMIDLIST pidlRelative = ILClone(pidlTmp);
-	defer({ ILFree(pidlRelative); });
-	ILRemoveLastID(pidlLocal);
+	PUITEMID_CHILD pidlChild = ILClone(ILFindLastID(pidlAbsolute));
+	defer({ ILFree(pidlChild); });
+	ILRemoveLastID(pidlAbsolute);
 	hr = psfDesktop->BindToObject(
-		pidlLocal, NULL, IID_IShellFolder, (void **) &psfTargetParent
+		pidlAbsolute, NULL, IID_IShellFolder, (void **) &psfTargetParent
 	);
 	if (FAILED(hr)) return hr;
 	//------------------------------
@@ -483,9 +494,9 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	hr = psfTargetParent->GetUIObjectOf(
 		hwndOwner,
 		1,
-		(LPCITEMIDLIST *) &pidlRelative,
+		(PCUITEMID_CHILD_ARRAY) &pidlChild,
 		riid,
-		puReserved,
+		rgfReserved,
 		ppvReturn
 	);
 
@@ -493,15 +504,15 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 }
 
 STDMETHODIMP
-CADSXRootShellFolder::BindToStorage(LPCITEMIDLIST, LPBC, REFIID, void **) {
+CADSXRootShellFolder::BindToStorage(PCUIDLIST_RELATIVE, IBindCtx *, REFIID, void **) {
 	AtlTrace("CADSXRootShellFolder(0x%08x)::BindToStorage()\n", this);
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
-	LPCITEMIDLIST pidl,
-	DWORD uFlags,
-	LPSTRRET lpName
+	PCUITEMID_CHILD pidl,
+	SHGDNF uFlags,
+	STRRET *pName
 ) {
 	AtlTrace(
 		_T("CADSXRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) ")
@@ -511,7 +522,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		PidlToString(pidl)
 	);
 
-	if (pidl == NULL || lpName == NULL) return E_POINTER;
+	if (pidl == NULL || pName == NULL) return E_POINTER;
 
 	// Return name of Root
 	if (pidl->mkid.cb == 0) {
@@ -523,7 +534,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
 				return SetReturnStringW(
 					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
-					*lpName
+					*pName
 				) ? S_OK : E_FAIL;
 		}
 		// We don't handle other combinations of flags for the root pidl
@@ -534,11 +545,11 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
 	auto Item = CADSXItem::Get(pidl);
-
 	switch (uFlags) {
+		// TODO(garlic-os)
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
-			return SetReturnStringW(Item->m_Path, *lpName) ? S_OK
+			return SetReturnStringW(L"Placeholder", *pName) ? S_OK
 			                                               : E_FAIL;
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
@@ -547,23 +558,24 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 
 	// Any other combination results in returning the name.
-	return SetReturnStringW(Item->m_Name, *lpName) ? S_OK : E_FAIL;
+	return SetReturnStringW(Item->m_Name, *pName) ? S_OK : E_FAIL;
 }
 
+// TODO(garlic-os): root pidl plus pidlized file object's path
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
-	HWND,
-	LPBC,
-	LPOLESTR,
-	LPDWORD,
-	LPITEMIDLIST *,
-	LPDWORD
+	/* [in]      */ HWND hwnd,
+	/* [in]      */ IBindCtx *pbc,
+	/* [in]      */ LPWSTR pszDisplayName,
+	/* [out]     */ ULONG *pchEaten,
+	/* [out]     */ PIDLIST_RELATIVE *ppidl,
+	/* [in, out] */ ULONG *pfAttributes
 ) {
 	AtlTrace("CADSXRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CADSXRootShellFolder::
-	SetNameOf(HWND, LPCITEMIDLIST, LPCOLESTR, DWORD, LPITEMIDLIST *) {
+// TODO(garlic-os): should this be implemented?
+STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHGDNF, PITEMID_CHILD *) {
 	AtlTrace("CADSXRootShellFolder(0x%08x)::SetNameOf()\n", this);
 	return E_NOTIMPL;
 }
@@ -581,9 +593,9 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT iColumn) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
-	LPCITEMIDLIST pidl,
-	UINT iColumn,
-	LPSHELLDETAILS pDetails
+	/* [in, optional] */ PCUITEMID_CHILD pidl,
+	/* [in]           */ UINT iColumn,
+	/* [out]          */ SHELLDETAILS *pDetails
 ) {
 	AtlTrace(
 		_T("CADSXRootShellFolder(0x%08x)::GetDetailsOf(iColumn=%d) pidl=[%s]\n"),
@@ -597,8 +609,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	}
 
 	// Shell asks for the column headers
+	// TODO(garlic-os): should filesize be here too?
 	if (pidl == NULL) {
 		// Load the iColumn based string from the resource
+		// TODO(garlic-os): can CString be changed out for something else?
 		CString ColumnName(MAKEINTRESOURCE(IDS_COLUMN_NAME + iColumn));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;

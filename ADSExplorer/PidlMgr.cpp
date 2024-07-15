@@ -1,9 +1,10 @@
 #include "stdafx.h"	 // MUST be included first
 
 #include "PidlMgr.h"
+#include <shtypes.h>
 
 
-LPITEMIDLIST PidlMgr::Create(const IPidlData &Data) {
+PITEMID_CHILD PidlMgr::Create(const IPidlData &Data) {
 	// Total size of the PIDL, including SHITEMID
 	// TODO(garlic-os): one byte larger than it needs to be?
 	// UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize() - sizeof(BYTE);
@@ -11,7 +12,7 @@ LPITEMIDLIST PidlMgr::Create(const IPidlData &Data) {
 
 	// Allocate memory for this SHITEMID plus the final null SHITEMID.
 	auto pidlNew =
-		(LPITEMIDLIST) CoTaskMemAlloc(cbTotalSize + sizeof(ITEMIDLIST));
+		(PITEMID_CHILD) CoTaskMemAlloc(cbTotalSize + sizeof(ITEMIDLIST));
 	if (pidlNew) {
 		// Prepares the PIDL to be filled with actual data
 		pidlNew->mkid.cb = cbTotalSize;
@@ -49,12 +50,12 @@ LPITEMIDLIST PidlMgr::GetNextItem(LPCITEMIDLIST pidl) {
 	return LPITEMIDLIST(LPBYTE(pidl) + pidl->mkid.cb);
 }
 
-LPITEMIDLIST PidlMgr::GetLastItem(LPCITEMIDLIST pidl) {
-	LPITEMIDLIST pidlLast = NULL;
+PITEMID_CHILD PidlMgr::GetLastItem(LPCITEMIDLIST pidl) {
+	PITEMID_CHILD pidlLast = NULL;
 
 	// get the PIDL of the last item in the list
 	while (pidl && pidl->mkid.cb) {
-		pidlLast = (LPITEMIDLIST) pidl;
+		pidlLast = (PITEMID_CHILD) pidl;
 		pidl = PidlMgr::GetNextItem(pidl);
 	}
 	return pidlLast;
@@ -84,6 +85,6 @@ UINT PidlMgr::GetSize(LPCITEMIDLIST pidl) {
 	return cbSize;
 }
 
-bool PidlMgr::IsSingle(LPCITEMIDLIST pidl) {
+bool PidlMgr::IsChild(LPCITEMIDLIST pidl) {
 	return PidlMgr::GetNextItem(pidl)->mkid.cb == 0;
 }
