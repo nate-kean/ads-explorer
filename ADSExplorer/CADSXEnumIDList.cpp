@@ -55,8 +55,14 @@ HRESULT CADSXEnumIDList::NextInternal(
 	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
 	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
 ) {
-	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) return E_POINTER;
-	if (celt == 0) return S_OK;
+	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
+		AtlTrace(_T("** Bad argument(s)\n"));
+		return E_POINTER;
+	}
+	if (celt == 0) {
+		AtlTrace(_T("** 0 requested :/ vacuous success\n"));
+		return S_OK;
+	}
 
 	ULONG nActual = 0;
 	PITEMID_CHILD *pelt = rgelt;
@@ -69,15 +75,30 @@ HRESULT CADSXEnumIDList::NextInternal(
 		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &m_fsd, 0);
 		if (m_hFinder == INVALID_HANDLE_VALUE) {
 			m_hFinder = NULL;
-			if (GetLastError() == ERROR_SUCCESS) {
-				AtlTrace(_T("FindFirstStreamW returned INVALID_HANDLE_VALUE but GetLastError() == ERROR_SUCCESS\n"));
-				return E_FAIL;
+			switch (GetLastError()) {
+				case ERROR_SUCCESS:
+					AtlTrace(
+						_T("** FindFirstStreamW returned INVALID_HANDLE_VALUE ")
+						_T("but GetLastError() == ERROR_SUCCESS\n")
+					);
+					return E_FAIL;
+				case ERROR_HANDLE_EOF:
+					AtlTrace(_T("** No streams found\n"));
+					return S_FALSE;
+				default:
+					AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
+					return HRESULT_FROM_WIN32(GetLastError());
 			}
+		}
+		if (GetLastError() == ERROR_HANDLE_EOF) {
+			AtlTrace(_T("** No streams found\n"));
+			return S_FALSE;
+		}
+		bPushPidlSuccess = fnConsume(&pelt, &nActual);
+		if (!bPushPidlSuccess) {
+			AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
-		if (GetLastError() == ERROR_HANDLE_EOF) return S_FALSE;
-		bPushPidlSuccess = fnConsume(pelt, &nActual);
-		if (!bPushPidlSuccess) return HRESULT_FROM_WIN32(GetLastError());
 	}
 
 	// The main loop body that the rest of the calls to Next will skip to.
@@ -90,19 +111,28 @@ HRESULT CADSXEnumIDList::NextInternal(
 				// Do nothing and let the loop end
 			} else {
 				// Stream has stopped expectedly
+				AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		} else {
 			// Consume stream
-			bPushPidlSuccess = fnConsume(pelt, &nActual);
-			if (!bPushPidlSuccess) return HRESULT_FROM_WIN32(GetLastError());
+			bPushPidlSuccess = fnConsume(&pelt, &nActual);
+			if (!bPushPidlSuccess) {
+				AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
+				return HRESULT_FROM_WIN32(GetLastError());
+			}
 		}
 	}
-	if (pceltFetched != NULL) {  // Bookkeeping
+	if (pceltFetched != NULL) {	 // Bookkeeping
 		*pceltFetched = nActual;
 	}
 	m_nTotalFetched += nActual;
-	return nActual == celt ? S_OK : S_FALSE;
+	if (nActual == celt) {
+		return S_OK;
+	} else {
+		AtlTrace(_T("** Ran out\n"));
+		return S_FALSE;
+	}
 }
 
 
