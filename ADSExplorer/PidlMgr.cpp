@@ -7,12 +7,11 @@
 PITEMID_CHILD PidlMgr::Create(const IPidlData &Data) {
 	// Total size of the PIDL, including SHITEMID
 	// TODO(garlic-os): one byte larger than it needs to be?
-	// UINT TotalSize = sizeof(ITEMIDLIST) + Data.GetSize() - sizeof(BYTE);
-	UINT cbTotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
+	UINT cbTotalSize = sizeof(ITEMIDLIST) + Data.GetSize() - sizeof(BYTE);
+	// UINT cbTotalSize = sizeof(ITEMIDLIST) + Data.GetSize();
 
 	// Allocate memory for this SHITEMID plus the final null SHITEMID.
-	auto pidlNew =
-		(PITEMID_CHILD) CoTaskMemAlloc(cbTotalSize + sizeof(ITEMIDLIST));
+	auto pidlNew = (PITEMID_CHILD) CoTaskMemAlloc(cbTotalSize + sizeof(ITEMIDLIST));
 	if (pidlNew) {
 		// Prepares the PIDL to be filled with actual data
 		pidlNew->mkid.cb = cbTotalSize;
