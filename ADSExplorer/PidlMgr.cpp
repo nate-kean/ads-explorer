@@ -20,9 +20,9 @@ PITEMID_CHILD PidlMgr::Create(const IPidlData &Data) {
 		Data.CopyTo(&pidlNew->mkid.abID);
 
 		// Set an empty PIDL at the end
-		pidlNew = PidlMgr::GetNextItem(pidlNew);
-		pidlNew->mkid.cb = 0;
-		pidlNew->mkid.abID[0] = 0;
+		LPITEMIDLIST pidlEnd = PidlMgr::GetNextItem(pidlNew);
+		pidlEnd->mkid.cb = 0;
+		pidlEnd->mkid.abID[0] = 0;
 	}
 
 	return pidlNew;
