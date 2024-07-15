@@ -186,6 +186,7 @@ HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
 
 
 // Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
+// pushin p
 bool CADSXEnumIDList::PushPidl(
 	/* [in/out] */ PITEMID_CHILD **ppelt,  // POINTER! to the destination array
 	                                       // cursor because we're going to
