@@ -1,4 +1,4 @@
-#include "stdafx.h"	 // MUST be included first
+#include "stdafx.h"  // MUST be included first
 
 #include "CADSXEnumIDList.h"
 
@@ -24,7 +24,6 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 	SysFreeString(m_pszPath);
 }
 
-// @post: this takes ownership of pszPath
 void CADSXEnumIDList::Init(IUnknown *pUnkOwner, const BSTR pszPath) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Init()\n"), this);
 	m_pUnkOwner = pUnkOwner;
@@ -51,9 +50,9 @@ HRESULT CADSXEnumIDList::Next(
 
 HRESULT CADSXEnumIDList::NextInternal(
 	/* [in]  */ FnConsume fnConsume,   // callback on item found
-	/* [in]  */ ULONG celt,            // number of pidls requested
+	/* [in]  */ ULONG celt,			   // number of pidls requested
 	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
-	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
+	/* [out] */ ULONG *pceltFetched	   // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
 		AtlTrace(_T("** Bad argument(s)\n"));
@@ -188,9 +187,11 @@ HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
 
 // Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
 bool CADSXEnumIDList::PushPidl(
-	/* [in/out] */ PITEMID_CHILD *pelt,  // destination array cursor
+	/* [in/out] */ PITEMID_CHILD **ppelt,  // POINTER! to the destination array
+	                                       // cursor because we're going to
+	                                       // modify it (advance it)
 	/* [out]    */ ULONG *nActual
-) {
+) const {
 	// Reusable item
 	static CADSXItem Item;
 

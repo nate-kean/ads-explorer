@@ -16,8 +16,9 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	virtual ~CADSXEnumIDList();
 	
 	// Initialization logic in a method separate because COM object constructors
-	// are called in a weird way that makes it so that, AFAIK, they can't have
-	// parameters.
+	// are called in a weird way that makes it so that AFAIK they can't have
+	// parameters
+	// @post: this takes ownership of pszPath
 	void Init(IUnknown *pUnkOwner, const BSTR pszPath);
 
 	// IEnumIDList
