@@ -27,14 +27,14 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	STDMETHOD(Clone)(IEnumIDList **);
 
   protected:
-	using FnConsume = std::function<bool(PITEMID_CHILD *, ULONG *)>;
+	using FnConsume = std::function<bool(PITEMID_CHILD **, ULONG *)>;
 	HRESULT NextInternal(
 		FnConsume fnConsume,
 		ULONG celt,
 		PITEMID_CHILD *rgelt,
 		ULONG *pceltFetched
 	);
-	bool PushPidl(PITEMID_CHILD * pelt, ULONG *nActual);
+	bool PushPidl(PITEMID_CHILD **ppelt, ULONG *nActual) const;
 
 	// A sentinel COM object to represent the lifetime of the owner object.
 	// This exists to prevent the owner object from being freed before this one.

@@ -148,8 +148,8 @@ HRESULT CADSXEnumIDList::Reset() {
 }
 
 // Find one or more items with NextInternal and discard them.
-bool NoOp(PITEMID_CHILD *pelt, ULONG *nActual) {
-	UNREFERENCED_PARAMETER(pelt);
+static bool NoOp(PITEMID_CHILD **ppelt, ULONG *nActual) {
+	UNREFERENCED_PARAMETER(ppelt);
 	UNREFERENCED_PARAMETER(nActual);
 	return true;
 }
@@ -204,10 +204,10 @@ bool CADSXEnumIDList::PushPidl(
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;
 	}
-	*pelt = pidl;
+	**ppelt = pidl;
 
 	// Advance the enumerator
-	++*pelt;
+	*ppelt += sizeof(PITEMID_CHILD);
 	++*nActual;
 	return true;
 }
