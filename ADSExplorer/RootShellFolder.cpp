@@ -297,10 +297,12 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
-	wchar_t pszPath[MAX_PATH];
-	SHGetPathFromIDListW(m_pidlRoot, pszPath);
-	_bstr_t bstrPath(pszPath);
-
+	// wchar_t pszPath[MAX_PATH];
+	// SHGetPathFromIDListW(PidlMgr::GetNextItem(m_pidlRoot), pszPath);
+	// _bstr_t bstrPath(pszPath);
+	_bstr_t bstrPath =
+		"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+		"ADS Explorer\\Test\\Files\\3streams.txt";
 	AtlTrace(_T(" ** EnumObjects: Path=%s\n"), bstrPath.GetBSTR());
 	pEnum->Init(GetUnknown(), bstrPath.Detach());
 
