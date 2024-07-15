@@ -52,33 +52,23 @@
 
 #ifdef _DEBUG
 	LPWSTR PidlToString(LPCITEMIDLIST pidl) {
-		static int which = 0;
-		static WCHAR str1[MAX_PATH];
-		static WCHAR str2[MAX_PATH];
-		WCHAR* str;
-		which ^= 1;
-		str = which ? str1 : str2;
-
-		str[0] = '\0';
+		_bstr_t str;
 
 		if (pidl == NULL) {
-			wcscpy_s(str, MAX_PATH, L"<null>");
-			return str;
+			return str + "<null>";
 		}
 
 		while (pidl->mkid.cb != 0) {
 			if (CADSXItem::IsOwn(pidl)) {
-				LPOLESTR sName = CADSXItem::Get(pidl)->m_Name;
-				wcscat_s(str, AtlStrLen(str) + AtlStrLen(sName), sName);
-				wcscat_s(str, AtlStrLen(str) + AtlStrLen(L"::"), L"::");
+				_bstr_t sName = CADSXItem::Get(pidl)->m_Name;
+				str += sName + "--";
 			} else {
 				bool success = false;
 				// success = SHGetPathFromIDListW(pidl, str);
 				if (!success) {
-					str[0] = '\0';
 					WCHAR tmp[16];
-					swprintf_s(tmp, L"<unk-%02d>::", pidl->mkid.cb);
-					wcscat_s(str, AtlStrLen(str) + 16, tmp);
+					swprintf_s(tmp, L"<unk-%02d>--", pidl->mkid.cb);
+					str += tmp;
 				}
 			}
 
