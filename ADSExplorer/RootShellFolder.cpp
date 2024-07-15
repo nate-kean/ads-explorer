@@ -317,19 +317,19 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	/* [in, out] */ SFGAOF *pfAttribs
 ) {
 	#ifdef _DEBUG
-		if (uCount >= 1) {
+		if (cidl >= 1) {
 			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d) ")
+				_T("CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d) ")
 				_T("pidl=[%s]\n"),
 				this,
-				uCount,
+				cidl,
 				PidlToString(aPidls[0])
 			);
 		} else {
 			AtlTrace(
-				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(uCount=%d)\n",
+				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d)\n",
 				this,
-				uCount
+				cidl
 			);
 		}
 	#endif
@@ -380,19 +380,19 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	void **ppvReturn
 ) {
 	#ifdef _DEBUG
-		if (uCount >= 1) {
+		if (cidl >= 1) {
 			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d) ")
+				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d) ")
 				_T("pidl=[%s]\n"),
 				this,
-				uCount,
-				PidlToString(*pPidl)
+				cidl,
+				PidlToString(*aPidls)
 			);
 		} else {
 			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(uCount=%d)\n"),
+				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d)\n"),
 				this,
-				uCount
+				cidl
 			);
 		}
 		// DUMPIID(riid);
