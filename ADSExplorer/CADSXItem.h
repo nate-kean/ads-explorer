@@ -8,8 +8,7 @@
 
 class CADSXItem : public IPidlData {
    public:
-	enum { SIGNATURE = 'ADSX' };
-
+	const UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;
 	_bstr_t m_Path;  // TODO(garlic-os): remove
 	_bstr_t m_Name;
