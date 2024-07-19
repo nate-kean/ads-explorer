@@ -14,11 +14,12 @@ class CADSXItem : public IPidlData {
 	_bstr_t m_Name;
 
 	CADSXItem();  // TODO(garlic-os): remove
+	// Check if a PIDL contains a CADSXItem.
+	// CADSXItems are always the last part of the PIDL (i.e. the child).
+	// FUTURE: pseudofolders may open this up to be any relative PIDL.
+	static bool IsOwn(PCUIDLIST_RELATIVE pidl);
 
-	// Check if a PIDL contains a CADSXItem
-	static bool IsOwn(LPCITEMIDLIST pidl);
-
-	static CADSXItem *Get(LPCITEMIDLIST pidl);
+	static CADSXItem *Get(PCUITEMID_CHILD pidl);
 
 	// From IPidlData
 	ULONG GetSize() const;

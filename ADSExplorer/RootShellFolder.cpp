@@ -58,7 +58,7 @@
 				str += "--";
 			}
 			if (CADSXItem::IsOwn(pidl)) {
-				_bstr_t sName = CADSXItem::Get(pidl)->m_Name;
+				_bstr_t sName = CADSXItem::Get((PCUITEMID_CHILD) pidl)->m_Name;
 				str += sName;
 			} else if (pidl == m_pidlRoot) {
 				WCHAR tmp[MAX_PATH];
@@ -161,8 +161,8 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
-	auto Item1 = CADSXItem::Get(pidl1);
-	auto Item2 = CADSXItem::Get(pidl2);
+	auto Item1 = CADSXItem::Get((PCUITEMID_CHILD) pidl1);
+	auto Item2 = CADSXItem::Get((PCUITEMID_CHILD) pidl2);
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DETAILS_COLUMN_NAME:
