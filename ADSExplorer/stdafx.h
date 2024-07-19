@@ -29,10 +29,6 @@
 
 #pragma once
 
-// #ifndef _UNICODE
-// 	#define _UNICODE
-// #endif
-
 #ifndef STRICT_TYPED_ITEMIDS
 	#define STRICT_TYPED_ITEMIDS
 #endif
@@ -63,6 +59,13 @@ extern CComModule _Module;
 #include <ShlObj.h>
 #include <atlcom.h>
 #include <atlwin.h>
+
+#ifndef UNICODE
+	#define UNICODE
+#endif
+#ifndef _UNICODE
+	#define _UNICODE
+#endif
 
 #if defined(ADSX_PKEYS_SUPPORT) && VER_PRODUCTBUILD >= 6000
 // These are probably supportable on 2600 in some obscure WDS SDK
