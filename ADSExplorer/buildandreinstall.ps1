@@ -1,4 +1,4 @@
 # @pre: pwd is ${workspaceFolder}
 
-call build.ps1
-call reinstall.ps1
+& ((Split-Path $MyInvocation.InvocationName) + "\build.ps1")
+& ((Split-Path $MyInvocation.InvocationName) + "\reinstall.ps1")
