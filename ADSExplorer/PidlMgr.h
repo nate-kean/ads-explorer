@@ -40,11 +40,5 @@ class IPidlData {
 };
 
 namespace PidlMgr {
-	LPITEMIDLIST Create(const IPidlData &Data);
-	LPITEMIDLIST Copy(LPCITEMIDLIST pidlSrc);
-	LPITEMIDLIST GetNextItem(LPCITEMIDLIST pidl);
-	LPITEMIDLIST GetLastItem(LPCITEMIDLIST pidl);
-	void Delete(LPITEMIDLIST pidl);
-	UINT GetSize(LPCITEMIDLIST pidl);
-	bool IsChild(LPCITEMIDLIST pidl);
+	PITEMID_CHILD Create(const IPidlData &Data);
 };

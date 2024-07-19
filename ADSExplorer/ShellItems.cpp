@@ -27,8 +27,10 @@
 // fails to compile without it
 #include "stdafx.h"
 
-#include "ShellItems.h"
 #include <combaseapi.h>
+
+#include "defer.h"
+#include "ShellItems.h"
 
 //==============================================================================
 // Helper for STRRET
@@ -61,106 +63,80 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
 HGLOBAL CreateShellIDList(
-	LPCITEMIDLIST pidlParent,
-	LPCITEMIDLIST *aPidls,
-	UINT uItemCount
+	PIDLIST_ABSOLUTE pidlParent,
+	PCUITEMID_CHILD pidl
 ) {
-	HGLOBAL hGlobal = NULL;
-	LPIDA pData;
-	UINT iCurPos;
-	UINT cbPidl;
-	UINT i;
-
-	// get the size of the parent folder's PIDL
-	cbPidl = PidlMgr::GetSize(pidlParent);
-
-	// get the total size of all of the PIDLs
-	for (i = 0; i < uItemCount; i++) {
-		cbPidl += PidlMgr::GetSize(aPidls[i]);
-	}
+	// Get the combined size of the parent folder's PIDL and the other PIDL
+	UINT cbPidl = ILGetSize(pidlParent) + ILGetSize(pidl);
 
 	// Find the end of the CIDA structure. This is the size of the
 	// CIDA structure itself (which includes one element of aoffset) plus the
 	// additional number of elements in aoffset.
-	iCurPos = sizeof(CIDA) + (uItemCount * sizeof(UINT));
+	UINT iCurPos = sizeof(CIDA) + (sizeof(UINT));
 
 	// Allocate the memory for the CIDA structure and it's variable length
 	// members.
-	hGlobal = GlobalAlloc(
+	HGLOBAL hGlobal = GlobalAlloc(
 		GPTR | GMEM_SHARE,
 		(DWORD) (iCurPos +	// size of the CIDA structure and the additional
 							// aoffset elements
 				 (cbPidl + 1))
 	);	// size of the pidls
-	if (!hGlobal) {
-		return NULL;
-	}
+	if (hGlobal == NULL) return NULL;
 
-	pData = (LPIDA) GlobalLock(hGlobal);
-	if (pData != NULL) {
-		pData->cidl = uItemCount;
-		pData->aoffset[0] = iCurPos;
+	LPIDA pData = (LPIDA) GlobalLock(hGlobal);
+	if (pData == NULL) return hGlobal;
+	defer({ GlobalUnlock(hGlobal); });
 
-		// add the PIDL for the parent folder
-		cbPidl = PidlMgr::GetSize(pidlParent);
-		CopyMemory((LPBYTE) (pData) + iCurPos, (LPBYTE) pidlParent, cbPidl);
-		iCurPos += cbPidl;
+	pData->cidl = 1;
+	pData->aoffset[0] = iCurPos;
 
-		for (i = 0; i < uItemCount; i++) {
-			// get the size of the PIDL
-			cbPidl = PidlMgr::GetSize(aPidls[i]);
+	// add the PIDL for the parent folder
+	cbPidl = ILGetSize(pidlParent);
+	CopyMemory(LPBYTE(pData) + iCurPos, (LPBYTE) pidlParent, cbPidl);
+	iCurPos += cbPidl;
 
-			// fill out the members of the CIDA structure.
-			pData->aoffset[i + 1] = iCurPos;
+	// get the size of the PIDL
+	cbPidl = ILGetSize(pidl);
 
-			// copy the contents of the PIDL
-			CopyMemory((LPBYTE) (pData) + iCurPos, (LPBYTE) aPidls[i], cbPidl);
+	// fill out the members of the CIDA structure.
+	pData->aoffset[1] = iCurPos;
 
-			// set up the position of the next PIDL
-			iCurPos += cbPidl;
-		}
+	// copy the contents of the PIDL
+	CopyMemory((LPBYTE) (pData) + iCurPos, (LPBYTE) pidl, cbPidl);
 
-		GlobalUnlock(hGlobal);
-	}
+	// set up the position of the next PIDL
+	iCurPos += cbPidl;
 
 	return hGlobal;
 }
 
-CDataObject::CDataObject() : m_pidl(NULL), m_pidlParent(NULL) {
-	m_cfShellIDList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
-}
-
 CDataObject::~CDataObject() {
-	PidlMgr::Delete(m_pidl);
-	PidlMgr::Delete(m_pidlParent);
+	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
+	if (m_pidlParent != NULL) CoTaskMemFree(m_pidlParent);
 }
 
-void CDataObject::Init(IUnknown *pUnkOwner) { m_UnkOwnerPtr = pUnkOwner; }
-
-void CDataObject::SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl) {
-	m_pidlParent = PidlMgr::Copy(pidlParent);
-	m_pidl = PidlMgr::Copy(pidl);
+void CDataObject::Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITEMID_CHILD pidl) {
+	m_UnkOwnerPtr = pUnkOwner;
+	m_pidlParent = ILCloneFull(pidlParent);
+	m_pidl = ILCloneChild(pidl);
+	m_cfShellIDList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 	AtlTrace("CDataObject::GetData()\n");
+	if (pFE->cfFormat != m_cfShellIDList) return E_INVALIDARG;
 
-	if (pFE->cfFormat == m_cfShellIDList) {
-		pStgMedium->hGlobal =
-			CreateShellIDList(m_pidlParent, (LPCITEMIDLIST *) &m_pidl, 1);
+	pStgMedium->hGlobal = CreateShellIDList(m_pidlParent, m_pidl);
+	if (pStgMedium->hGlobal == NULL) return E_OUTOFMEMORY;
 
-		if (pStgMedium->hGlobal) {
-			pStgMedium->tymed = TYMED_HGLOBAL;
-			// Even if our tymed is HGLOBAL, WinXP calls ReleaseStgMedium()
-			// which tries to call pUnkForRelease->Release() -- BANG!
-			pStgMedium->pUnkForRelease = NULL;
-			return S_OK;
-		}
-	}
-
-	return E_INVALIDARG;
+	pStgMedium->tymed = TYMED_HGLOBAL;
+	// Even if our tymed is HGLOBAL, WinXP calls ReleaseStgMedium()
+	// which tries to call pUnkForRelease->Release() -- BANG!
+	pStgMedium->pUnkForRelease = NULL;
+	return S_OK;
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC, LPSTGMEDIUM) {

@@ -33,6 +33,10 @@
 // 	#define _UNICODE
 // #endif
 
+#ifndef STRICT_TYPED_ITEMIDS
+	#define STRICT_TYPED_ITEMIDS
+#endif
+
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
 // XXX: Perhaps it could disable all of IShellFolder2 for really old SDKs?

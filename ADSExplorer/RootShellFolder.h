@@ -53,6 +53,10 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	  public IPersistFolder2,
 	  public IShellDetails {
    public:
+	#ifdef _DEBUG
+		LPWSTR PidlToString(PCUIDLIST_RELATIVE pidl) const;
+	#endif
+
 	CADSXRootShellFolder();
 
 	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)
@@ -85,7 +89,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	STDMETHOD(CreateViewObject)(HWND, REFIID, void**);
 	STDMETHOD(EnumObjects)(HWND, SHCONTF, IEnumIDList**);
 	STDMETHOD(GetAttributesOf)(UINT, PCUITEMID_CHILD_ARRAY, SFGAOF*);
-	STDMETHOD(GetUIObjectOf)(HWND, UINT, PCUITEMID_CHILD_ARRAY, REFIID, UINT*, void **);
+	STDMETHOD(GetUIObjectOf)(HWND, UINT, PCUITEMID_CHILD_ARRAY, REFIID, UINT*, void**);
 	STDMETHOD(BindToStorage)(PCUIDLIST_RELATIVE, IBindCtx*, REFIID, void**);
 	STDMETHOD(GetDisplayNameOf)(PCUITEMID_CHILD, SHGDNF, STRRET*);
 	STDMETHOD(ParseDisplayName)(HWND, IBindCtx*, LPWSTR, ULONG*, PIDLIST_RELATIVE*, ULONG*);

@@ -65,40 +65,37 @@ class ATL_NO_VTABLE CDataObject
 
 	//--------------------------------------------------------------------------
 
-	CDataObject();
 	~CDataObject();
 
-	// Ensure the owner object is not freed before this one
-	void Init(IUnknown *pUnkOwner);
-
-	// Populate the object with the Favorite Item pidl.
+	// Ensure the owner object is not freed before this one and 
+	// populate the object with the Favorite Item pidl.
 	// This member must be called before any IDataObject member.
-	void SetPidl(LPCITEMIDLIST pidlParent, LPCITEMIDLIST pidl);
+	void Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITEMID_CHILD pidl);
 
 	//--------------------------------------------------------------------------
 	// IDataObject methods
-	STDMETHOD(GetData)(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium);
+	STDMETHOD(GetData)(LPFORMATETC, LPSTGMEDIUM);
 	STDMETHOD(GetDataHere)(LPFORMATETC, LPSTGMEDIUM);
 	STDMETHOD(QueryGetData)(LPFORMATETC);
 	STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC, LPFORMATETC);
 	STDMETHOD(SetData)(LPFORMATETC, LPSTGMEDIUM, BOOL);
-	STDMETHOD(EnumFormatEtc)(DWORD, IEnumFORMATETC **);
-	STDMETHOD(DAdvise)(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD);
-	STDMETHOD(DUnadvise)(DWORD dwConnection);
-	STDMETHOD(EnumDAdvise)(IEnumSTATDATA **ppEnumAdvise);
+	STDMETHOD(EnumFormatEtc)(DWORD, IEnumFORMATETC**);
+	STDMETHOD(DAdvise)(LPFORMATETC, DWORD, IAdviseSink*, LPDWORD);
+	STDMETHOD(DUnadvise)(DWORD);
+	STDMETHOD(EnumDAdvise)(IEnumSTATDATA**);
 
 	//--------------------------------------------------------------------------
 	// IEnumFORMATETC members
-	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG *);
+	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG*);
 	STDMETHOD(Skip)(ULONG);
 	STDMETHOD(Reset)();
-	STDMETHOD(Clone)(LPENUMFORMATETC *);
+	STDMETHOD(Clone)(LPENUMFORMATETC*);
 
    protected:
 	CComPtr<IUnknown> m_UnkOwnerPtr;
 
 	UINT m_cfShellIDList;
 
-	LPITEMIDLIST m_pidl;
-	LPITEMIDLIST m_pidlParent;
+	PUITEMID_CHILD m_pidl;
+	PIDLIST_ABSOLUTE m_pidlParent;
 };

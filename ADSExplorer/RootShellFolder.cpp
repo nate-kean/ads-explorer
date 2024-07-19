@@ -23,11 +23,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#include "stdafx.h"  // MUST be included first
+
 #include <Shlwapi.h>
 #include <objidl.h>
+#include <shlobj_core.h>
 #include <shobjidl_core.h>
 #include <shtypes.h>
-#include "stdafx.h"  // MUST be included first
 
 #if _MSC_VER > 1200
 	#include "ADSExplorer_h.h"
@@ -41,7 +43,6 @@
 
 #include "CADSXEnumIDList.h"
 #include "CADSXItem.h"
-#include "PidlMgr.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
 #include "defer.h"
@@ -51,28 +52,31 @@
 // #define _DEBUG
 
 #ifdef _DEBUG
-	LPWSTR PidlToString(LPCITEMIDLIST pidl) {
-		_bstr_t str;
+	LPWSTR CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
+		_bstr_t str = "";
 
 		if (pidl == NULL) {
 			return str + "<null>";
 		}
 
-		while (pidl->mkid.cb != 0) {
+		bool first = true;
+		for (; !ILIsEmpty(pidl); pidl = ILNext(pidl)) {
+			if (!first) {
+				str += "--";
+			}
 			if (CADSXItem::IsOwn(pidl)) {
 				_bstr_t sName = CADSXItem::Get(pidl)->m_Name;
-				str += sName + "--";
+				str += sName;
+			} else if (pidl == m_pidlRoot) {
+				WCHAR tmp[MAX_PATH];
+				SHGetPathFromIDListW((PIDLIST_ABSOLUTE) pidl, tmp);
+				str += tmp;
 			} else {
-				bool success = false;
-				// success = SHGetPathFromIDListW(pidl, str);
-				if (!success) {
-					WCHAR tmp[16];
-					swprintf_s(tmp, L"<unk-%02d>--", pidl->mkid.cb);
-					str += tmp;
-				}
+				WCHAR tmp[16];
+				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
+				str += tmp;
 			}
-
-			pidl = LPITEMIDLIST(LPBYTE(pidl) + pidl->mkid.cb);
+			first = false;
 		}
 		return str;
 	}
@@ -101,22 +105,21 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 		this,
 		PidlToString(pidl)
 	);
-	m_pidlRoot = PidlMgr::Copy(pidl);
+	m_pidlRoot = ILCloneFull(pidl);
 	return S_OK;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
 	if (ppidl == NULL) return E_POINTER;
-	*ppidl = PidlMgr::Copy(m_pidlRoot);
+	*ppidl = ILCloneFull(m_pidlRoot);
 	return S_OK;
 }
 
 //-------------------------------------------------------------------------------
 // IShellFolder
 
-// BindToObject() is called when a folder in our part of the namespace is being
-// browsed.
+// Called when an item in our folder is double-clicked.
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	/* [in]  */ PCUIDLIST_RELATIVE pidl,
 	/* [in]  */ IBindCtx *pbc,
@@ -133,27 +136,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
 	// I'll support multi-level PIDLs when I implement pseudofolders
-	if (!PidlMgr::IsChild(pidl)) return E_NOTIMPL;
-
-	HRESULT hr;
-	CComPtr<IShellFolder> psfDesktop;
-
-	hr = SHGetDesktopFolder(&psfDesktop);
-	if (FAILED(hr)) return hr;
-
-	PIDLIST_ABSOLUTE pidlAbsolute = NULL;
-	auto Item = CADSXItem::Get(pidl);
-	hr = psfDesktop->ParseDisplayName(
-		NULL, pbc, Item->m_Path, NULL, &pidlAbsolute, NULL
-	);
-	if (FAILED(hr)) return hr;
-	defer({ ILFree(pidlAbsolute); });
-
-	// Okay, browsing into a favorite item will redirect to its real path.
-	hr = psfDesktop->BindToObject(pidlAbsolute, pbc, riid, ppvOut);
-	return hr;
-
-	// could also use this one? ILCreateFromPathW
+	return E_NOTIMPL;
 }
 
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
@@ -179,7 +162,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	// Now check if the pidl are one or multi level, in case they are
 	// multi-level, return non-equality
-	if (!PidlMgr::IsChild(pidl1) || !PidlMgr::IsChild(pidl2)) {
+	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 1);
 	}
 
@@ -238,7 +221,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		pViewObject->AddRef();
 
 		// Tight the view object lifetime with the current IShellFolder.
-		pViewObject->Init(GetUnknown());
+		pViewObject->Init(this->GetUnknown());
 
 		// Create the view
 		hr = pViewObject->Create(
@@ -285,26 +268,24 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 		dwFlags
 	);
 
-	HRESULT hr;
-
 	if (ppEnumIDList == NULL) return E_POINTER;
 	*ppEnumIDList = NULL;
 
 	// Create an enumerator over this file system object's alternate data streams.
 	CComObject<CADSXEnumIDList> *pEnum;
-	hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
+	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
 	if (FAILED(hr)) return hr;
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
 	// wchar_t pszPath[MAX_PATH];
-	// SHGetPathFromIDListW(PidlMgr::GetNextItem(m_pidlRoot), pszPath);
+	// SHGetPathFromIDListW(ILNext(m_pidlRoot), pszPath);
 	// _bstr_t bstrPath(pszPath);
 	_bstr_t bstrPath =
 		"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
 		"ADS Explorer\\Test\\Files\\3streams.txt";
 	AtlTrace(_T(" ** EnumObjects: Path=%s\n"), bstrPath.GetBSTR());
-	pEnum->Init(GetUnknown(), bstrPath.Detach());
+	pEnum->Init(this->GetUnknown(), bstrPath.Detach());
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnumIDList);
@@ -379,7 +360,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	PCUITEMID_CHILD_ARRAY aPidls,
 	REFIID riid,
 	UINT *rgfReserved,
-	void **ppvReturn
+	void **ppvOut
 ) {
 	#ifdef _DEBUG
 		if (cidl >= 1) {
@@ -388,7 +369,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 				_T("pidl=[%s]\n"),
 				this,
 				cidl,
-				PidlToString(*aPidls)
+				PidlToString(aPidls[0])
 			);
 		} else {
 			AtlTrace(
@@ -402,15 +383,10 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	HRESULT hr;
 
-	if (ppvReturn == NULL) {
-		return E_POINTER;
-	}
+	if (ppvOut == NULL) return E_POINTER;
+	*ppvOut = NULL;
 
-	*ppvReturn = NULL;
-
-	if (cidl == 0) {
-		return E_INVALIDARG;
-	}
+	if (cidl == 0) return E_INVALIDARG;
 
 	// Does the FileDialog need to embed some data?
 	if (riid == IID_IDataObject) {
@@ -418,7 +394,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		if (cidl != 1) return E_INVALIDARG;
 
 		// Is this really one of our item?
-		if (!CADSXItem::IsOwn(*aPidls)) return E_INVALIDARG;
+		if (!CADSXItem::IsOwn(aPidls[0])) return E_INVALIDARG;
 
 		// Create a COM object that exposes IDataObject
 		CComObject<CDataObject> *pDataObject;
@@ -429,14 +405,12 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// destruction.
 		pDataObject->AddRef();
 
-		// Tight its lifetime with this object (the IShellFolder object)
-		pDataObject->Init(GetUnknown());
-
-		// Okay, embed the pidl in the data
-		pDataObject->SetPidl(m_pidlRoot, *aPidls);
+		// Tie its lifetime with this object (the IShellFolder object)
+		// and embed the PIDL in the data
+		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
 
 		// Return the requested interface to the caller
-		hr = pDataObject->QueryInterface(riid, ppvReturn);
+		hr = pDataObject->QueryInterface(riid, ppvOut);
 
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
@@ -444,52 +418,46 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		return hr;
 	}  // All other requests are delegated to the target path's IShellFolder
 
-	// Bbecause multiple items can point to different storages, we can't (easily)
+	// Since multiple items can point to different storages, we can't (easily)
 	// handle groups of items.
 	// TODO(garlic-os): Still current?
 	if (cidl > 1) return E_NOINTERFACE;
 
-	if (!CADSXItem::IsOwn(*aPidls)) return E_NOINTERFACE;
+	if (!CADSXItem::IsOwn(aPidls[0])) return E_NOINTERFACE;
 
-	CComPtr<IShellFolder> psfTargetParent;
 	CComPtr<IShellFolder> psfDesktop;
-
 	hr = SHGetDesktopFolder(&psfDesktop);
 	if (FAILED(hr)) return hr;
 
-	PIDLIST_ABSOLUTE pidlAbsolute = NULL;
-	auto Item = CADSXItem::Get(*aPidls);
+	PIDLIST_ABSOLUTE pidlItemAbsPath = NULL;
+	auto Item = CADSXItem::Get(aPidls[0]);
 	hr = psfDesktop->ParseDisplayName(
-		NULL, NULL, Item->m_Path, NULL, &pidlAbsolute, NULL
+		NULL, NULL, Item->m_Path, NULL,
+		(PIDLIST_RELATIVE *) &pidlItemAbsPath,  // Absolute because it's relative
+		                                     // to [Desktop]
+		NULL
 	);
 	if (FAILED(hr)) return hr;
-	defer({ ILFree(pidlAbsolute); });
+	defer({ CoTaskMemFree(pidlItemAbsPath); });
 
-	//------------------------------
-	// polyfill for the following line
-	// (not available to shell version 4.7x):
-	//   hr = SHBindToParent(
-	//   	pidlAbsolute,
-	//   	IID_IShellFolder,
-	//   	(void**) &pTargetParentShellFolder,
-	//   	&pidlChild
-	//   );
-	PUITEMID_CHILD pidlChild = ILClone(ILFindLastID(pidlAbsolute));
-	defer({ ILFree(pidlChild); });
-	ILRemoveLastID(pidlAbsolute);
-	hr = psfDesktop->BindToObject(
-		pidlAbsolute, NULL, IID_IShellFolder, (void **) &psfTargetParent
+	CComPtr<IShellFolder> psfItemParent;
+	PITEMID_CHILD pidlItemBasename = ILCloneChild(ILFindLastID(pidlItemAbsPath));
+	defer({ CoTaskMemFree(pidlItemBasename); });
+	hr = SHBindToParent(
+		pidlItemAbsPath,
+		IID_IShellFolder,
+		(void**) &psfItemParent,
+		&pidlItemBasename
 	);
 	if (FAILED(hr)) return hr;
-	//------------------------------
 
-	hr = psfTargetParent->GetUIObjectOf(
+	hr = psfItemParent->GetUIObjectOf(
 		hwndOwner,
 		1,
-		(PCUITEMID_CHILD_ARRAY) &pidlChild,
+		(PCUITEMID_CHILD_ARRAY) &pidlItemBasename,
 		riid,
 		rgfReserved,
-		ppvReturn
+		ppvOut
 	);
 
 	return hr;
@@ -696,7 +664,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
-	LPCITEMIDLIST pidl,
+	PCUITEMID_CHILD pidl,
 	const SHCOLUMNID *pscid,
 	VARIANT *pv
 ) {
