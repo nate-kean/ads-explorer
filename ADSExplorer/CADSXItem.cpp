@@ -3,7 +3,6 @@
 #include "CADSXItem.h"
 
 
-CADSXItem::CADSXItem() : m_Path("PlaceholderPath") {}
 bool CADSXItem::IsOwn(PCUIDLIST_RELATIVE pidl) {
   return pidl != NULL &&
 		 pidl->mkid.cb == sizeof(ITEMIDLIST) + sizeof(CADSXItem) - sizeof(BYTE) &&
@@ -26,6 +25,5 @@ void CADSXItem::CopyTo(void *pTarget) const {
 	new (pTarget) CADSXItem();
 	auto p = (CADSXItem *) pTarget;
 	p->m_Filesize = m_Filesize;
-	p->m_Path = m_Path;
 	p->m_Name = m_Name;
 }

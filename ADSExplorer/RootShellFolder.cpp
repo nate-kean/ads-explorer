@@ -112,7 +112,8 @@ STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 //-------------------------------------------------------------------------------
 // IShellFolder
 
-// Called when an item in our folder is double-clicked.
+// Called when an item in an ADSX folder is double-clicked.
+// TODO(garlic-os): is this also called for an ADSX folder itself?
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	/* [in]  */ PCUIDLIST_RELATIVE pidl,
 	/* [in]  */ IBindCtx *pbc,
@@ -397,63 +398,45 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// AddRef it while we are working with it, this prevent from an early
 		// destruction.
 		pDataObject->AddRef();
-
 		// Tie its lifetime with this object (the IShellFolder object)
 		// and embed the PIDL in the data
 		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
-
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppvOut);
-
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
 		return hr;
-	}  // All other requests are delegated to the target path's IShellFolder
+	}
 
-	// Since multiple items can point to different storages, we can't (easily)
-	// handle groups of items.
-	// TODO(garlic-os): Still current?
-	if (cidl > 1) return E_NOINTERFACE;
+	// TODO(garlic-os): implement other interfaces as listed in
+	// https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellfolder-getuiobjectof#remarks.
+	// OpenWindows had the luxury of their objects being real/normal filesystem
+	// objects (i.e., the folders other Explorer windows were open to), so it
+	// could just proxy these requests on to those objects' parent folders.
+	// Our objects are not real/normal filesystem objects, so we have to
+	// implement these interfaces ourselves.
+	else if (riid == IID_IContextMenu) {
+		return E_NOINTERFACE;
+	}
 
-	if (!CADSXItem::IsOwn(aPidls[0])) return E_NOINTERFACE;
+	else if (riid == IID_IContextMenu2) {
+		return E_NOINTERFACE;
+	}
+	
+	else if (riid == IID_IDropTarget) {
+		return E_NOINTERFACE;
+	}
 
-	CComPtr<IShellFolder> psfDesktop;
-	hr = SHGetDesktopFolder(&psfDesktop);
-	if (FAILED(hr)) return hr;
+	else if (riid == IID_IExtractIcon) {
+		return E_NOINTERFACE;
+	}
 
-	PIDLIST_ABSOLUTE pidlItemAbsPath = NULL;
-	auto Item = CADSXItem::Get(aPidls[0]);
-	hr = psfDesktop->ParseDisplayName(
-		NULL, NULL, Item->m_Path, NULL,
-		(PIDLIST_RELATIVE *) &pidlItemAbsPath,  // Absolute because it's relative
-		                                     // to [Desktop]
-		NULL
-	);
-	if (FAILED(hr)) return hr;
-	defer({ CoTaskMemFree(pidlItemAbsPath); });
+	else if (riid == IID_IQueryInfo) {
+		return E_NOINTERFACE;
+	}
 
-	CComPtr<IShellFolder> psfItemParent;
-	PITEMID_CHILD pidlItemBasename = ILCloneChild(ILFindLastID(pidlItemAbsPath));
-	defer({ CoTaskMemFree(pidlItemBasename); });
-	hr = SHBindToParent(
-		pidlItemAbsPath,
-		IID_IShellFolder,
-		(void**) &psfItemParent,
-		&pidlItemBasename
-	);
-	if (FAILED(hr)) return hr;
-
-	hr = psfItemParent->GetUIObjectOf(
-		hwndOwner,
-		1,
-		(PCUITEMID_CHILD_ARRAY) &pidlItemBasename,
-		riid,
-		rgfReserved,
-		ppvOut
-	);
-
-	return hr;
+	return E_NOINTERFACE;
 }
 
 STDMETHODIMP

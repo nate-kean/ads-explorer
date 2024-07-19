@@ -10,10 +10,8 @@ class CADSXItem : public IPidlData {
    public:
 	const UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;
-	_bstr_t m_Path;  // TODO(garlic-os): remove
 	_bstr_t m_Name;
 
-	CADSXItem();  // TODO(garlic-os): remove
 	// Check if a PIDL contains a CADSXItem.
 	// CADSXItems are always the last part of the PIDL (i.e. the child).
 	// FUTURE: pseudofolders may open this up to be any relative PIDL.
