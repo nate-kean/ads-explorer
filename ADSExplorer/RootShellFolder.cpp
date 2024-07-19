@@ -566,7 +566,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	if (pidl == NULL) {
 		// Load the iColumn based string from the resource
 		// TODO(garlic-os): can CString be changed out for something else?
-		CString ColumnName(MAKEINTRESOURCE(IDS_COLUMN_NAME + iColumn));
+		CStringW ColumnName(MAKEINTRESOURCE(IDS_COLUMN_NAME + uColumn));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
 		return SetReturnString(ColumnName, pDetails->str) ? S_OK
@@ -579,7 +579,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
 			pDetails->cxChar = (int) wcslen(Item->m_Name);
-			return SetReturnStringW(Item->m_Name, pDetails->str)
+			return SetReturnString(Item->m_Name, pDetails->str)
 				? S_OK
 				: E_OUTOFMEMORY;
 
@@ -588,7 +588,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			BSTR pszSize[16] = {0};
 			StrFormatByteSizeW(Item->m_Filesize, (BSTR) pszSize, 16);
 			pDetails->cxChar = (int) wcslen((BSTR) pszSize);
-			return SetReturnStringW((BSTR) pszSize, pDetails->str)
+			return SetReturnString((BSTR) pszSize, pDetails->str)
 				? S_OK
 				: E_OUTOFMEMORY;
 	}
