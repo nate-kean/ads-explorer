@@ -547,17 +547,17 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT iColumn) {
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	/* [in, optional] */ PCUITEMID_CHILD pidl,
-	/* [in]           */ UINT iColumn,
+	/* [in]           */ UINT uColumn,
 	/* [out]          */ SHELLDETAILS *pDetails
 ) {
 	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::GetDetailsOf(iColumn=%d) pidl=[%s]\n"),
+		_T("CADSXRootShellFolder(0x%08x)::GetDetailsOf(uColumn=%d) pidl=[%s]\n"),
 		this,
-		iColumn,
+		uColumn,
 		PidlToString(pidl)
 	);
 
-	if (iColumn >= DETAILS_COLUMN_MAX) {
+	if (uColumn >= DETAILS_COLUMN_MAX) {
 		return E_FAIL;
 	}
 
@@ -575,7 +575,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 
 	// Okay, this time it's for a real item
 	auto Item = CADSXItem::Get(pidl);
-	switch (iColumn) {
+	switch (uColumn) {
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
 			pDetails->cxChar = (int) wcslen(Item->m_Name);
