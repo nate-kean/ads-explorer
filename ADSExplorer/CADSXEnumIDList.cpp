@@ -2,12 +2,50 @@
 
 #include "CADSXEnumIDList.h"
 
-#include <functional>
 #include <handleapi.h>
 #include <winnt.h>
 
 #include "CADSXItem.h"
 #include "PidlMgr.h"
+
+
+// Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
+// pushin p
+static bool PushPidl(
+	/* [in]     */ WIN32_FIND_STREAM_DATA *fsd,
+	/* [in/out] */ PITEMID_CHILD **ppelt,  // POINTER! to the destination array
+	                                       // cursor because we're going to
+	                                       // modify it (advance it)
+	/* [out]    */ ULONG *nActual
+) {
+	// Reusable item
+	static CADSXItem Item;
+
+	// Fill in the item
+	Item.m_Filesize = fsd->StreamSize.QuadPart;
+	Item.m_Name = fsd->cStreamName;
+
+	// Copy this item into a PIDL and put that into the output array
+	PITEMID_CHILD pidl = PidlMgr::Create(Item);
+	if (pidl == NULL) {
+		SetLastError(ERROR_OUTOFMEMORY);
+		return false;
+	}
+	**ppelt = pidl;
+
+	// Advance the enumerator
+	*ppelt += sizeof(PITEMID_CHILD);
+	++*nActual;
+	return true;
+}
+
+// Find one or more items with NextInternal and discard them.
+static bool NoOp(WIN32_FIND_STREAM_DATA *fsd, PITEMID_CHILD **ppelt, ULONG *nActual) {
+	UNREFERENCED_PARAMETER(fsd);
+	UNREFERENCED_PARAMETER(ppelt);
+	UNREFERENCED_PARAMETER(nActual);
+	return true;
+}
 
 
 CADSXEnumIDList::CADSXEnumIDList()
@@ -39,20 +77,15 @@ HRESULT CADSXEnumIDList::Next(
 	/* [out] */ ULONG *pceltFetched
 ) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Next(celt=%lu)\n"), this, celt);
-	static CADSXEnumIDList::FnConsume fnCbPushPidl = std::bind(
-		&CADSXEnumIDList::PushPidl,
-		this,
-		std::placeholders::_1, std::placeholders::_2
-	);
-	return NextInternal(fnCbPushPidl, celt, rgelt, pceltFetched);
+	return NextInternal(&PushPidl, celt, rgelt, pceltFetched);
 }
 
 
 HRESULT CADSXEnumIDList::NextInternal(
 	/* [in]  */ FnConsume fnConsume,   // callback on item found
-	/* [in]  */ ULONG celt,			   // number of pidls requested
+	/* [in]  */ ULONG celt,            // number of pidls requested
 	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
-	/* [out] */ ULONG *pceltFetched	   // actual number of pidls fetched
+	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
 		AtlTrace(_T("** Bad argument(s)\n"));
@@ -63,6 +96,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 		return S_OK;
 	}
 
+	static WIN32_FIND_STREAM_DATA fsd;
 	ULONG nActual = 0;
 	PITEMID_CHILD *pelt = rgelt;
 	bool bPushPidlSuccess;
@@ -71,7 +105,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	// FindFirstStream instead of FindNextStream.
 	// Call the callback on this first item.
 	if (m_hFinder == NULL) {
-		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &m_fsd, 0);
+		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &fsd, 0);
 		if (m_hFinder == INVALID_HANDLE_VALUE) {
 			m_hFinder = NULL;
 			switch (GetLastError()) {
@@ -93,7 +127,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 			AtlTrace(_T("** No streams found\n"));
 			return S_FALSE;
 		}
-		bPushPidlSuccess = fnConsume(&pelt, &nActual);
+		bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 		if (!bPushPidlSuccess) {
 			AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
 			return HRESULT_FROM_WIN32(GetLastError());
@@ -104,34 +138,33 @@ HRESULT CADSXEnumIDList::NextInternal(
 	// Each loop calls the callback on another stream.
 	bool bFindStreamStopped = false;
 	while (!bFindStreamStopped && nActual < celt) {
-		bFindStreamStopped = !FindNextStreamW(m_hFinder, &m_fsd);
+		bFindStreamStopped = !FindNextStreamW(m_hFinder, &fsd);
 		if (bFindStreamStopped) {
 			if (GetLastError() == ERROR_HANDLE_EOF) {
 				// Do nothing and let the loop end
 			} else {
-				// Stream has stopped expectedly
+				// Stream has stopped unexpectedly
 				AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		} else {
 			// Consume stream
-			bPushPidlSuccess = fnConsume(&pelt, &nActual);
+			bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 			if (!bPushPidlSuccess) {
 				AtlTrace(_T("** latery Eror! Er Erry Err! later\n"));
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
 	}
-	if (pceltFetched != NULL) {	 // Bookkeeping
+	if (pceltFetched != NULL) {  // Bookkeeping
 		*pceltFetched = nActual;
 	}
 	m_nTotalFetched += nActual;
-	if (nActual == celt) {
-		return S_OK;
-	} else {
+	if (nActual < celt) {
 		AtlTrace(_T("** Ran out\n"));
 		return S_FALSE;
 	}
+	return S_OK;
 }
 
 
@@ -146,22 +179,12 @@ HRESULT CADSXEnumIDList::Reset() {
 	return S_OK;
 }
 
-// Find one or more items with NextInternal and discard them.
-static bool NoOp(PITEMID_CHILD **ppelt, ULONG *nActual) {
-	UNREFERENCED_PARAMETER(ppelt);
-	UNREFERENCED_PARAMETER(nActual);
-	return true;
-}
+
 HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Skip(celt=%lu)\n"), this, celt);
 	ULONG pceltFetchedFake = 0;
-	PITEMID_CHILD rgeltFake[1];
-
-	static CADSXEnumIDList::FnConsume fnCbNoOp = std::bind(
-		&NoOp,
-		std::placeholders::_1, std::placeholders::_2
-	);
-	return NextInternal(fnCbNoOp, celt, rgeltFake, &pceltFetchedFake);
+	PITEMID_CHILD *rgeltFake;
+	return NextInternal(&NoOp, celt, rgeltFake, &pceltFetchedFake);
 }
 
 
@@ -172,44 +195,13 @@ HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
 	CComObject<CADSXEnumIDList> *pNewEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pNewEnum);
 	if (FAILED(hr)) return hr;
-
 	pNewEnum->Init(m_pUnkOwner, m_pszPath);
 	
-	// Unforuntately I don't see any more an efficient way to do this with
+	// Unfortunately I don't see any more an efficient way to do this with
 	// the Find Stream API :(
 	pNewEnum->Skip(m_nTotalFetched);
 
 	hr = pNewEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnum);
 	if (FAILED(hr)) return hr;
 	return S_OK;
-}
-
-
-// Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
-// pushin p
-bool CADSXEnumIDList::PushPidl(
-	/* [in/out] */ PITEMID_CHILD **ppelt,  // POINTER! to the destination array
-	                                       // cursor because we're going to
-	                                       // modify it (advance it)
-	/* [out]    */ ULONG *nActual
-) const {
-	// Reusable item
-	static CADSXItem Item;
-
-	// Fill in the item
-	Item.m_Filesize = m_fsd.StreamSize.QuadPart;
-	Item.m_Name = m_fsd.cStreamName;
-
-	// Copy this item into a PIDL and put that into the output array
-	PITEMID_CHILD pidl = PidlMgr::Create(Item);
-	if (pidl == NULL) {
-		SetLastError(ERROR_OUTOFMEMORY);
-		return false;
-	}
-	**ppelt = pidl;
-
-	// Advance the enumerator
-	*ppelt += sizeof(PITEMID_CHILD);
-	++*nActual;
-	return true;
 }
