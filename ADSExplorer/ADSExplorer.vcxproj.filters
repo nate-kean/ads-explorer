@@ -39,9 +39,6 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="wtlstr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="defer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

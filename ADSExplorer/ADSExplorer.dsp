@@ -153,10 +153,7 @@ SOURCE=.\stdafx.h
 
 SOURCE=.\targetver.h
 # End Source File
-# Begin Source File
 
-SOURCE=.\wtlstr.h
-# End Source File
 # End Group
 # Begin Group "Resource Files"
 

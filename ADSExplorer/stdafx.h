@@ -64,7 +64,6 @@ extern CComModule _Module;
 #include <atlcom.h>
 #include <atlwin.h>
 
-#include "wtlstr.h"
 #if defined(ADSX_PKEYS_SUPPORT) && VER_PRODUCTBUILD >= 6000
 // These are probably supportable on 2600 in some obscure WDS SDK
 #include <propkey.h>

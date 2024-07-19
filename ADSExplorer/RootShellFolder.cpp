@@ -40,6 +40,7 @@
 
 #include <atlcore.h>
 #include <winnt.h>
+#include <atlstr.h>
 
 #include "CADSXEnumIDList.h"
 #include "CADSXItem.h"
