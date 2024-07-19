@@ -25,12 +25,6 @@
 
 #include "stdafx.h"  // MUST be included first
 
-#include <Shlwapi.h>
-#include <objidl.h>
-#include <shlobj_core.h>
-#include <shobjidl_core.h>
-#include <shtypes.h>
-
 #if _MSC_VER > 1200
 	#include "ADSExplorer_h.h"
 #else
@@ -38,8 +32,6 @@
 	#include "ADSExplorer.h"
 #endif
 
-#include <atlcore.h>
-#include <winnt.h>
 #include <atlstr.h>
 
 #include "CADSXEnumIDList.h"
