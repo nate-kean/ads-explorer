@@ -13,9 +13,11 @@
 // pushin p
 static bool PushPidl(
 	/* [in]     */ WIN32_FIND_STREAM_DATA *fsd,
-	/* [in/out] */ PITEMID_CHILD **ppelt,  // POINTER! to the destination array
-	                                       // cursor because we're going to
-	                                       // modify it (advance it)
+	// POINTER! to the destination array cursor because we're going to
+	// modify it (advance it).
+	// Fun Fact: This is a pointer to an array of pointers to ITEMID_CHILDren.
+	// A real triple pointer. How awful is that? :)
+	/* [in/out] */ PITEMID_CHILD **ppelt,
 	/* [out]    */ ULONG *nActual
 ) {
 	// Reusable item
