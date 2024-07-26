@@ -183,7 +183,7 @@ HRESULT CADSXEnumIDList::Reset() {
 HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 	AtlTrace(_T("CADSXEnumIDList(0x%08x)::Skip(celt=%lu)\n"), this, celt);
 	ULONG pceltFetchedFake = 0;
-	PITEMID_CHILD *rgeltFake;
+	PITEMID_CHILD *rgeltFake = NULL;
 	return NextInternal(&NoOp, celt, rgeltFake, &pceltFetchedFake);
 }
 
