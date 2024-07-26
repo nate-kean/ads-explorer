@@ -74,10 +74,58 @@
 		return str;
 	}
 
-	#define DUMPIID(iid) AtlDumpIID(iid, NULL, S_OK)
+	// An undocumented debug function that outputs the name of an interface
+	// given its IID. Has since disappeared from the Win32 API, but this project
+	// found it useful. Dug it back up from the NT5 source code.
+	// https://github.com/tongzx/nt5src/blob/daad8a087a4e75422ec96b7911f1df4669989611/Source/XPSP1/NT/net/mmc/mprsnap/atlimpl.cpp#L750
+	void WINAPI AtlDumpIID(REFIID iid) {
+		USES_CONVERSION;
+		CRegKey key;
+		TCHAR szName[100];
+		DWORD dwType,dw = sizeof(szName);
+
+		LPOLESTR pszGUID = NULL;
+		StringFromCLSID(iid, &pszGUID);
+
+		// Attempt to find it in the interfaces section
+		key.Open(HKEY_CLASSES_ROOT, _T("Interface"));
+		if (key.Open(key, OLE2T(pszGUID)) == S_OK) {
+			*szName = 0;
+			RegQueryValueEx(
+				key.m_hKey,
+				(LPTSTR) NULL,
+				NULL,
+				&dwType,
+				(LPBYTE) szName,
+				&dw
+			);
+			OutputDebugString(szName);
+			goto cleanup;
+		}
+		// Attempt to find it in the clsid section
+		key.Open(HKEY_CLASSES_ROOT, _T("CLSID"));
+		if (key.Open(key, OLE2T(pszGUID)) == S_OK) {
+			*szName = 0;
+			RegQueryValueEx(
+				key.m_hKey,
+				(LPTSTR) NULL,
+				NULL,
+				&dwType,
+				(LPBYTE) szName,
+				&dw
+			);
+			OutputDebugString(_T("(CLSID\?\?\?) "));
+			OutputDebugString(szName);
+			goto cleanup;
+		}
+		OutputDebugString(OLE2T(pszGUID));
+	cleanup:
+		OutputDebugString(_T("\n"));
+		CoTaskMemFree(pszGUID);
+	}
 #else
 	#define PidlToString
-	#define DUMPIID
+	#define AtlDumpIID
 #endif
 
 
@@ -125,6 +173,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 		this,
 		PidlToString(pidl)
 	);
+	(void) AtlDumpIID(riid);
 
 	// If the passed pidl is not ours, fail.
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
@@ -190,7 +239,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	/* [out] */ void **ppvOut
 ) {
 	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
-	// DUMPIID(riid);
+	(void) AtlDumpIID(riid);
 
 	HRESULT hr;
 
@@ -372,7 +421,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 				cidl
 			);
 		}
-		// DUMPIID(riid);
+		(void) AtlDumpIID(riid);
 	#endif
 
 	HRESULT hr;
