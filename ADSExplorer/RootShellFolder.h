@@ -72,7 +72,6 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 		COM_INTERFACE_ENTRY_IID(IID_IShellDetails, IShellDetails)
 	END_COM_MAP()
 
-   public:
 	//--------------------------------------------------------------------------
 	// IPersist
 	STDMETHOD(GetClassID)(CLSID*);
@@ -97,7 +96,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// IShellDetails
-	STDMETHOD(ColumnClick)(UINT iColumn);
+	STDMETHOD(ColumnClick)(UINT);
 	STDMETHOD(GetDetailsOf)	(PCUITEMID_CHILD, UINT, SHELLDETAILS*);
 
 	//--------------------------------------------------------------------------

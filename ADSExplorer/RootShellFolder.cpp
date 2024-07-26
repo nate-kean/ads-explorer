@@ -232,7 +232,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, /*-1,0,1*/ Result);
 }
 
-// CreateViewObject() creates a new COM object that implements IShellView.
+// Create a new COM object that implements IShellView.
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	/* [in]  */ HWND hwndOwner,
 	/* [in]  */ REFIID riid,
@@ -243,10 +243,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 	HRESULT hr;
 
-	if (ppvOut == NULL) {
-		return E_POINTER;
-	}
-
+	if (ppvOut == NULL) return E_POINTER;
 	*ppvOut = NULL;
 
 	// We handle only the IShellView
@@ -256,14 +253,12 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		// Create a view object
 		CComObject<COWRootShellView> *pViewObject;
 		hr = CComObject<COWRootShellView>::CreateInstance(&pViewObject);
-		if (FAILED(hr)) {
-			return hr;
-		}
+		if (FAILED(hr)) return hr;
 
 		// AddRef the object while we are using it
 		pViewObject->AddRef();
 
-		// Tight the view object lifetime with the current IShellFolder.
+		// Tie the view object lifetime with the current IShellFolder.
 		pViewObject->Init(this->GetUnknown());
 
 		// Create the view
@@ -271,7 +266,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 			(IShellView **) ppvOut, hwndOwner, (IShellFolder *) this
 		);
 
-		// We are finished with our own use of the view object (AddRef()'ed
+		// We are finished with our own use of the view object (AddRef()'d
 		// above by us, AddRef()'ed by Create)
 		pViewObject->Release();
 

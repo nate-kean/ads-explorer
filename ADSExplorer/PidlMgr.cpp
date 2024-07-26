@@ -5,6 +5,7 @@
 
 
 // Returned object should be freed with CoTaskMemFree
+// Data is COPIED into the PIDL
 PITEMID_CHILD PidlMgr::Create(const IPidlData &Data) {
 	UINT cbSizeItem = sizeof(SHITEMID) - sizeof(BYTE) + Data.GetSize();
 	UINT cbSizeItemList = cbSizeItem + sizeof(SHITEMID);
