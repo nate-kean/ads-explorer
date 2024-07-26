@@ -71,19 +71,19 @@
 	}
 
 
-class COWRootShellView : public CShellFolderViewImpl {
 // This class does very little but trace the messages.
 // You can add message handlers like the SFVM_COLUMNCLICK.
+class CADSXRootShellView : public CShellFolderViewImpl {
    public:
-	COWRootShellView() {
-		AtlTrace("COWRootShellView(%08x) CONSTRUCTOR\n", this);
+	CADSXRootShellView() {
+		AtlTrace("CADSXRootShellView(%08x) CONSTRUCTOR\n", this);
 	}
 
-	~COWRootShellView() {
-		AtlTrace("COWRootShellView(%08x) DESTRUCTOR\n", this);
+	~CADSXRootShellView() {
+		AtlTrace("CADSXRootShellView(%08x) DESTRUCTOR\n", this);
 	}
 
-	// If called, the passed object will be held (AddRef()'ed) until the View
+	// If called, the passed object will be held (AddRef()'d) until the View
 	// gets deleted.
 	void Init(IUnknown *pUnkOwner = NULL) { m_UnkOwnerPtr = pUnkOwner; }
 
@@ -151,7 +151,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		AtlTrace("COWRootShellView(%08x)::OnDefViewMode()\n", this);
+		AtlTrace("CADSXRootShellView(%08x)::OnDefViewMode()\n", this);
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
 			DWORD ver, maj, min;
@@ -169,7 +169,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
 		AtlTrace(
-			"COWRootShellView(%08x)::OnColumnClick(iColumn=%d)\n", this, wParam
+			"CADSXRootShellView(%08x)::OnColumnClick(iColumn=%d)\n", this, wParam
 		);
 
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
@@ -186,7 +186,7 @@ class COWRootShellView : public CShellFolderViewImpl {
 		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
 
 		AtlTrace(
-			"COWRootShellView(%08x)::OnGetDetailsOf(iColumn=%d)\n",
+			"CADSXRootShellView(%08x)::OnGetDetailsOf(iColumn=%d)\n",
 			this,
 			iColumn
 		);

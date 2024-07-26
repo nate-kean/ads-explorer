@@ -251,8 +251,8 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		AtlTrace(_T(" ** CreateViewObject for IShellView\n"));
 
 		// Create a view object
-		CComObject<COWRootShellView> *pViewObject;
-		hr = CComObject<COWRootShellView>::CreateInstance(&pViewObject);
+		CComObject<CADSXRootShellView> *pViewObject;
+		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
 		if (FAILED(hr)) return hr;
 
 		// AddRef the object while we are using it
