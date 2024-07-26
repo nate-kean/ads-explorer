@@ -84,11 +84,14 @@ class CShellFolderViewImpl : public CMessageMap,
 							 public CComObjectRoot,
 							 public IShellFolderViewCB {
    public:
+	BEGIN_COM_MAP(CShellFolderViewImpl)
+		COM_INTERFACE_ENTRY_IID(IID_IShellFolderViewCB, IShellFolderViewCB)
+	END_COM_MAP()
 	// This really creates the view.
-	// ppISV		will receive the interface pointer to the view (that one should be
-	// returned from IShellFolder::CreateViewObject) hwndOwner	The window
-	// handle of the parent to the new shell view pISF			The IShellFolder
-	// related to the view
+	// ppISV - will receive the interface pointer to the view (that one should be
+	// returned from IShellFolder::CreateViewObject)
+	// hwndOwner - The window handle of the parent to the new shell view
+	// pISF - The IShellFolder related to the view
 	HRESULT Create(
 		IShellView **ppISV,
 		HWND hwndOwner,
@@ -96,14 +99,13 @@ class CShellFolderViewImpl : public CMessageMap,
 		IShellView *psvOuter = NULL
 	) {
 		m_hwndOwner = hwndOwner;
+		m_pISF = pISF;
 
 		SFV_CREATE sfv;
-		sfv.cbSize = sizeof(sfv);
-		sfv.pshf = pISF;
+		sfv.cbSize = sizeof(SFV_CREATE);
+		sfv.pshf = m_pISF;
 		sfv.psvOuter = psvOuter;
-		sfv.psfvcb = (IShellFolderViewCB *) this;
-
-		m_pISF = pISF;
+		sfv.psfvcb = static_cast<IShellFolderViewCB *>(this);
 
 		return SHCreateShellFolderView(&sfv, ppISV);
 	}
@@ -112,12 +114,6 @@ class CShellFolderViewImpl : public CMessageMap,
 	LRESULT SendFolderViewMessage(UINT uMsg, LPARAM lParam) {
 		return SHShellFolderView_Message(m_hwndOwner, uMsg, lParam);
 	}
-
-   public:
-	// Implementation
-	BEGIN_COM_MAP(CShellFolderViewImpl)
-	COM_INTERFACE_ENTRY_IID(IID_IShellFolderViewCB, IShellFolderViewCB)
-	END_COM_MAP()
 
 	STDMETHODIMP MessageSFVCB(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		LRESULT lResult;
@@ -128,10 +124,10 @@ class CShellFolderViewImpl : public CMessageMap,
 
    protected:
 	HWND m_hwndOwner;
-	IShellFolder
-		*m_pISF;  // This one is not ref-counted. This object should be garanted
-				  // to live until the view is destroyed. So the lifetime is
-				  // handled by SHCreateShellFolderView()
+	// This one is not ref-counted. This object should be guaranteed to live
+	// until the view is destroyed. So the lifetime is handled by
+	// SHCreateShellFolderView().
+	IShellFolder *m_pISF;
 };
 
 //==============================================================================
