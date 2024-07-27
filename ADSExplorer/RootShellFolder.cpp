@@ -124,8 +124,8 @@
 	}
 	
 #else
-	#define PidlToString
-	#define AtlDumpIID
+	#define PidlToString(...) (void) 0
+	#define AtlDumpIID(...) (void) 0
 #endif
 
 
