@@ -86,11 +86,13 @@
 
 		LPOLESTR pszGUID = NULL;
 		StringFromCLSID(iid, &pszGUID);
+		defer({ CoTaskMemFree(pszGUID); });
+		defer({ OutputDebugString(_T("\n")); });
 
 		// Attempt to find it in the interfaces section
 		key.Open(HKEY_CLASSES_ROOT, _T("Interface"));
-		if (key.Open(key, OLE2T(pszGUID)) == S_OK) {
-			*szName = 0;
+		if (key.Open(key, OLE2T(pszGUID)) == ERROR_SUCCESS) {
+			szName[0] = '\0';
 			RegQueryValueEx(
 				key.m_hKey,
 				(LPTSTR) NULL,
@@ -100,12 +102,12 @@
 				&dw
 			);
 			OutputDebugString(szName);
-			goto cleanup;
+			return;
 		}
 		// Attempt to find it in the clsid section
 		key.Open(HKEY_CLASSES_ROOT, _T("CLSID"));
-		if (key.Open(key, OLE2T(pszGUID)) == S_OK) {
-			*szName = 0;
+		if (key.Open(key, OLE2T(pszGUID)) == ERROR_SUCCESS) {
+			szName[0] = '\0';
 			RegQueryValueEx(
 				key.m_hKey,
 				(LPTSTR) NULL,
@@ -116,13 +118,11 @@
 			);
 			OutputDebugString(_T("(CLSID\?\?\?) "));
 			OutputDebugString(szName);
-			goto cleanup;
+			return;
 		}
 		OutputDebugString(OLE2T(pszGUID));
-	cleanup:
-		OutputDebugString(_T("\n"));
-		CoTaskMemFree(pszGUID);
 	}
+	
 #else
 	#define PidlToString
 	#define AtlDumpIID
