@@ -56,11 +56,11 @@
 #define BEGIN_TRACE_MSG_NAME() switch (uMsg) {
 #define TRACE_MSG_NAME(name)                                \
 	case name:                                                  \
-		AtlTrace("CADSXRootShellView(%08x) %s\n", this, #name); \
+		DebugPrint("CADSXRootShellView(%08x) %s\n", this, #name); \
 		break;
 #define END_TRACE_MSG_NAME()                                      \
 	default:                                                      \
-		AtlTrace(                                                 \
+		DebugPrint(                                                 \
 			"CADSXRootShellView(%08x) Msg: %2d:%2x w=%d, l=%d\n", \
 			this,                                                 \
 			uMsg,                                                 \
@@ -76,11 +76,11 @@
 class CADSXRootShellView : public CShellFolderViewImpl {
    public:
 	CADSXRootShellView() {
-		AtlTrace("CADSXRootShellView(%08x) CONSTRUCTOR\n", this);
+		DebugPrint("CADSXRootShellView(%08x) CONSTRUCTOR\n", this);
 	}
 
 	~CADSXRootShellView() {
-		AtlTrace("CADSXRootShellView(%08x) DESTRUCTOR\n", this);
+		DebugPrint("CADSXRootShellView(%08x) DESTRUCTOR\n", this);
 	}
 
 	// If called, the passed object will be held (AddRef()'d) until the View
@@ -151,7 +151,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		AtlTrace("CADSXRootShellView(%08x)::OnDefViewMode()\n", this);
+		DebugPrint("CADSXRootShellView(%08x)::OnDefViewMode()\n", this);
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
 			DWORD ver, maj, min;
@@ -168,7 +168,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// When a user clicks on a column header in details mode
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		AtlTrace(
+		DebugPrint(
 			"CADSXRootShellView(%08x)::OnColumnClick(iColumn=%d)\n", this, wParam
 		);
 
@@ -185,7 +185,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		int iColumn = (int) wParam;
 		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
 
-		AtlTrace(
+		DebugPrint(
 			"CADSXRootShellView(%08x)::OnGetDetailsOf(iColumn=%d)\n",
 			this,
 			iColumn

@@ -141,8 +141,8 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n",
 		this,
 		PidlToString(pidl)
 	);
@@ -151,7 +151,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
-	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n"), this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n", this);
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = ILCloneFull(m_pidlRoot);
 	return S_OK;
@@ -168,12 +168,12 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	/* [in]  */ REFIID riid,
 	/* [out] */ void **ppvOut
 ) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n ** ",
 		this,
 		PidlToString(pidl)
 	);
-	(void) AtlDumpIID(riid);
+	AtlDumpIID(riid);
 
 	// If the passed pidl is not ours, fail.
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
@@ -189,9 +189,9 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	/* [in] */ PCUIDLIST_RELATIVE pidl1,
 	/* [in] */ PCUIDLIST_RELATIVE pidl2
 ) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], ")
-		_T("pidl2=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], "
+		"pidl2=[%s]\n",
 		this,
 		lParam,
 		PidlToString(pidl1),
@@ -238,8 +238,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	/* [in]  */ REFIID riid,
 	/* [out] */ void **ppvOut
 ) {
-	AtlTrace(_T("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n"), this);
-	(void) AtlDumpIID(riid);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n", this);
 
 	HRESULT hr;
 
@@ -248,7 +247,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
-		AtlTrace(_T(" ** CreateViewObject for IShellView\n"));
+		DebugPrint(" ** CreateViewObject for IShellView\n");
 
 		// Create a view object
 		CComObject<CADSXRootShellView> *pViewObject;
@@ -283,10 +282,12 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		 {0x94, 0xDD, 0xAA, 0x25, 0x8A, 0x15, 0x54, 0x70}};
 
 	if (riid != unknownVistaGuid) {
+		DebugPrint(" ** ");
+		AtlDumpIID(riid);
 		LPOLESTR unkIid;
 		StringFromIID(riid, &unkIid);
 		defer({ CoTaskMemFree(unkIid); });
-		AtlTrace(_T(" ** CreateViewObject is unknown: %s\n"), unkIid);
+		DebugPrint(" ** CreateViewObject is unknown: %s\n", unkIid);
 	}
 #endif
 
@@ -300,7 +301,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	/* [in]  */ SHCONTF dwFlags,
 	/* [out] */ IEnumIDList **ppEnumIDList
 ) {
-	AtlTrace(
+	DebugPrint(
 		"CADSXRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
 		this,
 		dwFlags
@@ -322,7 +323,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_bstr_t bstrPath =
 		"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
 		"ADS Explorer\\Test\\Files\\3streams.txt";
-	AtlTrace(_T(" ** EnumObjects: Path=%s\n"), bstrPath.GetBSTR());
+	DebugPrint(" ** EnumObjects: Path=%s\n", bstrPath.GetBSTR());
 	pEnum->Init(this->GetUnknown(), bstrPath.Detach());
 
 	// Return an IEnumIDList interface to the caller.
@@ -339,15 +340,15 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 ) {
 	#ifdef _DEBUG
 		if (cidl >= 1) {
-			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d) ")
-				_T("pidl=[%s]\n"),
+			DebugPrint(
+				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d) "
+				"pidl=[%s]\n",
 				this,
 				cidl,
 				PidlToString(aPidls[0])
 			);
 		} else {
-			AtlTrace(
+			DebugPrint(
 				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d)\n",
 				this,
 				cidl
@@ -402,21 +403,21 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 ) {
 	#ifdef _DEBUG
 		if (cidl >= 1) {
-			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d) ")
-				_T("pidl=[%s]\n"),
+			DebugPrint(
+				"CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d) "
+				"pidl=[%s]\n ** ",
 				this,
 				cidl,
 				PidlToString(aPidls[0])
 			);
 		} else {
-			AtlTrace(
-				_T("CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d)\n"),
+			DebugPrint(
+				"CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d)\n ** ",
 				this,
 				cidl
 			);
 		}
-		(void) AtlDumpIID(riid);
+		AtlDumpIID(riid);
 	#endif
 
 	HRESULT hr;
@@ -485,7 +486,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 STDMETHODIMP
 CADSXRootShellFolder::BindToStorage(PCUIDLIST_RELATIVE, IBindCtx *, REFIID, void **) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::BindToStorage()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::BindToStorage()\n", this);
 	return E_NOTIMPL;
 }
 
@@ -494,9 +495,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	SHGDNF uFlags,
 	STRRET *pName
 ) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) ")
-		_T("pidl=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) "
+		"pidl=[%s]\n",
 		this,
 		uFlags,
 		PidlToString(pidl)
@@ -550,13 +551,13 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	/* [out]     */ PIDLIST_RELATIVE *ppidl,
 	/* [in, out] */ ULONG *pfAttributes
 ) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
 	return E_NOTIMPL;
 }
 
 // TODO(garlic-os): should this be implemented?
 STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHGDNF, PITEMID_CHILD *) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::SetNameOf()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::SetNameOf()\n", this);
 	return E_NOTIMPL;
 }
 
@@ -564,7 +565,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHG
 // IShellDetails
 
 STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT iColumn) {
-	AtlTrace(
+	DebugPrint(
 		"CADSXRootShellFolder(0x%08x)::ColumnClick(iColumn=%d)\n", this, iColumn
 	);
 
@@ -577,8 +578,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	/* [in]           */ UINT uColumn,
 	/* [out]          */ SHELLDETAILS *pDetails
 ) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::GetDetailsOf(uColumn=%d) pidl=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::GetDetailsOf(uColumn=%d) pidl=[%s]\n",
 		this,
 		uColumn,
 		PidlToString(pidl)
@@ -627,7 +628,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 // IShellFolder2
 
 STDMETHODIMP CADSXRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::EnumSearches()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::EnumSearches()\n", this);
 	return E_NOTIMPL;
 }
 
@@ -636,7 +637,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 	ULONG *pSort,
 	ULONG *pDisplay
 ) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::GetDefaultColumn()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::GetDefaultColumn()\n", this);
 
 	if (!pSort || !pDisplay) {
 		return E_POINTER;
@@ -650,7 +651,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 
 STDMETHODIMP
 CADSXRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
-	AtlTrace(
+	DebugPrint(
 		"CADSXRootShellFolder(0x%08x)::GetDefaultColumnState(iColumn=%d)\n",
 		this,
 		iColumn
@@ -679,7 +680,7 @@ CADSXRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags)
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
-	AtlTrace("CADSXRootShellFolder(0x%08x)::GetDefaultSearchGUID()\n", this);
+	DebugPrint("CADSXRootShellFolder(0x%08x)::GetDefaultSearchGUID()\n", this);
 	return E_NOTIMPL;
 }
 
@@ -688,9 +689,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 	const SHCOLUMNID *pscid,
 	VARIANT *pv
 ) {
-	AtlTrace(
-		_T("CADSXRootShellFolder(0x%08x)::GetDetailsEx(pscid->pid=%d) ")
-		_T("pidl=[%s]\n"),
+	DebugPrint(
+		"CADSXRootShellFolder(0x%08x)::GetDetailsEx(pscid->pid=%d) "
+		"pidl=[%s]\n",
 		this,
 		pscid->pid,
 		PidlToString(pidl)
@@ -703,46 +704,46 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 		* only available on XP SP2+ on, so it won't harm 9x.
 		*/
 		if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
-			AtlTrace(_T(" ** GetDetailsEx: PKEY_PropList_TileInfo\n"));
+			DebugPrint(" ** GetDetailsEx: PKEY_PropList_TileInfo\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
-			AtlTrace(_T(" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo\n"));
+			DebugPrint(" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
-			AtlTrace(_T(" ** GetDetailsEx: PKEY_PropList_PreviewDetails\n"));
+			DebugPrint(" ** GetDetailsEx: PKEY_PropList_PreviewDetails\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
-			AtlTrace(_T(" ** GetDetailsEx: PKEY_PropList_FullDetails\n"));
+			DebugPrint(" ** GetDetailsEx: PKEY_PropList_FullDetails\n");
 			return SUCCEEDED(InitVariantFromString(
 				L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv
 			));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
-			AtlTrace(_T(" ** GetDetailsEx: PKEY_ItemType\n"));
+			DebugPrint(" ** GetDetailsEx: PKEY_ItemType\n");
 			return SUCCEEDED(InitVariantFromString(L"Directory", pv));
 		}
 	#endif
 
-	AtlTrace(_T(" ** GetDetailsEx: Not implemented\n"));
+	DebugPrint(" ** GetDetailsEx: Not implemented\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP
-CADSXRootShellFolder::MapColumnToSCID(UINT iColumn, SHCOLUMNID *pscid) {
-	AtlTrace(
+CADSXRootShellFolder::MapColumnToSCID(UINT uColumn, SHCOLUMNID *pscid) {
+	DebugPrint(
 		"CADSXRootShellFolder(0x%08x)::MapColumnToSCID(iColumn=%d)\n",
 		this,
-		iColumn
+		uColumn
 	);
 	#if defined(ADSX_PKEYS_SUPPORT)
 		// This will map the columns to some built-in properties on Vista.
 		// It's needed for the tile subtitles to display properly.
-		switch (iColumn) {
+		switch (uColumn) {
 			case DETAILS_COLUMN_NAME:
 				*pscid = PKEY_ItemNameDisplay;
 				return S_OK;

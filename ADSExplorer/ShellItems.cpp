@@ -126,7 +126,7 @@ void CDataObject::Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITE
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
-	AtlTrace("CDataObject::GetData()\n");
+	DebugPrint("CDataObject::GetData()\n");
 	if (pFE->cfFormat != m_cfShellIDList) return E_INVALIDARG;
 
 	pStgMedium->hGlobal = CreateShellIDList(m_pidlParent, m_pidl);
@@ -140,63 +140,63 @@ STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC, LPSTGMEDIUM) {
-	AtlTrace("CDataObject::GetDataHere()\n");
+	DebugPrint("CDataObject::GetDataHere()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC) {
-	AtlTrace("CDataObject::QueryGetData()\n");
+	DebugPrint("CDataObject::QueryGetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC, LPFORMATETC) {
-	AtlTrace("CDataObject::GetCanonicalFormatEtc()\n");
+	DebugPrint("CDataObject::GetCanonicalFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::SetData(LPFORMATETC, LPSTGMEDIUM, BOOL) {
-	AtlTrace("CDataObject::SetData()\n");
+	DebugPrint("CDataObject::SetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC **) {
-	AtlTrace("CDataObject::EnumFormatEtc()\n");
+	DebugPrint("CDataObject::EnumFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD) {
-	AtlTrace("CDataObject::DAdvise()\n");
+	DebugPrint("CDataObject::DAdvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
-	AtlTrace("CDataObject::DUnadvise()\n");
+	DebugPrint("CDataObject::DUnadvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
-	AtlTrace("CDataObject::EnumDAdvise()\n");
+	DebugPrint("CDataObject::EnumDAdvise()\n");
 	return E_NOTIMPL;
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
-	AtlTrace("CDataObject::Next()\n");
+	DebugPrint("CDataObject::Next()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Skip(ULONG) {
-	AtlTrace("CDataObject::Skip()\n");
+	DebugPrint("CDataObject::Skip()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Reset() {
-	AtlTrace("CDataObject::Reset()\n");
+	DebugPrint("CDataObject::Reset()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
-	AtlTrace("CDataObject::Clone()\n");
+	DebugPrint("CDataObject::Clone()\n");
 	return E_NOTIMPL;
 }
