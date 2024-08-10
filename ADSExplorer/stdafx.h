@@ -67,14 +67,6 @@ extern CComModule _Module;
 	#define _UNICODE
 #endif
 
-
-#ifdef _DEBUG
-	#define DebugPrint(msg, ...) \
-		ATLTRACE2(atlTraceCOM, 0, _T(msg), __VA_ARGS__)
-#else
-	#define DebugPrint(...) (void) 0
-#endif
-
 #if defined(ADSX_PKEYS_SUPPORT) && VER_PRODUCTBUILD >= 6000
 // These are probably supportable on 2600 in some obscure WDS SDK
 #include <propkey.h>

@@ -33,11 +33,14 @@
 #endif
 
 #include <atlstr.h>
+#include <comutil.h>
 
 #include "CADSXEnumIDList.h"
 #include "CADSXItem.h"
+#include "DebugPrint.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
+#include "ShellItems.h"
 #include "defer.h"
 
 //==============================================================================
@@ -45,13 +48,13 @@
 // #define _DEBUG
 
 #ifdef _DEBUG
-	LPWSTR CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
-		_bstr_t str = "";
-
+	#include "iids.h"
+	LPCWSTR CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
+		static _bstr_t str;
+		str = "";
 		if (pidl == NULL) {
 			return str + "<null>";
 		}
-
 		bool first = true;
 		for (; !ILIsEmpty(pidl); pidl = ILNext(pidl)) {
 			if (!first) {
@@ -71,61 +74,38 @@
 			}
 			first = false;
 		}
-		return str;
+		return str.GetBSTR();
 	}
 
-	// An undocumented debug function that outputs the name of an interface
-	// given its IID. Has since disappeared from the Win32 API, but this project
-	// found it useful. Dug it back up from the NT5 source code.
-	// https://github.com/tongzx/nt5src/blob/daad8a087a4e75422ec96b7911f1df4669989611/Source/XPSP1/NT/net/mmc/mprsnap/atlimpl.cpp#L750
-	void WINAPI AtlDumpIID(REFIID iid) {
-		USES_CONVERSION;
-		CRegKey key;
-		TCHAR szName[100];
-		DWORD dwType,dw = sizeof(szName);
+	LPCWSTR CADSXRootShellFolder::PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const {
+		static _bstr_t str;
+		str = "[";
+		defer({ str += "]"; });
+		for (UINT i = 0; i < cidl; i++) {
+			str += PidlToString(aPidls[i]);
+			if (i < cidl - 1) {
+				str += ", ";
+			}
+		}
+		return str.GetBSTR();
+	}
 
-		LPOLESTR pszGUID = NULL;
-		StringFromCLSID(iid, &pszGUID);
+	static LPCWSTR IIDToString(const IID &iid) {
+		static LPOLESTR pszGUID = NULL;
+		HRESULT hr = StringFromCLSID(iid, &pszGUID);
+		if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
 		defer({ CoTaskMemFree(pszGUID); });
-		defer({ OutputDebugString(_T("\n")); });
-
-		// Attempt to find it in the interfaces section
-		key.Open(HKEY_CLASSES_ROOT, _T("Interface"));
-		if (key.Open(key, OLE2T(pszGUID)) == ERROR_SUCCESS) {
-			szName[0] = '\0';
-			RegQueryValueEx(
-				key.m_hKey,
-				(LPTSTR) NULL,
-				NULL,
-				&dwType,
-				(LPBYTE) szName,
-				&dw
-			);
-			OutputDebugString(szName);
-			return;
+		// Search as an interface
+		auto search = iids.find(pszGUID);
+		if (search != iids.end()) {
+			return search->second;
 		}
-		// Attempt to find it in the clsid section
-		key.Open(HKEY_CLASSES_ROOT, _T("CLSID"));
-		if (key.Open(key, OLE2T(pszGUID)) == ERROR_SUCCESS) {
-			szName[0] = '\0';
-			RegQueryValueEx(
-				key.m_hKey,
-				(LPTSTR) NULL,
-				NULL,
-				&dwType,
-				(LPBYTE) szName,
-				&dw
-			);
-			OutputDebugString(_T("(CLSID\?\?\?) "));
-			OutputDebugString(szName);
-			return;
-		}
-		OutputDebugString(OLE2T(pszGUID));
+		return pszGUID;
 	}
-	
 #else
 	#define PidlToString(...) (void) 0
-	#define AtlDumpIID(...) (void) 0
+	#define PidlArrayToString(...) (void) 0
+	#define IIDToString(...) (void) 0
 #endif
 
 
@@ -142,8 +122,8 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::Initialize() pidl=[%s]\n",
-		this,
+		L"CADSXRootShellFolder(0x%08zu)::Initialize() pidl=[%s]\n",
+		(size_t) this,
 		PidlToString(pidl)
 	);
 	m_pidlRoot = ILCloneFull(pidl);
@@ -151,7 +131,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::GetCurFolder()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::GetCurFolder()\n", (size_t) this);
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = ILCloneFull(m_pidlRoot);
 	return S_OK;
@@ -169,11 +149,11 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	/* [out] */ void **ppvOut
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::BindToObject() pidl=[%s]\n ** ",
-		this,
-		PidlToString(pidl)
+		L"CADSXRootShellFolder(0x%08zu)::BindToObject(pidl=[%s], riid=[%s])\n",
+		(size_t) this,
+		PidlToString(pidl),
+		IIDToString(riid)
 	);
-	AtlDumpIID(riid);
 
 	// If the passed pidl is not ours, fail.
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
@@ -190,10 +170,10 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	/* [in] */ PCUIDLIST_RELATIVE pidl2
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::CompareIDs(lParam=%d) pidl1=[%s], "
+		L"CADSXRootShellFolder(0x%08zu)::CompareIDs(lParam=%d) pidl1=[%s], "
 		"pidl2=[%s]\n",
-		this,
-		lParam,
+		(size_t) this,
+		(int) lParam,
 		PidlToString(pidl1),
 		PidlToString(pidl2)
 	);
@@ -238,7 +218,11 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	/* [in]  */ REFIID riid,
 	/* [out] */ void **ppvOut
 ) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::CreateViewObject()\n", this);
+	DebugPrint(
+		L"CADSXRootShellFolder(0x%08zu)::CreateViewObject(riid=[%s])\n",
+		(size_t) this,
+		IIDToString(riid)
+	);
 
 	HRESULT hr;
 
@@ -247,8 +231,6 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
-		DebugPrint(" ** CreateViewObject for IShellView\n");
-
 		// Create a view object
 		CComObject<CADSXRootShellView> *pViewObject;
 		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
@@ -272,25 +254,6 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		return hr;
 	}
 
-#if _DEBUG
-	// vista sludge that no one knows what it actually is
-	static const GUID
-		unknownVistaGuid =	// {93F81976-6A0D-42C3-94DD-AA258A155470}
-		{0x93F81976,
-		 0x6A0D,
-		 0x42C3,
-		 {0x94, 0xDD, 0xAA, 0x25, 0x8A, 0x15, 0x54, 0x70}};
-
-	if (riid != unknownVistaGuid) {
-		DebugPrint(" ** ");
-		AtlDumpIID(riid);
-		LPOLESTR unkIid;
-		StringFromIID(riid, &unkIid);
-		defer({ CoTaskMemFree(unkIid); });
-		DebugPrint(" ** CreateViewObject is unknown: %s\n", unkIid);
-	}
-#endif
-
 	// We do not handle other objects
 	return E_NOINTERFACE;
 }
@@ -302,8 +265,8 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	/* [out] */ IEnumIDList **ppEnumIDList
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::EnumObjects(dwFlags=0x%04x)\n",
-		this,
+		L"CADSXRootShellFolder(0x%08zu)::EnumObjects(dwFlags=0x%04x)\n",
+		(size_t) this,
 		dwFlags
 	);
 
@@ -323,7 +286,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_bstr_t bstrPath =
 		"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
 		"ADS Explorer\\Test\\Files\\3streams.txt";
-	DebugPrint(" ** EnumObjects: Path=%s\n", bstrPath.GetBSTR());
+	DebugPrint(L" ** EnumObjects: Path=%s\n", bstrPath.GetBSTR());
 	pEnum->Init(this->GetUnknown(), bstrPath.Detach());
 
 	// Return an IEnumIDList interface to the caller.
@@ -339,21 +302,11 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	/* [in, out] */ SFGAOF *pfAttribs
 ) {
 	#ifdef _DEBUG
-		if (cidl >= 1) {
-			DebugPrint(
-				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d) "
-				"pidl=[%s]\n",
-				this,
-				cidl,
-				PidlToString(aPidls[0])
-			);
-		} else {
-			DebugPrint(
-				"CADSXRootShellFolder(0x%08x)::GetAttributesOf(cidl=%d)\n",
-				this,
-				cidl
-			);
-		}
+		DebugPrint(
+			L"CADSXRootShellFolder(0x%08zu)::GetAttributesOf(pidls=[%s])\n",
+			(size_t) this,
+			PidlArrayToString(cidl, aPidls)
+		);
 	#endif
 
 	// We limit the tree by indicating that the favorites folder does not
@@ -402,22 +355,13 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	void **ppvOut
 ) {
 	#ifdef _DEBUG
-		if (cidl >= 1) {
-			DebugPrint(
-				"CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d) "
-				"pidl=[%s]\n ** ",
-				this,
-				cidl,
-				PidlToString(aPidls[0])
-			);
-		} else {
-			DebugPrint(
-				"CADSXRootShellFolder(0x%08x)::GetUIObjectOf(cidl=%d)\n ** ",
-				this,
-				cidl
-			);
-		}
-		AtlDumpIID(riid);
+		DebugPrint(
+			L"CADSXRootShellFolder(0x%08zu)::GetUIObjectOf(pidls=[%s], riid=[%s])"
+			"\n",
+			(size_t) this,
+			PidlArrayToString(cidl, aPidls),
+			IIDToString(riid)
+		);
 	#endif
 
 	HRESULT hr;
@@ -486,7 +430,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 STDMETHODIMP
 CADSXRootShellFolder::BindToStorage(PCUIDLIST_RELATIVE, IBindCtx *, REFIID, void **) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::BindToStorage()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::BindToStorage()\n", (size_t) this);
 	return E_NOTIMPL;
 }
 
@@ -496,9 +440,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	STRRET *pName
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::GetDisplayNameOf(uFlags=0x%04x) "
+		L"CADSXRootShellFolder(0x%08zu)::GetDisplayNameOf(uFlags=0x%04x) "
 		"pidl=[%s]\n",
-		this,
+		(size_t) this,
 		uFlags,
 		PidlToString(pidl)
 	);
@@ -551,13 +495,13 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	/* [out]     */ PIDLIST_RELATIVE *ppidl,
 	/* [in, out] */ ULONG *pfAttributes
 ) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::ParseDisplayName()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::ParseDisplayName()\n", (size_t) this);
 	return E_NOTIMPL;
 }
 
 // TODO(garlic-os): should this be implemented?
 STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHGDNF, PITEMID_CHILD *) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::SetNameOf()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::SetNameOf()\n", (size_t) this);
 	return E_NOTIMPL;
 }
 
@@ -566,7 +510,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHG
 
 STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT iColumn) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::ColumnClick(iColumn=%d)\n", this, iColumn
+		L"CADSXRootShellFolder(0x%08zu)::ColumnClick(iColumn=%d)\n", (size_t) this, iColumn
 	);
 
 	// The caller must sort the column itself
@@ -579,8 +523,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	/* [out]          */ SHELLDETAILS *pDetails
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::GetDetailsOf(uColumn=%d) pidl=[%s]\n",
-		this,
+		L"CADSXRootShellFolder(0x%08zu)::GetDetailsOf(uColumn=%d) pidl=[%s]\n",
+		(size_t) this,
 		uColumn,
 		PidlToString(pidl)
 	);
@@ -628,7 +572,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 // IShellFolder2
 
 STDMETHODIMP CADSXRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::EnumSearches()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::EnumSearches()\n", (size_t) this);
 	return E_NOTIMPL;
 }
 
@@ -637,7 +581,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 	ULONG *pSort,
 	ULONG *pDisplay
 ) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::GetDefaultColumn()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::GetDefaultColumn()\n", (size_t) this);
 
 	if (!pSort || !pDisplay) {
 		return E_POINTER;
@@ -652,8 +596,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 STDMETHODIMP
 CADSXRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::GetDefaultColumnState(iColumn=%d)\n",
-		this,
+		L"CADSXRootShellFolder(0x%08zu)::GetDefaultColumnState(iColumn=%d)\n",
+		(size_t) this,
 		iColumn
 	);
 
@@ -680,7 +624,7 @@ CADSXRootShellFolder::GetDefaultColumnState(UINT iColumn, SHCOLSTATEF *pcsFlags)
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
-	DebugPrint("CADSXRootShellFolder(0x%08x)::GetDefaultSearchGUID()\n", this);
+	DebugPrint(L"CADSXRootShellFolder(0x%08zu)::GetDefaultSearchGUID()\n", (size_t) this);
 	return E_NOTIMPL;
 }
 
@@ -690,9 +634,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 	VARIANT *pv
 ) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::GetDetailsEx(pscid->pid=%d) "
+		L"CADSXRootShellFolder(0x%08zu)::GetDetailsEx(pscid->pid=%d) "
 		"pidl=[%s]\n",
-		this,
+		(size_t) this,
 		pscid->pid,
 		PidlToString(pidl)
 	);
@@ -704,40 +648,40 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 		* only available on XP SP2+ on, so it won't harm 9x.
 		*/
 		if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
-			DebugPrint(" ** GetDetailsEx: PKEY_PropList_TileInfo\n");
+			DebugPrint(L" ** GetDetailsEx: PKEY_PropList_TileInfo\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
-			DebugPrint(" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo\n");
+			DebugPrint(L" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
-			DebugPrint(" ** GetDetailsEx: PKEY_PropList_PreviewDetails\n");
+			DebugPrint(L" ** GetDetailsEx: PKEY_PropList_PreviewDetails\n");
 			return SUCCEEDED(
 				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
 			);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
-			DebugPrint(" ** GetDetailsEx: PKEY_PropList_FullDetails\n");
+			DebugPrint(L" ** GetDetailsEx: PKEY_PropList_FullDetails\n");
 			return SUCCEEDED(InitVariantFromString(
 				L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv
 			));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
-			DebugPrint(" ** GetDetailsEx: PKEY_ItemType\n");
+			DebugPrint(L" ** GetDetailsEx: PKEY_ItemType\n");
 			return SUCCEEDED(InitVariantFromString(L"Directory", pv));
 		}
 	#endif
 
-	DebugPrint(" ** GetDetailsEx: Not implemented\n");
+	DebugPrint(L" ** GetDetailsEx: Not implemented\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP
 CADSXRootShellFolder::MapColumnToSCID(UINT uColumn, SHCOLUMNID *pscid) {
 	DebugPrint(
-		"CADSXRootShellFolder(0x%08x)::MapColumnToSCID(iColumn=%d)\n",
-		this,
+		L"CADSXRootShellFolder(0x%08zu)::MapColumnToSCID(iColumn=%d)\n",
+		(size_t) this,
 		uColumn
 	);
 	#if defined(ADSX_PKEYS_SUPPORT)

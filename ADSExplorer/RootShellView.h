@@ -26,6 +26,7 @@
 #include "stdafx.h"  // MUST be included first
 
 #include "ShellFolderView.h"
+#include "DebugPrint.h"
 
 // define some undocumented messages. See "shlext.h" from Henk Devos & Andrew Le
 // Bihan, at http://www.whirlingdervishes.com/nselib/public
@@ -54,20 +55,22 @@
 
 // Macros to trace the message name instead of its ID
 #define BEGIN_TRACE_MSG_NAME() switch (uMsg) {
-#define TRACE_MSG_NAME(name)                                \
-	case name:                                                  \
-		DebugPrint("CADSXRootShellView(%08x) %s\n", this, #name); \
+#define TRACE_MSG_NAME(name)                                            \
+	case name:                                                          \
+		DebugPrint(                                                     \
+			L"CADSXRootShellView(%08zu) %s\n", (size_t) this, _T(#name) \
+		);                                                              \
 		break;
-#define END_TRACE_MSG_NAME()                                      \
-	default:                                                      \
+#define END_TRACE_MSG_NAME()                                        \
+	default:                                                        \
 		DebugPrint(                                                 \
-			"CADSXRootShellView(%08x) Msg: %2d:%2x w=%d, l=%d\n", \
-			this,                                                 \
-			uMsg,                                                 \
-			uMsg,                                                 \
-			wParam,                                               \
-			lParam                                                \
-		);                                                        \
+			L"CADSXRootShellView(%08zu) Msg: %2d:%2x w=%d, l=%d\n", \
+			(size_t) this,                                          \
+			uMsg,                                                   \
+			uMsg,                                                   \
+			(int) wParam,                                           \
+			(int) lParam                                            \
+		);                                                          \
 	}
 
 
@@ -76,11 +79,11 @@
 class CADSXRootShellView : public CShellFolderViewImpl {
    public:
 	CADSXRootShellView() {
-		DebugPrint("CADSXRootShellView(%08x) CONSTRUCTOR\n", this);
+		DebugPrint(L"CADSXRootShellView(%08zu) CONSTRUCTOR\n", (size_t) this);
 	}
 
 	~CADSXRootShellView() {
-		DebugPrint("CADSXRootShellView(%08x) DESTRUCTOR\n", this);
+		DebugPrint(L"CADSXRootShellView(%08zu) DESTRUCTOR\n", (size_t) this);
 	}
 
 	// If called, the passed object will be held (AddRef()'d) until the View
@@ -151,7 +154,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		DebugPrint("CADSXRootShellView(%08x)::OnDefViewMode()\n", this);
+		DebugPrint(L"CADSXRootShellView(%08zu)::OnDefViewMode()\n", (size_t) this);
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
 			DWORD ver, maj, min;
@@ -169,7 +172,9 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
 		DebugPrint(
-			"CADSXRootShellView(%08x)::OnColumnClick(iColumn=%d)\n", this, wParam
+			L"CADSXRootShellView(%08zu)::OnColumnClick(iColumn=%d)\n",
+			(size_t) this,
+			(int) wParam
 		);
 
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
@@ -186,8 +191,8 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
 
 		DebugPrint(
-			"CADSXRootShellView(%08x)::OnGetDetailsOf(iColumn=%d)\n",
-			this,
+			L"CADSXRootShellView(%08zu)::OnGetDetailsOf(iColumn=%d)\n",
+			(size_t) this,
 			iColumn
 		);
 

@@ -7,6 +7,7 @@
 
 #include "CADSXItem.h"
 #include "PidlMgr.h"
+#include "DebugPrint.h"
 
 
 // Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
@@ -53,11 +54,11 @@ static bool NoOp(WIN32_FIND_STREAM_DATA *fsd, PITEMID_CHILD **ppelt, ULONG *nAct
 CADSXEnumIDList::CADSXEnumIDList()
 	: m_hFinder(NULL),
 	  m_nTotalFetched(0) {
-	DebugPrint("CADSXEnumIDList(0x%08x)::CADSXEnumIDList()\n", this);
+	DebugPrint(L"CADSXEnumIDList(0x%08zu)::CADSXEnumIDList()\n", (size_t) this);
 }
 
 CADSXEnumIDList::~CADSXEnumIDList() {
-	DebugPrint("CADSXEnumIDList(0x%08x)::~CADSXEnumIDList()\n", this);
+	DebugPrint(L"CADSXEnumIDList(0x%08zu)::~CADSXEnumIDList()\n", (size_t) this);
 	if (m_hFinder != NULL) {
 		FindClose(m_hFinder);
 	}
@@ -65,7 +66,7 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 }
 
 void CADSXEnumIDList::Init(IUnknown *pUnkOwner, const BSTR pszPath) {
-	DebugPrint("CADSXEnumIDList(0x%08x)::Init()\n", this);
+	DebugPrint(L"CADSXEnumIDList(0x%08zu)::Init()\n", (size_t) this);
 	m_pUnkOwner = pUnkOwner;
 	m_pszPath = pszPath;
 }
@@ -78,7 +79,9 @@ HRESULT CADSXEnumIDList::Next(
 	/* [out] */ PITEMID_CHILD *rgelt,
 	/* [out] */ ULONG *pceltFetched
 ) {
-	DebugPrint("CADSXEnumIDList(0x%08x)::Next(celt=%lu)\n", this, celt);
+	DebugPrint(
+		L"CADSXEnumIDList(0x%08zu)::Next(celt=%lu)\n", (size_t) this, celt
+	);
 	return NextInternal(&PushPidl, celt, rgelt, pceltFetched);
 }
 
@@ -90,11 +93,11 @@ HRESULT CADSXEnumIDList::NextInternal(
 	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
-		DebugPrint("** Bad argument(s)\n");
+		DebugPrint(L"** Bad argument(s)\n");
 		return E_POINTER;
 	}
 	if (celt == 0) {
-		DebugPrint("** 0 requested :/ vacuous success\n");
+		DebugPrint(L"** 0 requested :/ vacuous success\n");
 		return S_OK;
 	}
 
@@ -113,25 +116,25 @@ HRESULT CADSXEnumIDList::NextInternal(
 			switch (GetLastError()) {
 				case ERROR_SUCCESS:
 					DebugPrint(
-						"** FindFirstStreamW returned INVALID_HANDLE_VALUE "
-						"but GetLastError() == ERROR_SUCCESS\n"
+						L"** FindFirstStreamW returned INVALID_HANDLE_VALUE "
+						L"but GetLastError() == ERROR_SUCCESS\n"
 					);
 					return E_FAIL;
 				case ERROR_HANDLE_EOF:
-					DebugPrint("** No streams found\n");
+					DebugPrint(L"** No streams found\n");
 					return S_FALSE;
 				default:
-					DebugPrint("** latery Eror! Er Erry Err! later\n");
+					DebugPrint(L"** latery Eror! Er Erry Err! later\n");
 					return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
 		if (GetLastError() == ERROR_HANDLE_EOF) {
-			DebugPrint("** No streams found\n");
+			DebugPrint(L"** No streams found\n");
 			return S_FALSE;
 		}
 		bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 		if (!bPushPidlSuccess) {
-			DebugPrint("** latery Eror! Er Erry Err! later\n");
+			DebugPrint(L"** latery Eror! Er Erry Err! later\n");
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 	}
@@ -146,14 +149,14 @@ HRESULT CADSXEnumIDList::NextInternal(
 				// Do nothing and let the loop end
 			} else {
 				// Stream has stopped unexpectedly
-				DebugPrint("** latery Eror! Er Erry Err! later\n");
+				DebugPrint(L"** latery Eror! Er Erry Err! later\n");
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		} else {
 			// Consume stream
 			bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 			if (!bPushPidlSuccess) {
-				DebugPrint("** latery Eror! Er Erry Err! later\n");
+				DebugPrint(L"** latery Eror! Er Erry Err! later\n");
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
@@ -163,7 +166,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	}
 	m_nTotalFetched += nActual;
 	if (nActual < celt) {
-		DebugPrint("** Ran out\n");
+		DebugPrint(L"** Ran out\n");
 		return S_FALSE;
 	}
 	return S_OK;
@@ -171,7 +174,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 
 
 HRESULT CADSXEnumIDList::Reset() {
-	DebugPrint("CADSXEnumIDList(0x%08x)::Reset()\n", this);
+	DebugPrint(L"CADSXEnumIDList(0x%08zu)::Reset()\n", (size_t) this);
 	if (m_hFinder != NULL) {
 		BOOL success = FindClose(m_hFinder);
 		m_hFinder = NULL;
@@ -183,7 +186,9 @@ HRESULT CADSXEnumIDList::Reset() {
 
 
 HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
-	DebugPrint("CADSXEnumIDList(0x%08x)::Skip(celt=%lu)\n", this, celt);
+	DebugPrint(
+		L"CADSXEnumIDList(0x%08zu)::Skip(celt=%lu)\n", (size_t) this, celt
+	);
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD *rgeltFake = NULL;
 	return NextInternal(&NoOp, celt, rgeltFake, &pceltFetchedFake);
@@ -191,7 +196,7 @@ HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 
 
 HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
-	DebugPrint("CADSXEnumIDList(0x%08x)::Clone()\n", this);
+	DebugPrint(L"CADSXEnumIDList(0x%08zu)::Clone()\n", (size_t) this);
 	if (ppEnum == NULL) return E_POINTER;
 
 	CComObject<CADSXEnumIDList> *pNewEnum;

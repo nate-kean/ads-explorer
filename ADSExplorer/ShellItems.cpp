@@ -31,6 +31,7 @@
 
 #include "defer.h"
 #include "ShellItems.h"
+#include "DebugPrint.h"
 
 //==============================================================================
 // Helper for STRRET
@@ -126,7 +127,7 @@ void CDataObject::Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITE
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
-	DebugPrint("CDataObject::GetData()\n");
+	DebugPrint(L"CDataObject::GetData()\n");
 	if (pFE->cfFormat != m_cfShellIDList) return E_INVALIDARG;
 
 	pStgMedium->hGlobal = CreateShellIDList(m_pidlParent, m_pidl);
@@ -140,63 +141,63 @@ STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC, LPSTGMEDIUM) {
-	DebugPrint("CDataObject::GetDataHere()\n");
+	DebugPrint(L"CDataObject::GetDataHere()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC) {
-	DebugPrint("CDataObject::QueryGetData()\n");
+	DebugPrint(L"CDataObject::QueryGetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC, LPFORMATETC) {
-	DebugPrint("CDataObject::GetCanonicalFormatEtc()\n");
+	DebugPrint(L"CDataObject::GetCanonicalFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::SetData(LPFORMATETC, LPSTGMEDIUM, BOOL) {
-	DebugPrint("CDataObject::SetData()\n");
+	DebugPrint(L"CDataObject::SetData()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC **) {
-	DebugPrint("CDataObject::EnumFormatEtc()\n");
+	DebugPrint(L"CDataObject::EnumFormatEtc()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD) {
-	DebugPrint("CDataObject::DAdvise()\n");
+	DebugPrint(L"CDataObject::DAdvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
-	DebugPrint("CDataObject::DUnadvise()\n");
+	DebugPrint(L"CDataObject::DUnadvise()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
-	DebugPrint("CDataObject::EnumDAdvise()\n");
+	DebugPrint(L"CDataObject::EnumDAdvise()\n");
 	return E_NOTIMPL;
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
-	DebugPrint("CDataObject::Next()\n");
+	DebugPrint(L"CDataObject::Next()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Skip(ULONG) {
-	DebugPrint("CDataObject::Skip()\n");
+	DebugPrint(L"CDataObject::Skip()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Reset() {
-	DebugPrint("CDataObject::Reset()\n");
+	DebugPrint(L"CDataObject::Reset()\n");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
-	DebugPrint("CDataObject::Clone()\n");
+	DebugPrint(L"CDataObject::Clone()\n");
 	return E_NOTIMPL;
 }
