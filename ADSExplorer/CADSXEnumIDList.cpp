@@ -6,7 +6,6 @@
 #include <winnt.h>
 
 #include "CADSXItem.h"
-#include "PidlMgr.h"
 #include "DebugPrint.h"
 
 
@@ -28,8 +27,8 @@ static bool PushPidl(
 	Item.m_Filesize = fsd->StreamSize.QuadPart;
 	Item.m_Name = fsd->cStreamName;
 
-	// Copy this item into a PIDL and put that into the output array
-	PITEMID_CHILD pidl = PidlMgr::Create(Item);
+	// Copy this item into a PIDL
+	PITEMID_CHILD pidl = Item.ToPidl();
 	if (pidl == NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;

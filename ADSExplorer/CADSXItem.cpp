@@ -16,14 +16,28 @@ CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 }
 
 
-ULONG CADSXItem::GetSize() const {
-	return sizeof(CADSXItem);
-}
+PITEMID_CHILD CADSXItem::ToPidl() const {
+	// The item copy is manually allocated, as opposed to using C++'s `new`,
+	// because COM requires memory to be allocated with CoTaskMemAlloc.
+	UINT cbSizeItem = sizeof(SHITEMID) - sizeof(BYTE) + sizeof(CADSXItem);
+	UINT cbSizeItemList = cbSizeItem + sizeof(SHITEMID);
 
+	// Allocate memory for this SHITEMID plus the final null SHITEMID.
+	auto pidlNew = (PITEMID_CHILD) CoTaskMemAlloc(cbSizeItemList);
+	if (pidlNew == NULL) return NULL;
 
-void CADSXItem::CopyTo(void *pTarget) const {
-	new (pTarget) CADSXItem();
-	auto p = (CADSXItem *) pTarget;
-	p->m_Filesize = m_Filesize;
-	p->m_Name = m_Name;
+	// Debug: fill memory area with 0xAA so I can see it in the memory viewer
+	memset(pidlNew, 0xAA, cbSizeItemList);
+
+	// Put the data object in the PIDL
+	// new (pidlNew->mkid.abID) CADSXItem();
+	(CADSXItem &) pidlNew->mkid.abID = *this;
+	pidlNew->mkid.cb = cbSizeItem;
+
+	// A sentinel PIDL at the end of the list as the ITEMIDLIST spec ordains
+	PUITEMID_CHILD pidlEnd = (PUITEMID_CHILD) ILNext(pidlNew);
+	pidlEnd->mkid.abID[0] = 0;
+	pidlEnd->mkid.cb = 0;
+
+	return pidlNew;
 }

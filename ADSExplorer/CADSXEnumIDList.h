@@ -7,11 +7,14 @@
 
 class ATL_NO_VTABLE CADSXEnumIDList
 	: public IEnumIDList,
-	  public CComObjectRootEx<CComObjectThreadModel> {
+	//   public CComObjectRootEx<CComObjectThreadModel> {
+	  public CComObjectRootEx<CComSingleThreadModel> {
+
+  public:
 	BEGIN_COM_MAP(CADSXEnumIDList)
 		COM_INTERFACE_ENTRY_IID(IID_IEnumIDList, IEnumIDList)
 	END_COM_MAP()
-  public:
+
 	CADSXEnumIDList();
 	virtual ~CADSXEnumIDList();
 	

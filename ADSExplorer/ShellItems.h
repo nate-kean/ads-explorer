@@ -26,8 +26,6 @@
 #include <combaseapi.h>
 #include <comutil.h>
 
-#include "PidlMgr.h"
-
 //==============================================================================
 
 // Set the return string 'Source' in the STRRET struct.

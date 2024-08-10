@@ -29,8 +29,6 @@
 #include "ADSExplorer_h.h"
 
 #include "resource.h"  // main symbols
-#include "PidlMgr.h"
-#include "ShellItems.h"
 
 
 
@@ -54,7 +52,8 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	  public IShellDetails {
    public:
 	#ifdef _DEBUG
-		LPWSTR PidlToString(PCUIDLIST_RELATIVE pidl) const;
+		LPCWSTR PidlToString(PCUIDLIST_RELATIVE pidl) const;
+		LPCWSTR PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const;
 	#endif
 
 	CADSXRootShellFolder();

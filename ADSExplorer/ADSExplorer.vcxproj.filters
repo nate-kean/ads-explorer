@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PidlMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ShellItems.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -74,7 +71,6 @@
     <ClCompile Include="CADSXItem.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="PidlMgr.cpp">
     <ClCompile Include="DebugPrint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

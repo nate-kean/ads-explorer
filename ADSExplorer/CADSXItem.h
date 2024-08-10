@@ -4,11 +4,9 @@
 
 #include <comutil.h>
 
-#include "PidlMgr.h"
-
-class CADSXItem : public IPidlData {
-   public:
-	const UINT32 SIGNATURE = 'ADSX';
+class CADSXItem {
+  public:
+	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;
 	_bstr_t m_Name;
 
@@ -19,7 +17,8 @@ class CADSXItem : public IPidlData {
 
 	static CADSXItem *Get(PCUITEMID_CHILD pidl);
 
-	// From IPidlData
-	ULONG GetSize() const;
-	void CopyTo(void *pTarget) const;
+	// Create a new one-item-long PIDL containing this item in the abID.
+	// Ownership of the return value belongs to the caller.
+	// Return value must be freed with CoTaskMemFree.
+	PITEMID_CHILD ToPidl() const;
 };
