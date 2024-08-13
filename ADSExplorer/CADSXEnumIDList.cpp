@@ -132,7 +132,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 					LOG(L"** No streams found");
 					return S_FALSE;
 				default:
-					LOG(L"** latery Eror! Er Erry Err! later");
+					LOG(L"** Error: " << GetLastError());
 					return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
@@ -142,7 +142,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 		}
 		bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 		if (!bPushPidlSuccess) {
-			LOG(L"** latery Eror! Er Erry Err! later");
+			LOG(L"** Error: " << GetLastError());
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 	}
@@ -157,14 +157,14 @@ HRESULT CADSXEnumIDList::NextInternal(
 				// Do nothing and let the loop end
 			} else {
 				// Stream has stopped unexpectedly
-				LOG(L"** latery Eror! Er Erry Err! later");
+				LOG(L"** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		} else {
 			// Consume stream
 			bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
 			if (!bPushPidlSuccess) {
-				LOG(L"** latery Eror! Er Erry Err! later");
+				LOG(L"** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
