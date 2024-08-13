@@ -133,8 +133,3 @@ inline HRESULT InitVariantFromString(PCWSTR psz, VARIANT *pvar) {
 	return hr;
 }
 #endif
-
-// TODO(garlic-os): can these be deleted?
-#include <Shlwapi.h>
-#include <UrlMon.h>
-#include <WinInet.h>
