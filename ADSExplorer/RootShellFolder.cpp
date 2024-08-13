@@ -98,11 +98,12 @@
 		if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
 		defer({ CoTaskMemFree(pszGUID); });
 		// Search as an interface
-		auto search = iids.find(pszGUID);
+		auto wstrGUID = std::wstring(pszGUID);
+		auto search = iids.find(wstrGUID);
 		if (search != iids.end()) {
 			return std::wstring(search->second);
 		} else {
-			return std::wstring(pszGUID);
+			return wstrGUID;
 		}
 	}
 #else
