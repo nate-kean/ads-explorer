@@ -61,8 +61,8 @@ static bool NoOp(WIN32_FIND_STREAM_DATA *fsd, PITEMID_CHILD **ppelt, ULONG *nAct
 
 
 CADSXEnumIDList::CADSXEnumIDList()
-	: m_hFinder(NULL),
-	  m_nTotalFetched(0) {
+	: m_hFinder(NULL)
+	, m_nTotalFetched(0) {
 	LOG(P_EIDL << L"CADSXEnumIDList()");
 }
 
