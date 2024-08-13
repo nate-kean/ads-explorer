@@ -4,8 +4,8 @@
 
 #include <comutil.h>
 
-class CADSXItem {
-  public:
+
+struct CADSXItem {
 	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;
 	_bstr_t m_Name;
