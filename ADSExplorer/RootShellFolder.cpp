@@ -528,10 +528,11 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 
 		case DETAILS_COLUMN_FILESIZE:
 			pDetails->fmt = LVCFMT_RIGHT;
-			BSTR pszSize[16] = {0};
-			StrFormatByteSizeW(Item->m_Filesize, (BSTR) pszSize, 16);
-			pDetails->cxChar = (int) wcslen((BSTR) pszSize);
-			return SetReturnString((BSTR) pszSize, pDetails->str)
+			constexpr UINT8 uLongLongStrLenMax = _countof("-9,223,372,036,854,775,808");
+			WCHAR pszSize[uLongLongStrLenMax] = {0};
+			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
+			pDetails->cxChar = (int) wcslen(pszSize);
+			return SetReturnStringW(pszSize, pDetails->str)
 				? S_OK
 				: E_OUTOFMEMORY;
 	}
