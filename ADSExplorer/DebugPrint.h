@@ -5,8 +5,8 @@
 #include <ostream>
 
 // Implements wstreambuf, but only for itself.
-// Then implements wostream publicly, so this class can be used as a stream
-// which calls its internal wstreambuf.
+// Then implements wostream publicly, so this class can be used as an ostream
+// that acts on its internal wstreambuf.
 class CDebugStream
 	: private std::wstreambuf
 	, public std::wostream {
