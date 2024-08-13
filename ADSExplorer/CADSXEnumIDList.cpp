@@ -41,6 +41,8 @@ static bool PushPidl(
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;
 	}
+
+	// Put that PIDL into the output array
 	**ppelt = pidl;
 
 	// Advance the enumerator
