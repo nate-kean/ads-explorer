@@ -46,3 +46,5 @@ blessing.
 Buckley used some Microsoft code (that is, code from outside the Win32 API
 itself) as a polyfill for full functionality when built with older SDKs, and as
 the Cargo Cult goes, this may still be the case but I don't actually know.
+
+I looked up SO many magic numbers on [magnumdb.com](https://www.magnumdb.com/).
