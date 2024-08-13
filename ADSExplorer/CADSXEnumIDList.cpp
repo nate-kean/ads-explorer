@@ -26,6 +26,11 @@ static bool PushPidl(
 	// Reusable item
 	static CADSXItem Item;
 
+	LOG(
+		L"** Stream: " << fsd->cStreamName <<
+		L" (" << fsd->StreamSize.QuadPart << L" bytes)"
+	);
+
 	// Fill in the item
 	Item.m_Filesize = fsd->StreamSize.QuadPart;
 	Item.m_Name = fsd->cStreamName;
