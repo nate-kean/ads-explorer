@@ -26,11 +26,8 @@ PITEMID_CHILD CADSXItem::ToPidl() const {
 	auto pidlNew = (PITEMID_CHILD) CoTaskMemAlloc(cbSizeItemList);
 	if (pidlNew == NULL) return NULL;
 
-	// Debug: fill memory area with 0xAA so I can see it in the memory viewer
-	memset(pidlNew, 0xAA, cbSizeItemList);
-
 	// Put the data object in the PIDL
-	// new (pidlNew->mkid.abID) CADSXItem();
+	new (pidlNew->mkid.abID) CADSXItem();
 	(CADSXItem &) pidlNew->mkid.abID = *this;
 	pidlNew->mkid.cb = cbSizeItem;
 
