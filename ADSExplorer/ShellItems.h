@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "stdafx.h"
+
 #include <combaseapi.h>
 #include <comutil.h>
 

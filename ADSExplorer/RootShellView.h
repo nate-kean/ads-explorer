@@ -25,6 +25,8 @@
 
 #include "stdafx.h"  // MUST be included first
 
+#include <iomanip>
+
 #include "ShellFolderView.h"
 #include "DebugPrint.h"
 
@@ -53,24 +55,22 @@
 #define SFVCB_WNDMAIN 46
 #define SFVCB_COLUMNCLICK2 0x32
 
+// Debug log prefix for CADSXRootShellView
+#define P_RSV L"CADSXRootShellView(0x" << std::hex << this << L")::"
+
 // Macros to trace the message name instead of its ID
 #define BEGIN_TRACE_MSG_NAME() switch (uMsg) {
-#define TRACE_MSG_NAME(name)                                            \
-	case name:                                                          \
-		DebugPrint(                                                     \
-			L"CADSXRootShellView(%08zu) %s\n", (size_t) this, _T(#name) \
-		);                                                              \
+#define TRACE_MSG_NAME(name)                                                     \
+	case name:                                                                   \
+		LOG(L"CADSXRootShellView(0x" << std::hex << this << L") " << _T(#name)); \
 		break;
-#define END_TRACE_MSG_NAME()                                        \
-	default:                                                        \
-		DebugPrint(                                                 \
-			L"CADSXRootShellView(%08zu) Msg: %2d:%2x w=%d, l=%d\n", \
-			(size_t) this,                                          \
-			uMsg,                                                   \
-			uMsg,                                                   \
-			(int) wParam,                                           \
-			(int) lParam                                            \
-		);                                                          \
+#define END_TRACE_MSG_NAME()                                                      \
+	default:                                                                      \
+		LOG(                                                                      \
+			L"CADSXRootShellView(0x" << std::hex << this << L") Msg: " <<         \
+			std::setw(2) << uMsg << L":" << std::hex << std::setw(2) << uMsg <<   \
+			L" w=" << (int) wParam << L", l=" << (int) lParam                     \
+		);                                                                        \
 	}
 
 
@@ -79,11 +79,11 @@
 class CADSXRootShellView : public CShellFolderViewImpl {
    public:
 	CADSXRootShellView() {
-		DebugPrint(L"CADSXRootShellView(%08zu) CONSTRUCTOR\n", (size_t) this);
+		LOG(P_RSV << L"CADSXRootShellView()");
 	}
 
 	~CADSXRootShellView() {
-		DebugPrint(L"CADSXRootShellView(%08zu) DESTRUCTOR\n", (size_t) this);
+		LOG(P_RSV << L"~CADSXRootShellView()");
 	}
 
 	// If called, the passed object will be held (AddRef()'d) until the View
@@ -154,7 +154,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		DebugPrint(L"CADSXRootShellView(%08zu)::OnDefViewMode()\n", (size_t) this);
+		LOG(P_RSV << L"OnDefViewMode()");
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
 			DWORD ver, maj, min;
@@ -171,11 +171,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// When a user clicks on a column header in details mode
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		DebugPrint(
-			L"CADSXRootShellView(%08zu)::OnColumnClick(iColumn=%d)\n",
-			(size_t) this,
-			(int) wParam
-		);
+		LOG(P_RSV << L"OnColumnClick(iColumn=" << (int) wParam << L")");
 
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
 		// SDK.
@@ -190,11 +186,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		int iColumn = (int) wParam;
 		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
 
-		DebugPrint(
-			L"CADSXRootShellView(%08zu)::OnGetDetailsOf(iColumn=%d)\n",
-			(size_t) this,
-			iColumn
-		);
+		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
 		if (!pDi) return E_POINTER;
 

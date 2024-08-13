@@ -30,6 +30,10 @@
 
 #include "resource.h"  // main symbols
 
+#ifdef _DEBUG
+	#include <string>
+#endif
+
 
 
 //==============================================================================
@@ -52,8 +56,8 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	  public IShellDetails {
    public:
 	#ifdef _DEBUG
-		LPCWSTR PidlToString(PCUIDLIST_RELATIVE pidl) const;
-		LPCWSTR PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const;
+		std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) const;
+		std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const;
 	#endif
 
 	CADSXRootShellFolder();
