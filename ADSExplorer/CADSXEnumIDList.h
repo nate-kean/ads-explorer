@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include <functional>
+#include <string>
 
 
 class ATL_NO_VTABLE CADSXEnumIDList
@@ -22,7 +23,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	// are called in a weird way that makes it so that AFAIK they can't have
 	// parameters
 	// @post: this takes ownership of pszPath
-	void Init(IUnknown *pUnkOwner, const BSTR pszPath);
+	void Init(IUnknown *pUnkOwner, std::wstring sPath);
 
 	// IEnumIDList
 	STDMETHOD(Next)(ULONG, PITEMID_CHILD*, ULONG*);
@@ -45,7 +46,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	// This exists to prevent the owner object from being freed before this one.
 	CComPtr<IUnknown> m_pUnkOwner;
 
-	BSTR m_pszPath;  // path on which to find streams
+	std::wstring m_sPath;  // path on which to find streams
 	HANDLE m_hFinder;
 	ULONG m_nTotalFetched;  // just to bring a clone up to speed
 };

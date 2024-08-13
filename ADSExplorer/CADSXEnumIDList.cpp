@@ -31,9 +31,21 @@ static bool PushPidl(
 		L" (" << fsd->StreamSize.QuadPart << L" bytes)"
 	);
 
+	std::wstring sName = std::wstring(fsd->cStreamName);
+	// All ADSes follow this name pattern AFAIK, but if they don't,
+	// 1: we shouldn't modify its name
+	// 2: I want to know about it
+	ATLASSERT(sName.starts_with(L":") && sName.ends_with(L":$DATA"));
+	if (sName.starts_with(L":") && sName.ends_with(L":$DATA")) {
+		sName = sName.substr(_countof(L":"), sName.length() - _countof(L":$DATA"));
+	}
+	
+	// Ignore the default stream
+	if (sName.empty()) return true;
+
 	// Fill in the item
 	Item.m_Filesize = fsd->StreamSize.QuadPart;
-	Item.m_Name = fsd->cStreamName;
+	Item.m_Name = sName;
 
 	// Copy this item into a PIDL
 	PITEMID_CHILD pidl = Item.ToPidl();
@@ -71,13 +83,12 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 	if (m_hFinder != NULL) {
 		FindClose(m_hFinder);
 	}
-	SysFreeString(m_pszPath);
 }
 
-void CADSXEnumIDList::Init(IUnknown *pUnkOwner, const BSTR pszPath) {
+void CADSXEnumIDList::Init(IUnknown *pUnkOwner, std::wstring sPath) {
 	LOG(P_EIDL << L"Init()");
 	m_pUnkOwner = pUnkOwner;
-	m_pszPath = pszPath;
+	m_sPath = sPath;
 }
 
 
@@ -118,7 +129,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	// Call the callback on this first item.
 	// Hopes and Streams
 	if (m_hFinder == NULL) {
-		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &fsd, 0);
+		m_hFinder = FindFirstStreamW(m_sPath.c_str(), FindStreamInfoStandard, &fsd, 0);
 		if (m_hFinder == INVALID_HANDLE_VALUE) {
 			m_hFinder = NULL;
 			switch (GetLastError()) {
@@ -208,7 +219,8 @@ HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
 	CComObject<CADSXEnumIDList> *pNewEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pNewEnum);
 	if (FAILED(hr)) return hr;
-	pNewEnum->Init(m_pUnkOwner, m_pszPath);
+	std::wstring sPathCopy = m_sPath;
+	pNewEnum->Init(m_pUnkOwner, sPathCopy);
 	
 	// Unfortunately I don't see any more an efficient way to do this with
 	// the Find Stream API :(

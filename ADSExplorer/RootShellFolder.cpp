@@ -33,7 +33,7 @@
 #endif
 
 #include <atlstr.h>
-#include <comutil.h>
+#include <string>
 
 #include "CADSXEnumIDList.h"
 #include "CADSXItem.h"
@@ -63,8 +63,7 @@
 				oss << L"--";
 			}
 			if (CADSXItem::IsOwn(pidl)) {
-				_bstr_t sName = CADSXItem::Get((PCUITEMID_CHILD) pidl)->m_Name;
-				oss << sName.copy();
+				oss << CADSXItem::Get((PCUITEMID_CHILD) pidl)->m_Name;
 			} else if (pidl == m_pidlRoot) {
 				WCHAR tmp[MAX_PATH];
 				SHGetPathFromIDListW((PIDLIST_ABSOLUTE) pidl, tmp);
@@ -191,7 +190,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DETAILS_COLUMN_NAME:
-			Result = wcscmp(Item1->m_Name, Item2->m_Name);
+			Result = Item1->m_Name.compare(Item2->m_Name);
 			break;
 		case DETAILS_COLUMN_FILESIZE:
 			Result = (USHORT) (Item1->m_Filesize - Item2->m_Filesize);
@@ -270,11 +269,11 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	// wchar_t pszPath[MAX_PATH];
 	// SHGetPathFromIDListW(ILNext(m_pidlRoot), pszPath);
 	// _bstr_t bstrPath(pszPath);
-	_bstr_t bstrPath =
-		"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-		"ADS Explorer\\Test\\Files\\3streams.txt";
-	LOG(L" ** EnumObjects: Path=" << bstrPath.GetBSTR());
-	pEnum->Init(this->GetUnknown(), bstrPath.Detach());
+	std::wstring wstrPath =
+		L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+		L"ADS Explorer\\Test\\Files\\3streams.txt";
+	LOG(L" ** EnumObjects: Path=" << wstrPath);
+	pEnum->Init(this->GetUnknown(), wstrPath);
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnumIDList);
@@ -436,7 +435,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				) ? S_OK : E_FAIL;
 		}
 		// We don't handle other combinations of flags for the root pidl
-		return E_FAIL;
+		// return E_FAIL;
+		return SetReturnStringW(L"GetDisplayNameOf test", *pName) ? S_OK : E_FAIL;
 	}
 
 	// At this stage, the pidl should be one of ours
@@ -446,17 +446,20 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	switch (uFlags) {
 		// TODO(garlic-os)
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
-		case SHGDN_INFOLDER | SHGDN_FORPARSING:
-			return SetReturnStringW(L"Placeholder", *pName) ? S_OK
+			// TODO(garlic-os): "ADS Explorer\{fs object's path}:{Item->m_Name}"
+			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
 			                                               : E_FAIL;
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
-			return E_FAIL;  // Can't rename!
-	}
+			return E_FAIL;  // TODO(garlic-os)
 
-	// Any other combination results in returning the name.
-	return SetReturnStringW(Item->m_Name, *pName) ? S_OK : E_FAIL;
+		case SHGDN_INFOLDER:
+		case SHGDN_INFOLDER | SHGDN_FORPARSING:
+		default:
+			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
+			                                               : E_FAIL;
+	}
 }
 
 // TODO(garlic-os): root pidl plus pidlized file object's path
@@ -500,11 +503,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	if (uColumn >= DETAILS_COLUMN_MAX) return E_FAIL;
 
 	// Shell asks for the column headers
-	// TODO(garlic-os): should filesize be here too?
 	if (pidl == NULL) {
-		// Load the iColumn based string from the resource
-		// TODO(garlic-os): can CString be changed out for something else?
-		CStringW ColumnName(MAKEINTRESOURCE(IDS_COLUMN_NAME + uColumn));
+		// Load the uColumn based string from the resource
+		// TODO(garlic-os): do we haaave to use CString here?
+		// this entire kind of string is not used anywhere else in the program
+		WORD wResourceID = IDS_COLUMN_NAME + uColumn;
+		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
 		return SetReturnString(ColumnName, pDetails->str) ? S_OK
@@ -516,8 +520,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	switch (uColumn) {
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
-			pDetails->cxChar = (int) wcslen(Item->m_Name);
-			return SetReturnString(Item->m_Name, pDetails->str)
+			ATLASSERT(Item->m_Name.length() <= INT_MAX);
+			pDetails->cxChar = (int) Item->m_Name.length();
+			return SetReturnStringW(Item->m_Name.c_str(), pDetails->str)
 				? S_OK
 				: E_OUTOFMEMORY;
 

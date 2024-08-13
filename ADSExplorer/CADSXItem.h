@@ -2,13 +2,13 @@
 
 #include "stdafx.h"  // MUST be included first
 
-#include <comutil.h>
+#include <string>
 
 
 struct CADSXItem {
 	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;
-	_bstr_t m_Name;
+	std::wstring m_Name;
 
 	// Check if a PIDL contains a CADSXItem.
 	// CADSXItems are always the last part of the PIDL (i.e. the child).
