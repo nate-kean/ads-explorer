@@ -649,8 +649,10 @@ CADSXRootShellFolder::MapColumnToSCID(UINT uColumn, SHCOLUMNID *pscid) {
 				*pscid = PKEY_ItemNameDisplay;
 				return S_OK;
 			case DETAILS_COLUMN_FILESIZE:
-				// TODO(garlic-os): what do I put here?
-				*pscid = PKEY_ItemNameDisplay;
+				// TODO(garlic-os): is this right? where are PKEYs' documentation?
+				*pscid = PKEY_TotalFileSize;
+				// *pscid = PKEY_Size;
+				// *pscid = PKEY_FileAllocationSize;
 				return S_OK;
 		}
 		return E_FAIL;
