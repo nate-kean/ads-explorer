@@ -80,7 +80,7 @@ HGLOBAL CreateShellIDList(
 	// members.
 	HGLOBAL hGlobal = GlobalAlloc(
 		GPTR | GMEM_SHARE,
-		(DWORD) (iCurPos +	// size of the CIDA structure and the additional
+		(size_t) (iCurPos +	// size of the CIDA structure and the additional
 							// aoffset elements
 				 (cbPidl + 1))
 	);	// size of the pidls
