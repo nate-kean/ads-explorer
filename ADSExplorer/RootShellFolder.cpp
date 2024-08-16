@@ -49,6 +49,31 @@
 // Debug log prefix for CADSXRootShellFolder
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
+// STRRET helper functions
+bool SetReturnStringA(LPCSTR Source, STRRET &str) {
+	SIZE_T StringLen = strlen(Source) + 1;
+	str.uType = STRRET_WSTR;
+	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+	if (str.pOleStr == NULL) {
+		return false;
+	}
+
+	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
+	return true;
+}
+bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
+	SIZE_T StringLen = wcslen(Source) + 1;
+	str.uType = STRRET_WSTR;
+	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+	if (str.pOleStr == NULL) {
+		return false;
+	}
+
+	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
+	return true;
+}
+
+
 // #define _DEBUG
 #ifdef _DEBUG
 	#include <sstream>
