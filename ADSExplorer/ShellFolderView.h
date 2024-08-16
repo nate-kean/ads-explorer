@@ -87,7 +87,6 @@ class CShellFolderViewImpl : public CMessageMap,
 	BEGIN_COM_MAP(CShellFolderViewImpl)
 		COM_INTERFACE_ENTRY_IID(IID_IShellFolderViewCB, IShellFolderViewCB)
 	END_COM_MAP()
-	// This really creates the view.
 	// ppISV - will receive the interface pointer to the view (that one should be
 	// returned from IShellFolder::CreateViewObject)
 	// hwndOwner - The window handle of the parent to the new shell view

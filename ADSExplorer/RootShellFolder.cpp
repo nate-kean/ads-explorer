@@ -140,7 +140,6 @@ STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 // IShellFolder
 
 // Called when an item in an ADSX folder is double-clicked.
-// TODO(garlic-os): is this also called for an ADSX folder itself?
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	/* [in]  */ PCUIDLIST_RELATIVE pidl,
 	/* [in]  */ IBindCtx *pbc,
@@ -346,7 +345,11 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	if (cidl == 0) return E_INVALIDARG;
 
-	// Does the FileDialog need to embed some data?
+	// We must be in the FileDialog; it wants aPidls wrapped in an IDataObject
+	// (just to call IDataObject::GetData() and nothing else).
+	// https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample#HowItsDone_UseCasesFileDialog_ClickIcon
+	// TODO(garlic-os): It was a design descision for Hurni's NSE to support
+	// only one item at a time. I should consider supporting multiple items.
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
 		if (cidl != 1) return E_INVALIDARG;
@@ -359,7 +362,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		hr = CComObject<CDataObject>::CreateInstance(&pDataObject);
 		if (FAILED(hr)) return hr;
 
-		// AddRef it while we are working with it, this prevent from an early
+		// AddRef it while we are working with it to keep it from an early
 		// destruction.
 		pDataObject->AddRef();
 		// Tie its lifetime with this object (the IShellFolder object)

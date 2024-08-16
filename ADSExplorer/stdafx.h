@@ -35,7 +35,8 @@
 
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
-// XXX: Perhaps it could disable all of IShellFolder2 for really old SDKs?
+// TODO(NattyNarwhal): Perhaps it could disable all of IShellFolder2 for really
+// old SDKs?
 #define ADSX_PKEYS_SUPPORT
 
 #include "targetver.h"
