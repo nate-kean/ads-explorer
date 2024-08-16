@@ -222,7 +222,7 @@
     <ClInclude Include="RootShellFolder.h" />
     <ClInclude Include="RootShellView.h" />
     <ClInclude Include="ShellFolderView.h" />
-    <ClInclude Include="ShellItems.h" />
+    <ClInclude Include="DataObject.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -251,7 +251,7 @@
     <ClCompile Include="CADSXItem.cpp" />
     <ClCompile Include="DebugPrint.cpp" />
     <ClCompile Include="RootShellFolder.cpp" />
-    <ClCompile Include="ShellItems.cpp" />
+    <ClCompile Include="DataObject.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">Create</PrecompiledHeader>

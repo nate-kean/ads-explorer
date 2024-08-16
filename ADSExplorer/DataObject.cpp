@@ -23,48 +23,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-// ShellItems.cpp's security blanket. vscode says it doesn't need it but it
-// fails to compile without it
+// vscode says it doesn't need this but it fails to compile without it
 #include "stdafx.h"
+
+#include "DataObject.h"
 
 #include <combaseapi.h>
 
 #include "defer.h"
-#include "ShellItems.h"
 #include "DebugPrint.h"
 
 // Debug log prefix for CDataObject
 #define P_DO L"CDataObject(0x" << std::hex << this << L")::"
-
-//==============================================================================
-// Helper for STRRET
-
-bool SetReturnStringA(LPCSTR Source, STRRET &str) {
-	SIZE_T StringLen = strlen(Source) + 1;
-	str.uType = STRRET_WSTR;
-	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
-	if (str.pOleStr == NULL) return false;
-
-	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
-	return true;
-}
-
-bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
-	SIZE_T StringLen = wcslen(Source) + 1;
-	str.uType = STRRET_WSTR;
-	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
-	if (str.pOleStr == NULL) return false;
-
-	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
-	return true;
-}
 
 
 //========================================================================================
 // CDataObject
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
-HGLOBAL CreateShellIDList(
+static HGLOBAL
+CreateShellIDList(
 	PIDLIST_ABSOLUTE pidlParent,
 	PCUITEMID_CHILD pidl
 ) {

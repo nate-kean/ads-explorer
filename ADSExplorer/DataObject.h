@@ -28,30 +28,16 @@
 #include <combaseapi.h>
 #include <comutil.h>
 
-//==============================================================================
-
-// Set the return string 'Source' in the STRRET struct.
-// Note that it always allocate a UNICODE copy of the string.
-// Returns false if memory allocation fails.
-bool SetReturnStringA(LPCSTR Source, STRRET &str);
-bool SetReturnStringW(LPCWSTR Source, STRRET &str);
-
-#ifdef _UNICODE
-#define SetReturnString SetReturnStringW
-#else
-#define SetReturnString SetReturnStringA
-#endif
-
 
 //==============================================================================
 // Light implementation of IDataObject.
 //
-// This object is used when you double-click on an item in the FileDialog.
-// Its purpose is simply to encapsulate the complete pidl for the item
-// (remember it's a Favorite item) into the IDataObject, so that the FileDialog
-// can pass it further to our IShellFolder::BindToObject(). Because I'm only
-// interested in the FileDialog behaviour, every methods returns E_NOTIMPL
-// except GetData().
+// This object is used when you double-click an item in the FileDialog.
+// Its purpose is simply to wrap the PIDL of an Item of ours into the
+// IDataObject, so that the FileDialog can pass it further to our
+// IShellFolder::BindToObject(). Because I'm only interested in FileDialog's
+// behaviour, every method returns E_NOTIMPL except GetData() (Pascal Hurni).
+// https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample#HowItsDone_UseCasesFileDialog_ClickIcon
 
 class ATL_NO_VTABLE CDataObject
 	: public CComObjectRootEx<CComSingleThreadModel>,

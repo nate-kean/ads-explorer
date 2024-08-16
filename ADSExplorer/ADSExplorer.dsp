@@ -111,7 +111,7 @@ SOURCE=.\RootShellFolder.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ShellItems.cpp
+SOURCE=.\DataObject.cpp
 # End Source File
 # Begin Source File
 
@@ -143,7 +143,7 @@ SOURCE=.\ShellFolderView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ShellItems.h
+SOURCE=.\DataObject.h
 # End Source File
 # Begin Source File
 

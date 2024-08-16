@@ -40,7 +40,7 @@
 #include "DebugPrint.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
-#include "ShellItems.h"
+#include "DataObject.h"
 #include "defer.h"
 
 //==============================================================================

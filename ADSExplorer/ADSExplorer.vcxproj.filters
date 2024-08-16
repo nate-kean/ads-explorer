@@ -21,7 +21,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ShellItems.h">
+    <ClInclude Include="DataObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RootShellView.h">
@@ -59,7 +59,7 @@
     <ClCompile Include="ADSExplorer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShellItems.cpp">
+    <ClCompile Include="DataObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RootShellFolder.cpp">
