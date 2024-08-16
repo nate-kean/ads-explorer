@@ -442,10 +442,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	SHGDNF uFlags,
 	STRRET *pName
 ) {
-	LOG(P_RSF << L"GetDisplayNameOf("
-		L"uFlags=0x" << std::hex << uFlags << L", "
-		L"pidl=[" << PidlToString(pidl) << L"])"
-	);
+	LOG(P_RSF << L"GetDisplayNameOf(pidl=[" << PidlToString(pidl) << L"])");
 
 	if (pidl == NULL || pName == NULL) return E_POINTER;
 
@@ -457,14 +454,17 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// point which is in the form "::{GUID}" So we should return
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
+				LOG(L" ** GetDisplayNameOf: Root NORMAL FORPARSING");
 				return SetReturnStringW(
 					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
 					*pName
 				) ? S_OK : E_FAIL;
+			default:
+				// We don't handle other combinations of flags for the root pidl
+				// return E_FAIL;
+				LOG(L" ** GetDisplayNameOf: Root default");
+				return SetReturnStringW(L"GetDisplayNameOf test", *pName) ? S_OK : E_FAIL;
 		}
-		// We don't handle other combinations of flags for the root pidl
-		// return E_FAIL;
-		return SetReturnStringW(L"GetDisplayNameOf test", *pName) ? S_OK : E_FAIL;
 	}
 
 	// At this stage, the pidl should be one of ours
@@ -473,17 +473,20 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	auto Item = CADSXItem::Get(pidl);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
+			LOG(L" ** GetDisplayNameOf: NORMAL FORPARSING");
 			// TODO(garlic-os): "ADS Explorer\{fs object's path}:{Item->m_Name}"
 			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
 			                                               : E_FAIL;
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
+			LOG(L" ** GetDisplayNameOf: FOREDITING");
 			return E_FAIL;  // TODO(garlic-os)
 
 		case SHGDN_INFOLDER:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
+			LOG(L" ** GetDisplayNameOf: INFOLDER or other");
 			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
 			                                               : E_FAIL;
 	}
