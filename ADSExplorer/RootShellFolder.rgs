@@ -12,7 +12,6 @@ HKCR
             ShellFolder
             {
                 val Attributes = d '4160749584'
-                val wantsFORPARSING = s ''
             }
         }
     }
