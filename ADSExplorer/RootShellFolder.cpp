@@ -35,8 +35,8 @@
 #include <atlstr.h>
 #include <string>
 
-#include "CADSXEnumIDList.h"
-#include "CADSXItem.h"
+#include "ADSXEnumIDList.h"
+#include "ADSXItem.h"
 #include "DebugPrint.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
@@ -79,6 +79,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#include <sstream>
 	#include <string>
 	#include "iids.h"
+
 	std::wstring CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
 		if (pidl == NULL) return L"<null>";
 		std::wostringstream oss;
@@ -135,6 +136,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#define PidlArrayToString(...) (void) 0
 	#define IIDToString(...) (void) 0
 #endif
+
 
 
 //==============================================================================
@@ -472,7 +474,6 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 	auto Item = CADSXItem::Get(pidl);
 	switch (uFlags) {
-		// TODO(garlic-os)
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
 			// TODO(garlic-os): "ADS Explorer\{fs object's path}:{Item->m_Name}"
 			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK

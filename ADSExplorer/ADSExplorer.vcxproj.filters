@@ -39,10 +39,10 @@
     <ClInclude Include="defer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CADSXEnumIDList.h">
+    <ClInclude Include="ADSXEnumIDList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CADSXItem.h">
+    <ClInclude Include="ADSXItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="iids.h">
@@ -65,20 +65,15 @@
     <ClCompile Include="RootShellFolder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CADSXEnumIDList.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CADSXItem.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="DebugPrint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="ADSExplorer.idl">
+    <ClCompile Include="ADSXItem.cpp">
       <Filter>Source Files</Filter>
-    </Midl>
+    </ClCompile>
+    <ClCompile Include="ADSXEnumIDList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ADSExplorer.rc">
@@ -92,11 +87,16 @@
     <None Include="icon1.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ADSExplorer.def">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="buildandreinstall.ps1">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ADSExplorer.def">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="ADSExplorer.idl">
+      <Filter>Resource Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

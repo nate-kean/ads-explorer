@@ -3,7 +3,7 @@
 #include <shtypes.h>
 #include <comutil.h>
 
-#include "CADSXEnumIDList.h"
+#include "ADSXEnumIDList.h"
 #include "defer.h"
 
 #include <stdexcept>

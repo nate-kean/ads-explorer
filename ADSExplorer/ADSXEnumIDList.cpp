@@ -1,11 +1,11 @@
 #include "stdafx.h"  // MUST be included first
 
-#include "CADSXEnumIDList.h"
+#include "ADSXEnumIDList.h"
 
 #include <handleapi.h>
 #include <winnt.h>
 
-#include "CADSXItem.h"
+#include "ADSXItem.h"
 #include "DebugPrint.h"
 
 // Debug log prefix for CADSXEnumIDList
@@ -26,22 +26,25 @@ static bool PushPidl(
 	// Reusable item
 	static CADSXItem Item;
 
-	LOG(
-		L"** Stream: " << fsd->cStreamName <<
-		L" (" << fsd->StreamSize.QuadPart << L" bytes)"
-	);
-
 	std::wstring sName = std::wstring(fsd->cStreamName);
 	// All ADSes follow this name pattern AFAIK, but if they don't,
 	// 1: we shouldn't modify its name
 	// 2: I want to know about it
 	ATLASSERT(sName.starts_with(L":") && sName.ends_with(L":$DATA"));
 	if (sName.starts_with(L":") && sName.ends_with(L":$DATA")) {
-		sName = sName.substr(_countof(L":"), sName.length() - _countof(L":$DATA"));
+		sName = sName.substr(
+			_countof(L":") - 1,
+			sName.length() - _countof(L":$DATA")
+		);
 	}
-	
-	// Ignore the default stream
+
+ 	// Skip the main stream. We're too hipster
 	if (sName.empty()) return true;
+
+	LOG(
+		L"** Stream: " << sName <<
+		L" (" << fsd->StreamSize.QuadPart << L" bytes)"
+	);
 
 	// Fill in the item
 	Item.m_Filesize = fsd->StreamSize.QuadPart;

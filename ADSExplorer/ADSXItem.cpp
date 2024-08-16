@@ -1,6 +1,6 @@
 #include "stdafx.h"  // MUST be included first
 
-#include "CADSXItem.h"
+#include "ADSXItem.h"
 
 
 bool CADSXItem::IsOwn(PCUIDLIST_RELATIVE pidl) {

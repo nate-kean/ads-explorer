@@ -213,8 +213,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="CADSXEnumIDList.h" />
-    <ClInclude Include="CADSXItem.h" />
+    <ClInclude Include="ADSXEnumIDList.h" />
+    <ClInclude Include="ADSXItem.h" />
     <ClInclude Include="DebugPrint.h" />
     <ClInclude Include="defer.h" />
     <ClInclude Include="iids.h" />
@@ -247,8 +247,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="CADSXEnumIDList.cpp" />
-    <ClCompile Include="CADSXItem.cpp" />
+    <ClCompile Include="ADSXEnumIDList.cpp" />
+    <ClCompile Include="ADSXItem.cpp" />
     <ClCompile Include="DebugPrint.cpp" />
     <ClCompile Include="RootShellFolder.cpp" />
     <ClCompile Include="DataObject.cpp" />
