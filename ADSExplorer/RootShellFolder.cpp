@@ -153,14 +153,14 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidl) << L"])");
 	m_pidlRoot = ILCloneFull(pidl);
-	return S_OK;
+	return m_pidlRoot != NULL ? S_OK : E_OUTOFMEMORY;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 	LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = ILCloneFull(m_pidlRoot);
-	return S_OK;
+	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
 }
 
 //-------------------------------------------------------------------------------
