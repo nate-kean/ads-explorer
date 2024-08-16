@@ -33,6 +33,9 @@
 	#define STRICT_TYPED_ITEMIDS
 #endif
 
+#include <fstream>
+#include <iostream>
+
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
 // TODO(NattyNarwhal): Perhaps it could disable all of IShellFolder2 for really
