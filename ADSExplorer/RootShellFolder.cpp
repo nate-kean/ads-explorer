@@ -90,10 +90,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			}
 			if (CADSXItem::IsOwn(pidl)) {
 				oss << CADSXItem::Get((PCUITEMID_CHILD) pidl)->m_Name;
-			} else if (pidl == m_pidlRoot) {
-				WCHAR tmp[MAX_PATH];
-				SHGetPathFromIDListW((PIDLIST_ABSOLUTE) pidl, tmp);
-				oss << tmp;
 			} else {
 				WCHAR tmp[16];
 				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
