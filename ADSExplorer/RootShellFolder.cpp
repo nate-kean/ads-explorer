@@ -463,7 +463,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				// We don't handle other combinations of flags for the root pidl
 				// return E_FAIL;
 				LOG(L" ** GetDisplayNameOf: Root default");
-				return SetReturnStringW(L"GetDisplayNameOf test", *pName) ? S_OK : E_FAIL;
+				return SetReturnStringW(L"GetDisplayNameOf test", *pName)
+					? S_OK : E_FAIL;
 		}
 	}
 
@@ -475,8 +476,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
 			LOG(L" ** GetDisplayNameOf: NORMAL FORPARSING");
 			// TODO(garlic-os): "ADS Explorer\{fs object's path}:{Item->m_Name}"
-			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
-			                                               : E_FAIL;
+			return SetReturnStringW(Item->m_Name.c_str(), *pName)
+				? S_OK : E_FAIL;
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
@@ -487,8 +488,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
 			LOG(L" ** GetDisplayNameOf: INFOLDER or other");
-			return SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK
-			                                               : E_FAIL;
+			return SetReturnStringW(Item->m_Name.c_str(), *pName)
+				? S_OK : E_FAIL;
 	}
 }
 
