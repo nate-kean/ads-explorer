@@ -484,7 +484,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
 			LOG(L" ** GetDisplayNameOf: NORMAL FORPARSING");
-			// TODO(garlic-os): "ADS Explorer\{fs object's path}:{Item->m_Name}"
+			// TODO(garlic-os): this should return:
+			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{Item->m_Name}"
 			return SetReturnStringW(Item->m_Name.c_str(), *pName)
 				? S_OK : E_FAIL;
 
