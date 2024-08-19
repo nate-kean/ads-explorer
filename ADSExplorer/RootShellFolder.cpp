@@ -88,8 +88,10 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			if (!first) {
 				oss << L"--";
 			}
+			PITEMID_CHILD pidlChild = ILCloneFirst(pidl);
+			defer({ CoTaskMemFree(pidlChild); });
 			if (CADSXItem::IsOwn(pidl)) {
-				oss << CADSXItem::Get((PCUITEMID_CHILD) pidl)->m_Name;
+				oss << CADSXItem::Get(pidlChild)->m_Name;
 			} else {
 				WCHAR tmp[16];
 				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
