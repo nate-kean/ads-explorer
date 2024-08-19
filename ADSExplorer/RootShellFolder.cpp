@@ -148,6 +148,15 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidl) << L"])");
+	// WCHAR name[16'384] = {0};
+	PWSTR name = NULL;
+	HRESULT hr = SHGetNameFromIDList(pidl, SIGDN_DESKTOPABSOLUTEPARSING, &name);
+	if (SUCCEEDED(hr)) {
+		LOG(L" ** Initialize: Name=" << name);
+		CoTaskMemFree(name);
+	} else {
+		LOG(L" ** Initialize: SHGetNameFromIDList failed");
+	}
 
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	m_pidlRoot = ILCloneFull(pidl);
