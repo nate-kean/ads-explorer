@@ -113,19 +113,21 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return oss.str();
 	}
 
+	static std::wstring IIDToString(const std::wstring &sIID) {
+		auto search = iids.find(sIID);
+		if (search != iids.end()) {
+			return std::wstring(search->second);
+		} else {
+			return sIID;
+		}
+	}
 	static std::wstring IIDToString(const IID &iid) {
 		LPOLESTR pszGUID = NULL;
 		HRESULT hr = StringFromCLSID(iid, &pszGUID);
 		if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
 		defer({ CoTaskMemFree(pszGUID); });
-		// Search as an interface
-		auto wstrGUID = std::wstring(pszGUID);
-		auto search = iids.find(wstrGUID);
-		if (search != iids.end()) {
-			return std::wstring(search->second);
-		} else {
-			return wstrGUID;
-		}
+		auto sIID = std::wstring(pszGUID);
+		return IIDToString(sIID);
 	}
 #else
 	#define PidlToString(...) (void) 0
