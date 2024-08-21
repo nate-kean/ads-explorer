@@ -3,9 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# IDE configuration files
-.vscode/
-
 # where i put the dll when im testing
 Active/
 

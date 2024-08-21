@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build and reinstall",
+            "command": "./ADSExplorer/buildandreinstall.ps1",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-NoProfile",
+                        "-File"
+                    ]
+                },
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": [
+                "$msCompile",
+                "$msvc"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "./ADSExplorer/clean.ps1",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile",
+                "$msvc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        }
+    ]
+}
