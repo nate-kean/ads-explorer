@@ -25,6 +25,7 @@ It was developed and tested on Windows 10.
 In your Visual Studio Installer it requires:
 - MSVC
 - C++ ATL
+- C++ MFC
 - A Windows SDK
 - The C++ 2022 redistributable update too I think I'm not sure
 
