@@ -29,6 +29,10 @@ In your Visual Studio Installer it requires:
 - A Windows SDK
 - The C++ 2022 redistributable update too I think I'm not sure
 
+The PowerShell scripts for vscode users also use `sudo`:
+- [Official `sudo` for Windows 11](https://learn.microsoft.com/en-us/windows/sudo/)
+- [Unofficial `sudo` for Windows 10](https://gerardog.github.io/gsudo/)
+
 ## Installation
 Copy the DLL and TLB to the same folder somewhere and run
 `regsvr32 ADSExplorer.dll`.
