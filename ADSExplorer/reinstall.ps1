@@ -7,9 +7,7 @@ sudo {
     Push-Location Active\
         regsvr32 /u ADSExplorer.dll
         if ($LastExitCode -ne 0) {
-            Start-Process "explorer.exe"
-            Write-Error "Failed to unregister the DLL"
-            exit $LastExitCode
+            Write-Warning "Failed to unregister the DLL"
         }
     Pop-Location
 
