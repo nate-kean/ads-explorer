@@ -329,7 +329,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	// contain sub-folders
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
 		// Root folder attributes
-	    *pfAttribs &= SFGAO_HASSUBFOLDER |
+		*pfAttribs &= SFGAO_HASSUBFOLDER |
 					  SFGAO_FOLDER |
 					  SFGAO_FILESYSTEM |
 					  SFGAO_FILESYSANCESTOR |
@@ -342,7 +342,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		//                SFGAO_NONENUMERATED;
 	} else {
 		// Child folder attributes
-	    *pfAttribs &= SFGAO_FOLDER |
+		*pfAttribs &= SFGAO_FOLDER |
 					  SFGAO_FILESYSTEM |
 					  SFGAO_FILESYSANCESTOR |
 					  SFGAO_BROWSABLE |
