@@ -2,7 +2,7 @@
 
 #include "DebugPrint.h"
 #include <winnt.h>
-#include <fstream>
+// #include <fstream>
 
 
 CDebugStream::CDebugStream() : std::wostream(this) {}
@@ -29,9 +29,8 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 	return 1;
 }
 
-// std::wostream g_DebugStream = CDebugStream::get_instance();
-std::wofstream g_DebugStream(
-	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-	L"ADS Explorer\\adsx.log",
-	std::ios::out | std::ios::trunc
-);
+// std::wofstream g_DebugStream(
+// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+// 	L"ADS Explorer\\adsx.log",
+// 	std::ios::out | std::ios::trunc
+// );
