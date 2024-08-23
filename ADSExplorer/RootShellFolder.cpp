@@ -80,7 +80,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#include <string>
 	#include "iids.h"
 
-	std::wstring CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
+	static std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
 		if (pidl == NULL) return L"<null>";
 		std::wostringstream oss;
 		bool first = true;
@@ -102,7 +102,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return oss.str();
 	}
 
-	std::wstring CADSXRootShellFolder::PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const {
+	static std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) {
 		std::wostringstream oss;
 		oss << L"[";
 		defer({ oss << L"]"; });
