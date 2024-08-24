@@ -122,9 +122,9 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			SIGDN_DESKTOPABSOLUTEPARSING,
 			&name
 		);
+		defer({ CoTaskMemFree(name); });
 		if (FAILED(hr)) return L"ERROR";
 		std::wstring wstrName(name);
-		CoTaskMemFree(name);
 		return name;
 	}
 
