@@ -125,8 +125,8 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		);
 		defer({ CoTaskMemFree(name); });
 		if (FAILED(hr)) return L"ERROR";
-		std::wstring wstrName(name);
-		return name;
+		std::wstring wstrName(name);  // name is copied so this is safe
+		return wstrName;
 	}
 
 	static std::wstring IIDToString(const std::wstring &sIID) {
