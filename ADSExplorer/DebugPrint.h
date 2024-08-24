@@ -36,15 +36,16 @@ class CDebugStream
 	// --- /Singleton ---
 };
 
-// extern std::wostream g_DebugStream;
-extern std::wofstream g_DebugStream;
+extern std::wostream g_DebugStream;
+// extern std::wofstream g_DebugStream;
 
 // https://stackoverflow.com/a/3371577
 // Usage: LOG(L"Hello" << ' ' << L"World!" << 1);
 // #define _DEBUG
 #ifdef _DEBUG
 	#define LOG(psz) do { \
-		g_DebugStream << psz << std::endl; \
+		CDebugStream::get_instance() << psz << std::endl; \
+		/* g_DebugStream << psz << std::endl; */ \
 	} while(false)
 #else
 	#define LOG(...) do { } while (false)

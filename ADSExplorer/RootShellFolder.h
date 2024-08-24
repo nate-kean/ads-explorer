@@ -30,10 +30,6 @@
 
 #include "resource.h"  // main symbols
 
-#ifdef _DEBUG
-	#include <string>
-#endif
-
 
 //==============================================================================
 
@@ -69,11 +65,6 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	  public IPersistFolder2,
 	  public IShellDetails {
    public:
-	#ifdef _DEBUG
-		std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) const;
-		std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const;
-	#endif
-
 	CADSXRootShellFolder();
 
 	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)

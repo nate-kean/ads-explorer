@@ -80,7 +80,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#include <string>
 	#include "iids.h"
 
-	std::wstring CADSXRootShellFolder::PidlToString(PCUIDLIST_RELATIVE pidl) const {
+	static std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
 		if (pidl == NULL) return L"<null>";
 		std::wostringstream oss;
 		bool first = true;
@@ -102,7 +102,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return oss.str();
 	}
 
-	std::wstring CADSXRootShellFolder::PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) const {
+	static std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) {
 		std::wostringstream oss;
 		oss << L"[";
 		defer({ oss << L"]"; });
@@ -113,6 +113,19 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			}
 		}
 		return oss.str();
+	}
+
+	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
+		PWSTR name = NULL;
+		HRESULT hr = SHGetNameFromIDList(
+			pidl,
+			SIGDN_DESKTOPABSOLUTEPARSING,
+			&name
+		);
+		if (FAILED(hr)) return L"ERROR";
+		std::wstring wstrName(name);
+		CoTaskMemFree(name);
+		return name;
 	}
 
 	static std::wstring IIDToString(const std::wstring &sIID) {
@@ -135,6 +148,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
 	#define IIDToString(...) (void) 0
+	#define InitalizationPidlToString(...) (void) 0
 #endif
 
 
@@ -151,16 +165,7 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
-	LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidl) << L"])");
-	PWSTR name = NULL;
-	HRESULT hr = SHGetNameFromIDList(pidl, SIGDN_DESKTOPABSOLUTEPARSING, &name);
-	if (SUCCEEDED(hr)) {
-		LOG(L" ** Initialize: Name=" << name);
-		CoTaskMemFree(name);
-	} else {
-		LOG(L" ** Initialize: SHGetNameFromIDList failed");
-	}
-
+	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	m_pidlRoot = ILCloneFull(pidl);
 	return m_pidlRoot != NULL ? S_OK : E_OUTOFMEMORY;
