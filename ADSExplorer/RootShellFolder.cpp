@@ -148,8 +148,8 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 #else
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
+	#define InitializationPidlToString(...) (void) 0
 	#define IIDToString(...) (void) 0
-	#define InitalizationPidlToString(...) (void) 0
 #endif
 
 
