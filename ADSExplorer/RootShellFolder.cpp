@@ -116,6 +116,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	}
 
 	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
+		if (pidl == NULL) return L"<null>";
 		PWSTR name = NULL;
 		HRESULT hr = SHGetNameFromIDList(
 			pidl,
