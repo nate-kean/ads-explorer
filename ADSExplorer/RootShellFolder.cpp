@@ -197,7 +197,8 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	// If the passed pidl is not ours, fail.
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
-	// I'll support multi-level PIDLs when I implement pseudofolders
+	// All items in an ADS Explorer view are children
+	// (until I implement pseudofolders)
 	return E_NOTIMPL;
 }
 
