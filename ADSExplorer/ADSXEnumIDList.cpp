@@ -15,18 +15,18 @@
 // Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
 // pushin p
 static bool PushPidl(
-	/* [in]     */ WIN32_FIND_STREAM_DATA *fsd,
+	_In_ const WIN32_FIND_STREAM_DATA &fsd,
 	// POINTER! to the destination array cursor because we're going to
 	// modify it (advance it).
 	// Fun Fact: This is a pointer to an array of pointers to ITEMID_CHILDren.
 	// A real triple pointer. How awful is that? :)
-	/* [in/out] */ PITEMID_CHILD **ppelt,
-	/* [out]    */ ULONG *nActual
+	_Inout_ PITEMID_CHILD **ppelt,
+	_Inout_ ULONG *nActual
 ) {
 	// Reusable item
 	static CADSXItem Item;
 
-	std::wstring sName = std::wstring(fsd->cStreamName);
+	std::wstring sName = std::wstring(fsd.cStreamName);
 	// All ADSes follow this name pattern AFAIK, but if they don't,
 	// 1: we shouldn't modify its name
 	// 2: I want to know about it
@@ -43,11 +43,11 @@ static bool PushPidl(
 
 	LOG(
 		L"** Stream: " << sName <<
-		L" (" << fsd->StreamSize.QuadPart << L" bytes)"
+		L" (" << fsd.StreamSize.QuadPart << L" bytes)"
 	);
 
 	// Fill in the item
-	Item.m_Filesize = fsd->StreamSize.QuadPart;
+	Item.m_Filesize = fsd.StreamSize.QuadPart;
 	Item.m_Name = sName;
 
 	// Copy this item into a PIDL
@@ -67,7 +67,7 @@ static bool PushPidl(
 }
 
 // Find one or more items with NextInternal and discard them.
-static bool NoOp(WIN32_FIND_STREAM_DATA *fsd, PITEMID_CHILD **ppelt, ULONG *nActual) {
+static bool NoOp(const WIN32_FIND_STREAM_DATA &fsd, PITEMID_CHILD **ppelt, ULONG *nActual) {
 	UNREFERENCED_PARAMETER(fsd);
 	UNREFERENCED_PARAMETER(ppelt);
 	UNREFERENCED_PARAMETER(nActual);
@@ -88,7 +88,7 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 	}
 }
 
-void CADSXEnumIDList::Init(IUnknown *pUnkOwner, std::wstring sPath) {
+void CADSXEnumIDList::Init(_In_ IUnknown *pUnkOwner, _In_ std::wstring sPath) {
 	LOG(P_EIDL << L"Init()");
 	m_pUnkOwner = pUnkOwner;
 	m_sPath = sPath;
@@ -98,9 +98,9 @@ void CADSXEnumIDList::Init(IUnknown *pUnkOwner, std::wstring sPath) {
 // Find one or more items with NextInternal and push them to the
 // output array rgelt with PushPidl.
 HRESULT CADSXEnumIDList::Next(
-	/* [in]  */ ULONG celt,
-	/* [out] */ PITEMID_CHILD *rgelt,
-	/* [out] */ ULONG *pceltFetched
+	_In_ ULONG celt,
+	_Outptr_ PITEMID_CHILD *rgelt,
+	_Out_ ULONG *pceltFetched
 ) {
 	LOG(P_EIDL << L"Next(celt=" << celt << L")");
 	return NextInternal(&PushPidl, celt, rgelt, pceltFetched);
@@ -108,10 +108,10 @@ HRESULT CADSXEnumIDList::Next(
 
 
 HRESULT CADSXEnumIDList::NextInternal(
-	/* [in]  */ FnConsume fnConsume,   // callback on item found
-	/* [in]  */ ULONG celt,            // number of pidls requested
-	/* [out] */ PITEMID_CHILD *rgelt,  // array of pidls
-	/* [out] */ ULONG *pceltFetched    // actual number of pidls fetched
+	_In_ FnConsume fnConsume,       // callback on item found
+	_In_ ULONG celt,                // number of pidls requested
+	_Outptr_ PITEMID_CHILD *rgelt,  // array of pidls
+	_Out_ ULONG *pceltFetched       // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
 		LOG(L"** Bad argument(s)");
@@ -154,7 +154,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 			LOG(L"** No streams found");
 			return S_FALSE;
 		}
-		bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
+		bPushPidlSuccess = fnConsume(fsd, &pelt, &nActual);
 		if (!bPushPidlSuccess) {
 			LOG(L"** Error: " << GetLastError());
 			return HRESULT_FROM_WIN32(GetLastError());
@@ -176,7 +176,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 			}
 		} else {
 			// Consume stream
-			bPushPidlSuccess = fnConsume(&fsd, &pelt, &nActual);
+			bPushPidlSuccess = fnConsume(fsd, &pelt, &nActual);
 			if (!bPushPidlSuccess) {
 				LOG(L"** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
@@ -207,7 +207,7 @@ HRESULT CADSXEnumIDList::Reset() {
 }
 
 
-HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
+HRESULT CADSXEnumIDList::Skip(_In_ ULONG celt) {
 	LOG(P_EIDL << L"Skip(celt=" << celt << L")");
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD *rgeltFake = NULL;
@@ -215,9 +215,10 @@ HRESULT CADSXEnumIDList::Skip(/* [in] */ ULONG celt) {
 }
 
 
-HRESULT CADSXEnumIDList::Clone(/* [out] */ IEnumIDList **ppEnum) {
+HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	LOG(P_EIDL << L"Clone()");
 	if (ppEnum == NULL) return E_POINTER;
+	*ppEnum = NULL;
 
 	CComObject<CADSXEnumIDList> *pNewEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pNewEnum);

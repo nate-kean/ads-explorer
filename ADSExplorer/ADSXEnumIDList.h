@@ -26,20 +26,24 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	void Init(IUnknown *pUnkOwner, std::wstring sPath);
 
 	// IEnumIDList
-	STDMETHOD(Next)(ULONG, PITEMID_CHILD*, ULONG*);
-	STDMETHOD(Skip)(ULONG);
+	STDMETHOD(Next)(_In_ ULONG, _Outptr_ PITEMID_CHILD*, _Out_ ULONG*);
+	STDMETHOD(Skip)(_In_ ULONG);
 	STDMETHOD(Reset)(void);
-	STDMETHOD(Clone)(IEnumIDList**);
+	STDMETHOD(Clone)(_COM_Outptr_ IEnumIDList**);
 
   protected:
 	using FnConsume = std::function<
-		bool (WIN32_FIND_STREAM_DATA*, PITEMID_CHILD**, ULONG*)
+		bool (
+			_In_ const WIN32_FIND_STREAM_DATA &,
+			_Outptr_ PITEMID_CHILD**,
+			_Out_ ULONG*
+		)
 	>;
 	HRESULT NextInternal(
-		FnConsume fnConsume,
-		ULONG celt,
-		PITEMID_CHILD *rgelt,
-		ULONG *pceltFetched
+		_In_ FnConsume fnConsume,
+		_In_ ULONG celt,
+		_Outptr_ PITEMID_CHILD *rgelt,
+		_Out_ ULONG *pceltFetched
 	);
 
 	// A sentinel COM object to represent the lifetime of the owner object.
