@@ -322,7 +322,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->Init(this->GetUnknown(), wstrPath);
 
 	// Return an IEnumIDList interface to the caller.
-	hr = pEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnumIDList);
+	hr = pEnum->QueryInterface(IID_PPV_ARGS(ppEnumIDList));
 	return hr;
 }
 

@@ -194,7 +194,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		SHELLDETAILS ShellDetails;
 
 		IShellDetails *pISD;
-		hr = m_pISF->QueryInterface(IID_IShellDetails, (void **) &pISD);
+		hr = m_pISF->QueryInterface(IID_PPV_ARGS(&pISD));
 		if (FAILED(hr)) return hr;
 
 		hr = pISD->GetDetailsOf(pDi->pidl, iColumn, &ShellDetails);

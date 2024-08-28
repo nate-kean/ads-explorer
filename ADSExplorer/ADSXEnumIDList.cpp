@@ -230,7 +230,7 @@ HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	// the Find Stream API :(
 	pNewEnum->Skip(m_nTotalFetched);
 
-	hr = pNewEnum->QueryInterface(IID_IEnumIDList, (void **) ppEnum);
+	hr = pNewEnum->QueryInterface(IID_PPV_ARGS(ppEnum));
 	if (FAILED(hr)) return hr;
 	return S_OK;
 }
