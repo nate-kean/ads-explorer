@@ -164,12 +164,74 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 	return S_OK;
 }
 
+
+// Stolen from dj-tech/reactos
+// Licensed under GPLv3
+// TO DO: make sure project is GPL compliant
+// Definition: https://gitlab.com/dj-tech/reactos/-/blob/master/reactos/dll/win32/shell32/shlfolder.cpp#L151
+// Usage: https://gitlab.com/dj-tech/reactos/-/blob/master/reactos/dll/win32/shell32/folders/CAdminToolsFolder.cpp#L171
+HRESULT SHELL32_CoCreateInitSF(
+	_In_         PCIDLIST_ABSOLUTE pidlRoot,
+	_In_opt_     LPCWSTR pathRoot,
+	_In_opt_     PCITEMID_CHILD pidlChild,
+	_In_opt_     const GUID* clsid,
+	_In_         int csidl,
+	_In_         REFIID riid,
+	_COM_Outptr_ void **ppvOut
+) {
+	HRESULT hr;
+	CComPtr<IShellFolder> psf;
+
+	hr = SHCoCreateInstance(NULL, clsid, NULL, IID_PPV_ARGS(&psf));
+	if (FAILED(hr)) return hr;
+
+	PIDLIST_ABSOLUTE pidlAbsolute = ILCombine(pidlRoot, pidlChild);
+	CComPtr<IPersistFolder> ppf;
+	CComPtr<IPersistFolder3> ppf3;
+
+	if (SUCCEEDED(psf->QueryInterface(IID_PPV_ARGS(&ppf3)))) {
+		PERSIST_FOLDER_TARGET_INFO ppfti = {0};
+		ppfti.dwAttributes = -1;
+		ppfti.csidl = csidl;
+
+		// build path
+		// if (pathRoot != NULL) {
+		// 	lstrcpynW(ppfti.szTargetParsingName, pathRoot, MAX_PATH - 1);
+		// 	PathAddBackslashW(ppfti.szTargetParsingName); // FIXME: why have drives a backslash here ?
+		// }
+
+		// if (pidlChild != NULL) {
+		// 	size_t len = wcslen(ppfti.szTargetParsingName);
+
+		// 	if (!_ILSimpleGetTextW(pidlChild, ppfti.szTargetParsingName + len, MAX_PATH - len)) {
+		// 		hr = E_INVALIDARG;
+		// 	}
+		// }
+
+		ppf3->InitializeEx(NULL, pidlAbsolute, &ppfti);
+	}
+	else if (SUCCEEDED(psf->QueryInterface(IID_PPV_ARGS(&ppf)))) {
+		ppf->Initialize(pidlAbsolute);
+	}
+	CoTaskMemFree(pidlAbsolute);
+
+	return psf->QueryInterface(riid, ppvOut);
+}
+
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	m_pidlRoot = ILCloneFull(pidl);
-	return m_pidlRoot != NULL ? S_OK : E_OUTOFMEMORY;
+	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
+	return SHELL32_CoCreateInitSF(
+		m_pidlRoot,
+		NULL,
+		NULL,
+		&CLSID_ShellFSFolder,
+		-1,
+		IID_PPV_ARGS(&m_psfFolder)
+	);
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
@@ -530,18 +592,15 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_Inout_opt_ ULONG *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName(name=[" << pszDisplayName << L"])");
-	UNREFERENCED_PARAMETER(hwnd);
+	return m_psfFolder->ParseDisplayName(
+		hwnd,
+		pbc,
+		pszDisplayName,
+		pchEaten,
+		ppidl,
+		pfAttributes
+	);
 
-	if (ppidl == NULL) return E_POINTER;
-	*ppidl = NULL;
-
-	if (pchEaten == NULL || pfAttributes == NULL) return E_POINTER;
-	if (
-		!StartsWith(pszDisplayName, L"ADS Explorer\\") &&
-		!StartsWith(pszDisplayName, L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\") &&
-		!StartsWith(pszDisplayName, L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\")
-	) return E_INVALIDARG;
-	return S_OK;
 }
 
 // TODO(garlic-os): should this be implemented?
