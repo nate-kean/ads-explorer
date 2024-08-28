@@ -188,7 +188,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
-		if (!pDi) return E_POINTER;
+		if (pDi == NULL) return E_POINTER;
 
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;

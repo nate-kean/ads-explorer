@@ -681,7 +681,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 ) {
 	LOG(P_RSF << L"GetDefaultColumn()");
 
-	if (!pSort || !pDisplay) return E_POINTER;
+	if (pSort == NULL || pDisplay == NULL) return E_POINTER;
 
 	*pSort = DETAILS_COLUMN_NAME;
 	*pDisplay = DETAILS_COLUMN_NAME;
