@@ -734,27 +734,19 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 		// only available on XP SP2+ on, so it won't harm 9x.
 		if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_TileInfo");
-			return SUCCEEDED(
-				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
-			);
+			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo");
-			return SUCCEEDED(
-				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
-			);
+			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_PreviewDetails");
-			return SUCCEEDED(
-				InitVariantFromString(L"prop:System.ItemPathDisplay", pv)
-			);
+			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_FullDetails");
-			return SUCCEEDED(
-				InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv)
-			);
+			return InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv);
 		} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
 			LOG(L" ** GetDetailsEx: PKEY_ItemType");
-			return SUCCEEDED(InitVariantFromString(L"Directory", pv));
+			return InitVariantFromString(L"Directory", pv);
 		}
 	#endif
 
