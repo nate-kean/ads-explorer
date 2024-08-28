@@ -639,8 +639,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
-		return SetReturnString(ColumnName, pDetails->str) ? S_OK
-														  : E_OUTOFMEMORY;
+		return SetReturnString(ColumnName, pDetails->str)
+			? S_OK : E_OUTOFMEMORY;
 	}
 
 	// Okay, this time it's for a real item
@@ -651,8 +651,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			ATLASSERT(Item->m_Name.length() <= INT_MAX);
 			pDetails->cxChar = (int) Item->m_Name.length();
 			return SetReturnStringW(Item->m_Name.c_str(), pDetails->str)
-				? S_OK
-				: E_OUTOFMEMORY;
+				? S_OK : E_OUTOFMEMORY;
 
 		case DETAILS_COLUMN_FILESIZE:
 			pDetails->fmt = LVCFMT_RIGHT;
@@ -661,8 +660,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = (int) wcslen(pszSize);
 			return SetReturnStringW(pszSize, pDetails->str)
-				? S_OK
-				: E_OUTOFMEMORY;
+				? S_OK : E_OUTOFMEMORY;
 	}
 
 	return E_INVALIDARG;
@@ -683,9 +681,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 ) {
 	LOG(P_RSF << L"GetDefaultColumn()");
 
-	if (!pSort || !pDisplay) {
-		return E_POINTER;
-	}
+	if (!pSort || !pDisplay) return E_POINTER;
 
 	*pSort = DETAILS_COLUMN_NAME;
 	*pDisplay = DETAILS_COLUMN_NAME;
