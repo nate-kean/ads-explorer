@@ -300,6 +300,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
 ) {
 	LOG(P_RSF << L"EnumObjects(dwFlags=0x" << std::hex << dwFlags << L")");
+	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return E_POINTER;
 	*ppEnumIDList = NULL;
