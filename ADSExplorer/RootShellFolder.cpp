@@ -184,10 +184,10 @@ STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 
 // Called when an item in an ADSX folder is double-clicked.
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
-	/* [in]  */ PCUIDLIST_RELATIVE pidl,
-	/* [in]  */ IBindCtx *pbc,
-	/* [in]  */ REFIID riid,
-	/* [out] */ void **ppvOut
+	_In_         PCUIDLIST_RELATIVE pidl,
+	_In_opt_     IBindCtx *pbc,
+	_In_         REFIID riid,
+	_COM_Outptr_ void **ppvOut
 ) {
 	LOG(P_RSF << L"BindToObject("
 		L"pidl=[" << PidlToString(pidl) << L"], "
@@ -204,9 +204,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
 // lParam can be the 0-based Index of the details column
 STDMETHODIMP CADSXRootShellFolder::CompareIDs(
-	/* [in] */ LPARAM lParam,
-	/* [in] */ PCUIDLIST_RELATIVE pidl1,
-	/* [in] */ PCUIDLIST_RELATIVE pidl2
+	_In_ LPARAM lParam,
+	_In_ PCUIDLIST_RELATIVE pidl1,
+	_In_ PCUIDLIST_RELATIVE pidl2
 ) {
 	LOG(P_RSF << L"CompareIDs("
 		L"lParam=" << (int) lParam << L"), "
@@ -250,9 +250,9 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 // Create a new COM object that implements IShellView.
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
-	/* [in]  */ HWND hwndOwner,
-	/* [in]  */ REFIID riid,
-	/* [out] */ void **ppvOut
+	_In_opt_     HWND hwndOwner,
+	_In_         REFIID riid,
+	_COM_Outptr_ void **ppvOut
 ) {
 	LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
@@ -292,9 +292,9 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 // EnumObjects() creates a COM object that implements IEnumIDList.
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
-	/* [in]  */ HWND hwndOwner,
-	/* [in]  */ SHCONTF dwFlags,
-	/* [out] */ IEnumIDList **ppEnumIDList
+	_In_opt_     HWND hwndOwner,
+	_In_         SHCONTF dwFlags,
+	_COM_Outptr_ IEnumIDList **ppEnumIDList
 ) {
 	LOG(P_RSF << L"EnumObjects(dwFlags=0x" << std::hex << dwFlags << L")");
 
@@ -325,9 +325,9 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
 // in.
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
-	/* [in]      */ UINT cidl,
-	/* [in]      */ PCUITEMID_CHILD_ARRAY aPidls,
-	/* [in, out] */ SFGAOF *pfAttribs
+	_In_    UINT cidl,
+	_In_    PCUITEMID_CHILD_ARRAY aPidls,
+	_Inout_ SFGAOF *pfAttribs
 ) {
 	LOG(P_RSF << L"GetAttributesOf(pidls=[" << PidlArrayToString(cidl, aPidls) << L"])");
 
@@ -518,11 +518,11 @@ bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 
 // TODO(garlic-os): root pidl plus pidlized file object's path
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
-	_In_opt_ HWND hwnd,
-	_In_opt_ IBindCtx *pbc,
-	_In_ LPWSTR pszDisplayName,
-	_Out_opt_ ULONG *pchEaten,
-	_Outptr_ PIDLIST_RELATIVE *ppidl,
+	_In_opt_    HWND hwnd,
+	_In_opt_    IBindCtx *pbc,
+	_In_        LPWSTR pszDisplayName,
+	_Out_opt_   ULONG *pchEaten,
+	_Outptr_    PIDLIST_RELATIVE *ppidl,
 	_Inout_opt_ ULONG *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName(name=[" << pszDisplayName << L"])");
@@ -556,9 +556,9 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT uColumn) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
-	/* [in, optional] */ PCUITEMID_CHILD pidl,
-	/* [in]           */ UINT uColumn,
-	/* [out]          */ SHELLDETAILS *pDetails
+	_In_opt_ PCUITEMID_CHILD pidl,
+	_In_ UINT uColumn,
+	_Out_ SHELLDETAILS *pDetails
 ) {
 	LOG(P_RSF << L"GetDetailsOf("
 		L"uColumn=" << uColumn << L", "
