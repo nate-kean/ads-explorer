@@ -277,7 +277,9 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 		// Create the view
 		hr = pViewObject->Create(
-			(IShellView **) ppvOut, hwndOwner, (IShellFolder *) this
+			reinterpret_cast<IShellView **>(ppvOut),
+			hwndOwner,
+			static_cast<IShellFolder *>(this)
 		);
 
 		// We are finished with our own use of the view object (AddRef()'d
