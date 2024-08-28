@@ -13,6 +13,13 @@ HKCR
             {
                 val Attributes = d '4160749584'
             }
+            Implemented Categories
+            {
+                {00021490-0000-0000-C000-000000000046}
+                {
+
+                }
+            }
         }
     }
 }
