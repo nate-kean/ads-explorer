@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
+ * Copyright (c) 2024 Nate Kean
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
