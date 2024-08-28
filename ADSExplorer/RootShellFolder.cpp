@@ -512,17 +512,32 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 }
 
+bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
+	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
+}
+
 // TODO(garlic-os): root pidl plus pidlized file object's path
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
-	/* [in]      */ HWND hwnd,
-	/* [in]      */ IBindCtx *pbc,
-	/* [in]      */ LPWSTR pszDisplayName,
-	/* [out]     */ ULONG *pchEaten,
-	/* [out]     */ PIDLIST_RELATIVE *ppidl,
-	/* [in, out] */ ULONG *pfAttributes
+	_In_opt_ HWND hwnd,
+	_In_opt_ IBindCtx *pbc,
+	_In_ LPWSTR pszDisplayName,
+	_Out_opt_ ULONG *pchEaten,
+	_Outptr_ PIDLIST_RELATIVE *ppidl,
+	_Inout_opt_ ULONG *pfAttributes
 ) {
-	LOG(P_RSF << L"ParseDisplayName()");
-	return E_NOTIMPL;
+	LOG(P_RSF << L"ParseDisplayName(name=[" << pszDisplayName << L"])");
+	UNREFERENCED_PARAMETER(hwnd);
+
+	if (ppidl == NULL) return E_POINTER;
+	*ppidl = NULL;
+
+	if (pchEaten == NULL || pfAttributes == NULL) return E_POINTER;
+	if (
+		!StartsWith(pszDisplayName, L"ADS Explorer\\") &&
+		!StartsWith(pszDisplayName, L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\") &&
+		!StartsWith(pszDisplayName, L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\")
+	) return E_INVALIDARG;
+	return S_OK;
 }
 
 // TODO(garlic-os): should this be implemented?
