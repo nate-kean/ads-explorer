@@ -121,6 +121,6 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
-	PIDLIST_ABSOLUTE m_pidlRoot;
-	CComPtr<IShellFolder2> m_psfFolder;
+	PIDLIST_ABSOLUTE m_pidl;
+	CComPtr<IShellFolder2> m_psf;
 };

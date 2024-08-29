@@ -156,7 +156,10 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 
 //==============================================================================
 // CADSXRootShellFolder
-CADSXRootShellFolder::CADSXRootShellFolder() : m_pidlRoot(NULL) {}
+CADSXRootShellFolder::CADSXRootShellFolder() : m_pidl(NULL) {
+	LOG(P_RSF << L"CONSTRUCTOR");
+}
+
 
 STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 	if (pclsid == NULL) return E_POINTER;
@@ -172,48 +175,27 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 // Usage: https://gitlab.com/dj-tech/reactos/-/blob/master/reactos/dll/win32/shell32/folders/CAdminToolsFolder.cpp#L171
 HRESULT SHELL32_CoCreateInitSF(
 	_In_         PCIDLIST_ABSOLUTE pidlRoot,
-	_In_opt_     LPCWSTR pathRoot,
-	_In_opt_     PCITEMID_CHILD pidlChild,
-	_In_opt_     const GUID* clsid,
-	_In_         int csidl,
 	_In_         REFIID riid,
 	_COM_Outptr_ void **ppvOut
 ) {
-	HRESULT hr;
 	CComPtr<IShellFolder> psf;
 
-	hr = SHCoCreateInstance(NULL, clsid, NULL, IID_PPV_ARGS(&psf));
+	HRESULT hr = SHCoCreateInstance(NULL, &CLSID_ShellFSFolder, NULL, IID_PPV_ARGS(&psf));
 	if (FAILED(hr)) return hr;
 
-	PIDLIST_ABSOLUTE pidlAbsolute = ILCombine(pidlRoot, pidlChild);
 	CComPtr<IPersistFolder> ppf;
 	CComPtr<IPersistFolder3> ppf3;
 
 	if (SUCCEEDED(psf->QueryInterface(IID_PPV_ARGS(&ppf3)))) {
-		PERSIST_FOLDER_TARGET_INFO ppfti = {0};
-		ppfti.dwAttributes = -1;
-		ppfti.csidl = csidl;
+		PERSIST_FOLDER_TARGET_INFO pfti = {0};
+		pfti.dwAttributes = -1;
+		pfti.csidl = -1;
 
-		// build path
-		// if (pathRoot != NULL) {
-		// 	lstrcpynW(ppfti.szTargetParsingName, pathRoot, MAX_PATH - 1);
-		// 	PathAddBackslashW(ppfti.szTargetParsingName); // FIXME: why have drives a backslash here ?
-		// }
-
-		// if (pidlChild != NULL) {
-		// 	size_t len = wcslen(ppfti.szTargetParsingName);
-
-		// 	if (!_ILSimpleGetTextW(pidlChild, ppfti.szTargetParsingName + len, MAX_PATH - len)) {
-		// 		hr = E_INVALIDARG;
-		// 	}
-		// }
-
-		ppf3->InitializeEx(NULL, pidlAbsolute, &ppfti);
+		ppf3->InitializeEx(NULL, pidlRoot, &pfti);
 	}
 	else if (SUCCEEDED(psf->QueryInterface(IID_PPV_ARGS(&ppf)))) {
-		ppf->Initialize(pidlAbsolute);
+		ppf->Initialize(pidlRoot);
 	}
-	CoTaskMemFree(pidlAbsolute);
 
 	return psf->QueryInterface(riid, ppvOut);
 }
@@ -221,23 +203,16 @@ HRESULT SHELL32_CoCreateInitSF(
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
-	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
-	m_pidlRoot = ILCloneFull(pidl);
-	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
-	return SHELL32_CoCreateInitSF(
-		m_pidlRoot,
-		NULL,
-		NULL,
-		&CLSID_ShellFSFolder,
-		-1,
-		IID_PPV_ARGS(&m_psfFolder)
-	);
+	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
+	m_pidl = ILCloneFull(pidl);
+	if (m_pidl == NULL) return E_OUTOFMEMORY;
+	return SHELL32_CoCreateInitSF(m_pidl, IID_PPV_ARGS(&m_psf));
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 	LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
-	*ppidl = ILCloneFull(m_pidlRoot);
+	*ppidl = ILCloneFull(m_pidl);
 	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
 }
 
@@ -476,7 +451,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		pDataObject->AddRef();
 		// Tie its lifetime with this object (the IShellFolder object)
 		// and embed the PIDL in the data
-		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
+		pDataObject->Init(this->GetUnknown(), m_pidl, aPidls[0]);
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppvOut);
 		// We do no more need our ref (note that the object will not die because
@@ -592,7 +567,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_Inout_opt_ ULONG *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName(name=[" << pszDisplayName << L"])");
-	return m_psfFolder->ParseDisplayName(
+	return m_psf->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
