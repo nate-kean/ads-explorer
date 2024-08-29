@@ -160,6 +160,10 @@ CADSXRootShellFolder::CADSXRootShellFolder() : m_pidl(NULL) {
 	LOG(P_RSF << L"CONSTRUCTOR");
 }
 
+CADSXRootShellFolder::~CADSXRootShellFolder() {
+	LOG(P_RSF << L"DESTRUCTOR");
+	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
+}
 
 STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 	if (pclsid == NULL) return E_POINTER;

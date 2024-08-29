@@ -66,6 +66,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	  public IShellDetails {
    public:
 	CADSXRootShellFolder();
+	virtual ~CADSXRootShellFolder();
 
 	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)
 
