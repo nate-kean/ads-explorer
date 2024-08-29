@@ -18,7 +18,8 @@ including
 [Dave Plummer](https://www.youtube.com/watch?v=aQUtUQ_L8Yk),
 and
 [Michael Dunn](https://www.codeproject.com/Articles/1649/The-Complete-Idiot-s-Guide-to-Writing-Namespace-Ex).  
-This project is most directly a fork of Buckley's [OpenWindows](https://github.com/NattyNarwhal/OpenWindows) namespace extension.
+This project is most directly a fork of Buckley's [OpenWindows](https://github.com/NattyNarwhal/OpenWindows)
+namespace extension.
 
 ## Building
 This is a Visual Studio 2022 C++ ATL project made for MSVC v143.
@@ -49,7 +50,9 @@ picker dialogs), so it might cause stability issues. _Caveat emptor._
   tile view subtitles in Vista+. It should probably use fancier behavior,
   but as it is now it delegates as much as it can except the bare minimum to
   the "classic" way of doing it.
-* It's unfinished
+* Not feature complete.
+* It would be nice for this to be backwards compatible with the oldest versions
+  of Windows possible.
 
 ## Attributions
 See `LICENSE`.
