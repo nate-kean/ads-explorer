@@ -13,11 +13,12 @@ invisible by usual means.
 If I have seen further, it is by standing on the shoulders of giants. This app
 would not have been possible without the work of better programmers than me,
 including
-[Calvin Buckley](https://github.com/NattyNarwhal/OpenWindows),
+[Calvin Buckley](https://cmpct.info/~calvin/Articles/COMAbyss/),
 [Pascal Hurni](https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample),
 [Dave Plummer](https://www.youtube.com/watch?v=aQUtUQ_L8Yk),
 and
-[Michael Dunn](https://www.codeproject.com/Articles/1649/The-Complete-Idiot-s-Guide-to-Writing-Namespace-Ex).
+[Michael Dunn](https://www.codeproject.com/Articles/1649/The-Complete-Idiot-s-Guide-to-Writing-Namespace-Ex).  
+This project is most directly a fork of Buckley's [OpenWindows](https://github.com/NattyNarwhal/OpenWindows) namespace extension.
 
 ## Building
 This is a Visual Studio 2022 C++ ATL project made for MSVC v143.
