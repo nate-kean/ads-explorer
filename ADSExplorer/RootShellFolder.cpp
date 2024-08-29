@@ -599,8 +599,8 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT uColumn) {
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidl,
-	_In_ UINT uColumn,
-	_Out_ SHELLDETAILS *pDetails
+	_In_     UINT uColumn,
+	_Out_    SHELLDETAILS *pDetails
 ) {
 	LOG(P_RSF << L"GetDetailsOf("
 		L"uColumn=" << uColumn << L", "
