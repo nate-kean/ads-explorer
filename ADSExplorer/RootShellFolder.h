@@ -120,8 +120,13 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	STDMETHOD(MapColumnToSCID)(_In_ UINT, _Out_ SHCOLUMNID*);
 
 	//--------------------------------------------------------------------------
+	// Helper member functions
+	HRESULT ClipADSX(PIDLIST_RELATIVE *ppidl);
+
+	//--------------------------------------------------------------------------
 
    protected:
-	PIDLIST_ABSOLUTE m_pidl;
-	CComPtr<IShellFolder2> m_psf;
+	PIDLIST_ABSOLUTE m_pidlRoot;
+	PIDLIST_RELATIVE m_pidl;
+	CComPtr<IShellFolder2> m_psfRoot;
 };

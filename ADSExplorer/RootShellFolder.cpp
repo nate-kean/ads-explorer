@@ -156,12 +156,15 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 
 //==============================================================================
 // CADSXRootShellFolder
-CADSXRootShellFolder::CADSXRootShellFolder() : m_pidl(NULL) {
+CADSXRootShellFolder::CADSXRootShellFolder()
+	: m_pidlRoot(NULL)
+	, m_pidl(NULL) {
 	LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 CADSXRootShellFolder::~CADSXRootShellFolder() {
 	LOG(P_RSF << L"DESTRUCTOR");
+	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
 }
 
@@ -207,16 +210,16 @@ HRESULT SHELL32_CoCreateInitSF(
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
-	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
-	m_pidl = ILCloneFull(pidl);
-	if (m_pidl == NULL) return E_OUTOFMEMORY;
-	return SHELL32_CoCreateInitSF(m_pidl, IID_PPV_ARGS(&m_psf));
+	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
+	m_pidlRoot = ILCloneFull(pidl);
+	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
+	return SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 	LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
-	*ppidl = ILCloneFull(m_pidl);
+	*ppidl = ILCloneFull(m_pidlRoot);
 	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
 }
 
@@ -354,12 +357,12 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
-	// wchar_t pszPath[MAX_PATH];
-	// SHGetPathFromIDListW(ILNext(m_pidlRoot), pszPath);
-	// _bstr_t bstrPath(pszPath);
-	std::wstring wstrPath =
-		L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-		L"ADS Explorer\\Test\\Files\\3streams.txt";
+	wchar_t pszPath[MAX_PATH];
+	SHGetPathFromIDListW(m_pidl, pszPath);
+	std::wstring wstrPath(pszPath);
+	// std::wstring wstrPath =
+	// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+	// 	L"ADS Explorer\\Test\\Files\\3streams.txt";
 	LOG(L" ** EnumObjects: Path=" << wstrPath);
 	pEnum->Init(this->GetUnknown(), wstrPath);
 
@@ -456,7 +459,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		pDataObject->AddRef();
 		// Tie its lifetime with this object (the IShellFolder object)
 		// and embed the PIDL in the data
-		pDataObject->Init(this->GetUnknown(), m_pidl, aPidls[0]);
+		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppvOut);
 		// We do no more need our ref (note that the object will not die because
@@ -562,6 +565,54 @@ bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
 }
 
+// Clip My Computer off the PIDL if it's there
+// TODO(garlic-os): Can SHGetSpecialFolderLocation be used instead of
+// SHGetIDListFromObject and psfDesktop?
+// TODO(garlic-os): Can m_psf be used instead of psfDesktop?
+HRESULT ClipDesktop(PIDLIST_RELATIVE *ppidl) {
+	HRESULT hr;
+
+	CComPtr<IShellFolder> psfDesktop;
+	hr = SHGetDesktopFolder(&psfDesktop);
+	if (FAILED(hr)) return hr;
+
+	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	if (pidlFirst == NULL) return E_OUTOFMEMORY;
+	defer({ CoTaskMemFree(pidlFirst); });
+
+	PIDLIST_ABSOLUTE pidlDesktop;
+	hr = SHGetIDListFromObject(psfDesktop, &pidlDesktop);
+	if (FAILED(hr)) return hr;
+	defer({ CoTaskMemFree(pidlDesktop); });
+
+	if (psfDesktop->CompareIDs(0, pidlFirst, pidlDesktop) == 0) {
+		*ppidl = ILNext(*ppidl);
+		return S_OK;
+	}
+	return S_FALSE;
+}
+
+HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PIDLIST_RELATIVE *ppidl) {
+	HRESULT hr;
+
+	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	if (pidlFirst == NULL) return E_OUTOFMEMORY;
+	defer({ CoTaskMemFree(pidlFirst); });
+
+	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
+	if (pidlRootTemp == NULL) return E_OUTOFMEMORY;
+	defer({ CoTaskMemFree(pidlRootTemp); });
+
+	hr = ClipDesktop(&pidlRootTemp);
+	if (FAILED(hr)) return hr;
+
+	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
+		*ppidl = ILNext(*ppidl);
+		return S_OK;
+	}
+	return S_FALSE;
+}
+
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_opt_    HWND hwnd,
 	_In_opt_    IBindCtx *pbc,
@@ -570,8 +621,10 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
 	_Inout_opt_ ULONG *pfAttributes
 ) {
-	LOG(P_RSF << L"ParseDisplayName(name=[" << pszDisplayName << L"])");
-	return m_psf->ParseDisplayName(
+	LOG(P_RSF << L"ParseDisplayName(name=\"" << pszDisplayName << L"\")");
+
+	HRESULT hr;
+	hr = m_psfRoot->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
@@ -579,7 +632,17 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		ppidl,
 		pfAttributes
 	);
+	if (FAILED(hr)) return hr;
+	
+	m_pidl = ILClone(*ppidl);
+	if (m_pidl == NULL) return E_OUTOFMEMORY;
 
+	hr = ClipDesktop(&m_pidl);
+	if (FAILED(hr)) return hr;
+	hr = ClipADSX(&m_pidl);
+	if (FAILED(hr)) return hr;
+
+	return hr;
 }
 
 // TODO(garlic-os): should this be implemented?
