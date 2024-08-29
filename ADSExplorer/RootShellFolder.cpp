@@ -334,7 +334,8 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	return E_NOINTERFACE;
 }
 
-// EnumObjects() creates a COM object that implements IEnumIDList.
+// Return a COM object that implements IEnumIDList and enumerates the ADSes in
+// the current folder.
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_opt_     HWND hwndOwner,
 	_In_         SHCONTF dwFlags,
@@ -561,7 +562,6 @@ bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
 }
 
-// TODO(garlic-os): root pidl plus pidlized file object's path
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_opt_    HWND hwnd,
 	_In_opt_    IBindCtx *pbc,
