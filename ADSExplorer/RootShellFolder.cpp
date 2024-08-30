@@ -309,6 +309,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	*ppvOut = NULL;
 
 	HRESULT hr;
+
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
 		// Create a view object
@@ -632,7 +633,10 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
 	_Inout_opt_ ULONG            *pfAttributes
 ) {
-	LOG(P_RSF << L"ParseDisplayName(name=\"" << pszDisplayName << L"\")");
+	LOG(P_RSF << L"ParseDisplayName("
+		L"name=\"" << pszDisplayName << L"\", "
+		L"attributes=" << ((pfAttributes != NULL) ? *pfAttributes : 9001) <<
+	L")");
 
 	if (pchEaten != NULL) {
 		*pchEaten = 0;
@@ -648,7 +652,13 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		ppidl,
 		pfAttributes
 	);
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) {
+		LOG(L" ** m_psfDesktop->ParseDisplayName failed: " << hr);
+		return hr;
+	}
+
+	LOG("** Parsed: [" << PidlToString(*ppidl) << L"]");
+
 	
 	m_pidl = ILClone(*ppidl);
 	if (m_pidl == NULL) return E_OUTOFMEMORY;
