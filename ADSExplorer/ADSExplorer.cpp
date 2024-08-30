@@ -41,8 +41,11 @@ BEGIN_OBJECT_MAP(ObjectMap)
 OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, CADSXRootShellFolder)
 END_OBJECT_MAP()
 
-BOOL APIENTRY
-DllMain(HINSTANCE hInstance, DWORD ul_reason_for_call, LPVOID lpReserved) {
+BOOL APIENTRY DllMain(
+	_In_ HINSTANCE hInstance,
+	_In_ DWORD     ul_reason_for_call,
+	_In_ LPVOID    lpReserved
+) {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
 		_Module.Init(ObjectMap, hInstance, &LIBID_ADSEXPLORERLib);
 		DisableThreadLibraryCalls(hInstance);
@@ -54,23 +57,29 @@ DllMain(HINSTANCE hInstance, DWORD ul_reason_for_call, LPVOID lpReserved) {
 
 /////////////////////////////////////////////////////////////////////////////
 // Used to determine whether the DLL can be unloaded by OLE
+__control_entrypoint(DllExport)
 STDAPI DllCanUnloadNow(void) {
 	return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Returns a class factory to create an object of the requested type
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv) {
+_Check_return_
+STDAPI DllGetClassObject(
+	_In_     REFCLSID rclsid,
+	_In_     REFIID   riid,
+	_Outptr_ LPVOID   *ppv
+) {
 	return _Module.GetClassObject(rclsid, riid, ppv);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
-STDAPI DllRegisterServer(void) {
+STDAPI DllRegisterServer() {
 	// registers object, typelib and all interfaces in typelib
 	return _Module.RegisterServer(TRUE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
-STDAPI DllUnregisterServer(void) { return _Module.UnregisterServer(TRUE); }
+STDAPI DllUnregisterServer() { return _Module.UnregisterServer(TRUE); }

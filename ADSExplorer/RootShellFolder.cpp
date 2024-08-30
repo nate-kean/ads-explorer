@@ -168,7 +168,7 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
 }
 
-STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
+STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 	if (pclsid == NULL) return E_POINTER;
 	*pclsid = CLSID_ADSExplorerRootShellFolder;
 	return S_OK;
@@ -180,10 +180,10 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(CLSID *pclsid) {
 // TO DO: make sure project is GPL compliant
 // Definition: https://gitlab.com/dj-tech/reactos/-/blob/master/reactos/dll/win32/shell32/shlfolder.cpp#L151
 // Usage: https://gitlab.com/dj-tech/reactos/-/blob/master/reactos/dll/win32/shell32/folders/CAdminToolsFolder.cpp#L171
-HRESULT SHELL32_CoCreateInitSF(
+static HRESULT SHELL32_CoCreateInitSF(
 	_In_         PCIDLIST_ABSOLUTE pidlRoot,
-	_In_         REFIID riid,
-	_COM_Outptr_ void **ppvOut
+	_In_         REFIID            riid,
+	_COM_Outptr_ void              **ppvOut
 ) {
 	CComPtr<IShellFolder> psf;
 
@@ -208,7 +208,7 @@ HRESULT SHELL32_CoCreateInitSF(
 }
 
 // Initialize() is passed the PIDL of the folder where our extension is.
-STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
+STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	m_pidlRoot = ILCloneFull(pidl);
@@ -216,7 +216,8 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(PCIDLIST_ABSOLUTE pidl) {
 	return SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
 }
 
-STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
+STDMETHODIMP
+CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
 	*ppidl = ILCloneFull(m_pidlRoot);
@@ -229,9 +230,9 @@ STDMETHODIMP CADSXRootShellFolder::GetCurFolder(PIDLIST_ABSOLUTE *ppidl) {
 // Called when an item in an ADSX folder is double-clicked.
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
-	_In_opt_     IBindCtx *pbc,
-	_In_         REFIID riid,
-	_COM_Outptr_ void **ppvOut
+	_In_opt_     IBindCtx           *pbc,
+	_In_         REFIID             riid,
+	_COM_Outptr_ void               **ppvOut
 ) {
 	LOG(P_RSF << L"BindToObject("
 		L"pidl=[" << PidlToString(pidl) << L"], "
@@ -249,7 +250,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 // CompareIDs() is responsible for returning the sort order of two PIDLs.
 // lParam can be the 0-based Index of the details column
 STDMETHODIMP CADSXRootShellFolder::CompareIDs(
-	_In_ LPARAM lParam,
+	_In_ LPARAM             lParam,
 	_In_ PCUIDLIST_RELATIVE pidl1,
 	_In_ PCUIDLIST_RELATIVE pidl2
 ) {
@@ -295,9 +296,9 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 // Create a new COM object that implements IShellView.
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
-	_In_opt_     HWND hwndOwner,
+	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
-	_COM_Outptr_ void **ppvOut
+	_COM_Outptr_ void   **ppvOut
 ) {
 	LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
@@ -340,8 +341,8 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 // Return a COM object that implements IEnumIDList and enumerates the ADSes in
 // the current folder.
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
-	_In_opt_     HWND hwndOwner,
-	_In_         SHCONTF dwFlags,
+	_In_         HWND        hwndOwner,
+	_In_         SHCONTF     dwFlags,
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
 ) {
 	LOG(P_RSF << L"EnumObjects(dwFlags=0x" << std::hex << dwFlags << L")");
@@ -374,9 +375,9 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
 // in.
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
-	_In_    UINT cidl,
+	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
-	_Inout_ SFGAOF *pfAttribs
+	_Inout_ SFGAOF                *pfAttribs
 ) {
 	LOG(P_RSF << L"GetAttributesOf(pidls=[" << PidlArrayToString(cidl, aPidls) << L"])");
 
@@ -418,12 +419,12 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 // GetUIObjectOf() is called to get several sub-objects like IExtractIcon and
 // IDataObject
 STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
-	HWND hwndOwner,
-	UINT cidl,
-	PCUITEMID_CHILD_ARRAY aPidls,
-	REFIID riid,
-	UINT *rgfReserved,
-	void **ppvOut
+	_In_         HWND                  hwndOwner,
+	_In_         UINT                  cidl,
+	_In_         PCUITEMID_CHILD_ARRAY aPidls,
+	_In_         REFIID                riid,
+	_Inout_      UINT                  *rgfReserved,
+	_COM_Outptr_ void                  **ppvOut
 ) {
 	LOG(P_RSF << L"GetUIObjectOf("
 		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
@@ -498,16 +499,20 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	return E_NOINTERFACE;
 }
 
-STDMETHODIMP
-CADSXRootShellFolder::BindToStorage(PCUIDLIST_RELATIVE, IBindCtx *, REFIID, void **) {
+STDMETHODIMP CADSXRootShellFolder::BindToStorage(
+	_In_         PCUIDLIST_RELATIVE,
+	_In_         IBindCtx *,
+	_In_         REFIID,
+	_COM_Outptr_ void **ppvOut
+) {
 	LOG(P_RSF << L"BindToStorage()");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
-	PCUITEMID_CHILD pidl,
-	SHGDNF uFlags,
-	STRRET *pName
+	_In_  PCUITEMID_CHILD pidl,
+	_In_  SHGDNF          uFlags,
+	_Out_ STRRET          *pName
 ) {
 	LOG(P_RSF << L"GetDisplayNameOf(pidl=[" << PidlToString(pidl) << L"])");
 
@@ -614,12 +619,12 @@ HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PIDLIST_RELATIVE *ppidl) {
 }
 
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
-	_In_opt_    HWND hwnd,
-	_In_opt_    IBindCtx *pbc,
-	_In_        LPWSTR pszDisplayName,
-	_Out_opt_   ULONG *pchEaten,
+	_In_        HWND             hwnd,
+	_In_opt_    IBindCtx         *pbc,
+	_In_        LPWSTR           pszDisplayName,
+	_Out_opt_   ULONG            *pchEaten,
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
-	_Inout_opt_ ULONG *pfAttributes
+	_Inout_opt_ ULONG            *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName(name=\"" << pszDisplayName << L"\")");
 
@@ -646,7 +651,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 }
 
 // TODO(garlic-os): should this be implemented?
-STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHGDNF, PITEMID_CHILD *) {
+STDMETHODIMP CADSXRootShellFolder::SetNameOf(_In_ HWND, _In_ PCUITEMID_CHILD, _In_ LPCWSTR, _In_ SHGDNF, _Outptr_ PITEMID_CHILD *) {
 	LOG(P_RSF << L"SetNameOf()");
 	return E_NOTIMPL;
 }
@@ -654,7 +659,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(HWND, PCUITEMID_CHILD, LPCWSTR, SHG
 //-------------------------------------------------------------------------------
 // IShellDetails
 
-STDMETHODIMP CADSXRootShellFolder::ColumnClick(UINT uColumn) {
+STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 	LOG(P_RSF << L"ColumnClick(uColumn=" << uColumn << L")");
 	// Tell the caller to sort the column itself
 	return S_FALSE;
@@ -711,15 +716,15 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 //------------------------------------------------------------------------------
 // IShellFolder2
 
-STDMETHODIMP CADSXRootShellFolder::EnumSearches(IEnumExtraSearch **ppEnum) {
+STDMETHODIMP CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
-	DWORD dwReserved,
-	ULONG *pSort,
-	ULONG *pDisplay
+	_In_  DWORD dwReserved,
+	_Out_ ULONG *pSort,
+	_Out_ ULONG *pDisplay
 ) {
 	LOG(P_RSF << L"GetDefaultColumn()");
 
@@ -731,8 +736,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 	return S_OK;
 }
 
-STDMETHODIMP
-CADSXRootShellFolder::GetDefaultColumnState(UINT uColumn, SHCOLSTATEF *pcsFlags) {
+STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
+	_In_  UINT uColumn,
+	_Out_ SHCOLSTATEF *pcsFlags
+) {
 	LOG(P_RSF << L"GetDefaultColumnState(uColumn=" << uColumn << L")");
 
 	if (pcsFlags == NULL) return E_POINTER;
@@ -755,15 +762,15 @@ CADSXRootShellFolder::GetDefaultColumnState(UINT uColumn, SHCOLSTATEF *pcsFlags)
 	return S_OK;
 }
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(GUID *pguid) {
+STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 	LOG(P_RSF << L"GetDefaultSearchGUID()");
 	return E_NOTIMPL;
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
-	PCUITEMID_CHILD pidl,
-	const SHCOLUMNID *pscid,
-	VARIANT *pv
+	_In_  PCUITEMID_CHILD pidl,
+	_In_  const SHCOLUMNID *pscid,
+	_Out_ VARIANT *pv
 ) {
 	LOG(P_RSF << L"GetDetailsEx("
 		L"pscid->pid=" << pscid->pid << L", "
@@ -796,8 +803,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP
-CADSXRootShellFolder::MapColumnToSCID(UINT uColumn, SHCOLUMNID *pscid) {
+STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
+	_In_ UINT uColumn,
+	_Out_ SHCOLUMNID *pscid
+) {
 	LOG(P_RSF << L"MapColumnToSCID(uColumn=" << uColumn << L")");
 
 	#if defined(ADSX_PKEYS_SUPPORT)

@@ -15,13 +15,13 @@
 // Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
 // pushin p
 static bool PushPidl(
-	_In_ const WIN32_FIND_STREAM_DATA &fsd,
+	_In_    const WIN32_FIND_STREAM_DATA &fsd,
 	// POINTER! to the destination array cursor because we're going to
 	// modify it (advance it).
 	// Fun Fact: This is a pointer to an array of pointers to ITEMID_CHILDren.
 	// A real triple pointer. How awful is that? :)
-	_Inout_ PITEMID_CHILD **ppelt,
-	_Inout_ ULONG *nActual
+	_Inout_ PITEMID_CHILD                **ppelt,
+	_Inout_ ULONG                        *nActual
 ) {
 	// Reusable item
 	static CADSXItem Item;
@@ -67,10 +67,7 @@ static bool PushPidl(
 }
 
 // Find one or more items with NextInternal and discard them.
-static bool NoOp(const WIN32_FIND_STREAM_DATA &fsd, PITEMID_CHILD **ppelt, ULONG *nActual) {
-	UNREFERENCED_PARAMETER(fsd);
-	UNREFERENCED_PARAMETER(ppelt);
-	UNREFERENCED_PARAMETER(nActual);
+static bool NoOp(const WIN32_FIND_STREAM_DATA &, PITEMID_CHILD **, ULONG *) {
 	return true;
 }
 
@@ -108,10 +105,10 @@ HRESULT CADSXEnumIDList::Next(
 
 
 HRESULT CADSXEnumIDList::NextInternal(
-	_In_ FnConsume fnConsume,       // callback on item found
-	_In_ ULONG celt,                // number of pidls requested
-	_Outptr_ PITEMID_CHILD *rgelt,  // array of pidls
-	_Out_ ULONG *pceltFetched       // actual number of pidls fetched
+	_In_     FnConsume     fnConsume,     // callback on item found
+	_In_     ULONG         celt,          // number of pidls requested
+	_Outptr_ PITEMID_CHILD *rgelt,        // array of pidls
+	_Out_    ULONG         *pceltFetched  // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
 		LOG(L"** Bad argument(s)");

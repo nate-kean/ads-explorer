@@ -92,7 +92,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// IShellFolder
-	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
+	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_opt_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(CompareIDs)(_In_ LPARAM, _In_ PCUIDLIST_RELATIVE, _In_ PCUIDLIST_RELATIVE);
 	STDMETHOD(CreateViewObject)(_In_ HWND, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(EnumObjects)(_In_ HWND, _In_ SHCONTF, _COM_Outptr_ IEnumIDList**);
@@ -100,13 +100,13 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	STDMETHOD(GetUIObjectOf)(_In_ HWND, _In_ UINT, _In_ PCUITEMID_CHILD_ARRAY, _In_ REFIID, _Inout_ UINT*, _COM_Outptr_ void**);
 	STDMETHOD(BindToStorage)(_In_ PCUIDLIST_RELATIVE, _In_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(GetDisplayNameOf)(_In_ PCUITEMID_CHILD, _In_ SHGDNF, _Out_ STRRET*);
-	STDMETHOD(ParseDisplayName)(_In_ HWND, _In_ IBindCtx*, _In_ LPWSTR, _Out_ ULONG*, _Outptr_ PIDLIST_RELATIVE*, _Inout_ ULONG*);
+	STDMETHOD(ParseDisplayName)(_In_ HWND, _In_opt_ IBindCtx*, _In_ LPWSTR, _Out_opt_ ULONG*, _Outptr_ PIDLIST_RELATIVE*, _Inout_opt_ ULONG*);
 	STDMETHOD(SetNameOf)(_In_ HWND, _In_ PCUITEMID_CHILD, _In_ LPCWSTR, _In_ SHGDNF, _Outptr_ PITEMID_CHILD*);
 
 	//--------------------------------------------------------------------------
 	// IShellDetails
 	STDMETHOD(ColumnClick)(_In_ UINT);
-	STDMETHOD(GetDetailsOf)(_In_ PCUITEMID_CHILD, _In_ UINT, _Out_ SHELLDETAILS*);
+	STDMETHOD(GetDetailsOf)(_In_opt_ PCUITEMID_CHILD, _In_ UINT, _Out_ SHELLDETAILS*);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder2

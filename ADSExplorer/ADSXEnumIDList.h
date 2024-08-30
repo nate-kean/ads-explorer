@@ -23,7 +23,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	// are called in a weird way that makes it so that AFAIK they can't have
 	// parameters
 	// @post: this takes ownership of pszPath
-	void Init(IUnknown *pUnkOwner, std::wstring sPath);
+	void Init(_In_ IUnknown *pUnkOwner, _In_ std::wstring sPath);
 
 	// IEnumIDList
 	STDMETHOD(Next)(_In_ ULONG, _Outptr_ PITEMID_CHILD*, _Out_ ULONG*);
@@ -34,16 +34,16 @@ class ATL_NO_VTABLE CADSXEnumIDList
   protected:
 	using FnConsume = std::function<
 		bool (
-			_In_ const WIN32_FIND_STREAM_DATA &,
-			_Outptr_ PITEMID_CHILD**,
-			_Out_ ULONG*
+			_In_     const WIN32_FIND_STREAM_DATA &fsd,
+			_Outptr_ PITEMID_CHILD                **ppelt,
+			_Out_    ULONG                        *nActual
 		)
 	>;
 	HRESULT NextInternal(
-		_In_ FnConsume fnConsume,
-		_In_ ULONG celt,
+		_In_     FnConsume     fnConsume,
+		_In_     ULONG         celt,
 		_Outptr_ PITEMID_CHILD *rgelt,
-		_Out_ ULONG *pceltFetched
+		_Out_    ULONG         *pceltFetched
 	);
 
 	// A sentinel COM object to represent the lifetime of the owner object.
