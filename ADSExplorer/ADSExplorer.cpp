@@ -38,7 +38,7 @@
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, CADSXRootShellFolder)
+	OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, CADSXRootShellFolder)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(

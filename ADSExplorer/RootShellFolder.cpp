@@ -302,11 +302,10 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 ) {
 	LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
-	HRESULT hr;
-
 	if (ppvOut == NULL) return E_POINTER;
 	*ppvOut = NULL;
 
+	HRESULT hr;
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
 		// Create a view object

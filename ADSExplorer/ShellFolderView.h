@@ -116,9 +116,15 @@ class CShellFolderViewImpl : public CMessageMap,
 
 	STDMETHODIMP MessageSFVCB(UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		LRESULT lResult = NULL;
-		BOOL bResult =
-			ProcessWindowMessage(NULL, uMsg, wParam, lParam, lResult, 0);
-		return bResult ? (HRESULT) lResult : E_NOTIMPL;
+		BOOL bResult = ProcessWindowMessage(
+			NULL,
+			uMsg,
+			wParam,
+			lParam,
+			lResult,
+			0
+		);
+		return bResult ? lResult : E_NOTIMPL;
 	}
 
    protected:
