@@ -239,6 +239,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 
+	if (ppvOut == NULL) return E_POINTER;
+	*ppvOut = NULL;
+
 	// If the passed pidl is not ours, fail.
 	if (!CADSXItem::IsOwn(pidl)) return E_INVALIDARG;
 
@@ -429,6 +432,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
+	UNREFERENCED_PARAMETER(hwndOwner);
 
 	HRESULT hr;
 
@@ -505,6 +509,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	_COM_Outptr_ void **ppvOut
 ) {
 	LOG(P_RSF << L"BindToStorage()");
+	if (ppvOut != NULL) {
+		*ppvOut = NULL;
+	}
 	return E_NOTIMPL;
 }
 
@@ -565,7 +572,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 }
 
-bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
+static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
 }
 
@@ -626,6 +633,11 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_Inout_opt_ ULONG            *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName(name=\"" << pszDisplayName << L"\")");
+
+	if (pchEaten != NULL) {
+		*pchEaten = 0;
+	}
+
 
 	HRESULT hr;
 	hr = m_psfRoot->ParseDisplayName(
@@ -717,6 +729,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 
 STDMETHODIMP CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
+	if (ppEnum != NULL) {
+		*ppEnum = NULL;
+	}
 	return E_NOTIMPL;
 }
 

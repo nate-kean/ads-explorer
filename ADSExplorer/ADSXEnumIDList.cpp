@@ -116,12 +116,12 @@ HRESULT CADSXEnumIDList::NextInternal(
 	}
 	if (celt == 0) {
 		LOG(L"** 0 requested :/ vacuous success");
+		*pceltFetched = 0;
 		return S_OK;
 	}
 
 	static WIN32_FIND_STREAM_DATA fsd;
 	ULONG nActual = 0;
-	PITEMID_CHILD *pelt = rgelt;
 	bool bPushPidlSuccess;
 
 	// Initialize the finder if it hasn't been already with a call to
@@ -141,6 +141,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 					return E_FAIL;
 				case ERROR_HANDLE_EOF:
 					LOG(L"** No streams found");
+					*pceltFetched = 0;
 					return S_FALSE;
 				default:
 					LOG(L"** Error: " << GetLastError());
@@ -149,9 +150,10 @@ HRESULT CADSXEnumIDList::NextInternal(
 		}
 		if (GetLastError() == ERROR_HANDLE_EOF) {
 			LOG(L"** No streams found");
+			*pceltFetched = 0;
 			return S_FALSE;
 		}
-		bPushPidlSuccess = fnConsume(fsd, &pelt, &nActual);
+		bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 		if (!bPushPidlSuccess) {
 			LOG(L"** Error: " << GetLastError());
 			return HRESULT_FROM_WIN32(GetLastError());
@@ -173,7 +175,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 			}
 		} else {
 			// Consume stream
-			bPushPidlSuccess = fnConsume(fsd, &pelt, &nActual);
+			bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 			if (!bPushPidlSuccess) {
 				LOG(L"** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
