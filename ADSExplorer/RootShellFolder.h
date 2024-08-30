@@ -126,7 +126,8 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
-	PIDLIST_ABSOLUTE m_pidlRoot;
-	PIDLIST_RELATIVE m_pidl;
+	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
+	PIDLIST_ABSOLUTE m_pidlPath;  // The path to the filesystem object to view ADSes of, relative to [Desktop]
 	CComPtr<IShellFolder2> m_psfRoot;
+	CComPtr<IShellFolder> m_psfDesktop;
 };

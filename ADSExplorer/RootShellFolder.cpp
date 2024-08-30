@@ -158,14 +158,14 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 // CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
-	, m_pidl(NULL) {
+	, m_pidlPath(NULL) {
 	LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 CADSXRootShellFolder::~CADSXRootShellFolder() {
 	LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
-	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
+	if (m_pidlPath != NULL) CoTaskMemFree(m_pidlPath);
 }
 
 STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
@@ -187,7 +187,12 @@ static HRESULT SHELL32_CoCreateInitSF(
 ) {
 	CComPtr<IShellFolder> psf;
 
-	HRESULT hr = SHCoCreateInstance(NULL, &CLSID_ShellFSFolder, NULL, IID_PPV_ARGS(&psf));
+	HRESULT hr = SHCoCreateInstance(
+		NULL,
+		&CLSID_ShellFSFolder,
+		NULL,
+		IID_PPV_ARGS(&psf)
+	);
 	if (FAILED(hr)) return hr;
 
 	CComPtr<IPersistFolder> ppf;
@@ -213,7 +218,11 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	m_pidlRoot = ILCloneFull(pidl);
 	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
-	return SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
+	HRESULT hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
+	if (FAILED(hr)) return hr;
+	hr = SHGetDesktopFolder(&m_psfDesktop);
+	if (FAILED(hr)) return hr;
+	return hr;
 }
 
 STDMETHODIMP
@@ -361,12 +370,12 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
-	wchar_t pszPath[MAX_PATH];
-	SHGetPathFromIDListW(m_pidl, pszPath);
-	std::wstring wstrPath(pszPath);
-	// std::wstring wstrPath =
-	// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-	// 	L"ADS Explorer\\Test\\Files\\3streams.txt";
+	// wchar_t pszPath[MAX_PATH];
+	// SHGetPathFromIDListW(m_pidlPath, pszPath);
+	// std::wstring wstrPath(pszPath);
+	std::wstring wstrPath =
+		L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+		L"ADS Explorer\\Test\\Files\\3streams.txt";
 	LOG(L" ** EnumObjects: Path=" << wstrPath);
 	pEnum->Init(this->GetUnknown(), wstrPath);
 
@@ -581,49 +590,45 @@ static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 // TODO(garlic-os): Can SHGetSpecialFolderLocation be used instead of
 // SHGetIDListFromObject and psfDesktop?
 // TODO(garlic-os): Can m_psf be used instead of psfDesktop?
-HRESULT ClipDesktop(PIDLIST_RELATIVE *ppidl) {
-	HRESULT hr;
+// HRESULT ClipDesktop(PIDLIST_RELATIVE *ppidl) {
+// 	HRESULT hr;
 
-	CComPtr<IShellFolder> psfDesktop;
-	hr = SHGetDesktopFolder(&psfDesktop);
-	if (FAILED(hr)) return hr;
+// 	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+// 	if (pidlFirst == NULL) return E_OUTOFMEMORY;
+// 	defer({ CoTaskMemFree(pidlFirst); });
 
-	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
-	if (pidlFirst == NULL) return E_OUTOFMEMORY;
-	defer({ CoTaskMemFree(pidlFirst); });
+// 	PIDLIST_ABSOLUTE m_psfDesktop;
+// 	hr = SHGetIDListFromObject(psfDesktop, &m_psfDesktop);
+// 	if (FAILED(hr)) return hr;
+// 	defer({ CoTaskMemFree(m_psfDesktop); });
 
-	PIDLIST_ABSOLUTE pidlDesktop;
-	hr = SHGetIDListFromObject(psfDesktop, &pidlDesktop);
-	if (FAILED(hr)) return hr;
-	defer({ CoTaskMemFree(pidlDesktop); });
+// 	if (m_psfDesktop->CompareIDs(0, pidlFirst, m_psfDesktop) == 0) {
+// 		*ppidl = ILNext(*ppidl);
+// 		return S_OK;
+// 	}
+// 	return S_FALSE;
+// }
 
-	if (psfDesktop->CompareIDs(0, pidlFirst, pidlDesktop) == 0) {
-		*ppidl = ILNext(*ppidl);
-		return S_OK;
-	}
-	return S_FALSE;
-}
+// HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PIDLIST_RELATIVE *ppidl) {
+// 	HRESULT hr;
 
-HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PIDLIST_RELATIVE *ppidl) {
-	HRESULT hr;
+// 	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+// 	if (pidlFirst == NULL) return E_OUTOFMEMORY;
+// 	defer({ CoTaskMemFree(pidlFirst); });
 
-	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
-	if (pidlFirst == NULL) return E_OUTOFMEMORY;
-	defer({ CoTaskMemFree(pidlFirst); });
+// 	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
+// 	if (pidlRootTemp == NULL) return E_OUTOFMEMORY;
+// 	defer({ CoTaskMemFree(pidlRootTemp); });
 
-	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
-	if (pidlRootTemp == NULL) return E_OUTOFMEMORY;
-	defer({ CoTaskMemFree(pidlRootTemp); });
+// 	hr = ClipDesktop(&pidlRootTemp);
+// 	if (FAILED(hr)) return hr;
 
-	hr = ClipDesktop(&pidlRootTemp);
-	if (FAILED(hr)) return hr;
-
-	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
-		*ppidl = ILNext(*ppidl);
-		return S_OK;
-	}
-	return S_FALSE;
-}
+// 	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
+// 		*ppidl = ILNext(*ppidl);
+// 		return S_OK;
+// 	}
+// 	return S_FALSE;
+// }
 
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        HWND             hwnd,
@@ -642,9 +647,15 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		*pchEaten = 0;
 	}
 
+	// WCHAR pszNameOverride[] =
+	// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\"
+	// 	L"ADS Explorer Saga\\ADS Explorer\\Test\\Files\\3streams.txt";
+	// LOG(L" ** ParseDisplayName override: " << pszNameOverride);
+	// pszDisplayName = pszNameOverride;
 
 	HRESULT hr;
-	hr = m_psfRoot->ParseDisplayName(
+
+	hr = m_psfDesktop->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
@@ -660,13 +671,14 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	LOG("** Parsed: [" << PidlToString(*ppidl) << L"]");
 
 	
-	m_pidl = ILClone(*ppidl);
-	if (m_pidl == NULL) return E_OUTOFMEMORY;
+	// m_pidlPath = ILClone(*ppidl);
+	// if (m_pidlPath == NULL) return E_OUTOFMEMORY;
 
-	hr = ClipDesktop(&m_pidl);
-	if (FAILED(hr)) return hr;
-	hr = ClipADSX(&m_pidl);
-	if (FAILED(hr)) return hr;
+	// hr = ClipDesktop(&m_pidlPath);
+	// if (FAILED(hr)) return hr;
+	// hr = ClipADSX(&m_pidlPath);
+	// if (FAILED(hr)) return hr;
+
 
 	return hr;
 }
