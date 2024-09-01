@@ -47,6 +47,9 @@ extern std::wostream g_DebugStream;
 		CDebugStream::get_instance() << psz << std::endl; \
 		/* g_DebugStream << psz << std::endl; */ \
 	} while(false)
+
+	HRESULT LogReturn(HRESULT hr);
 #else
 	#define LOG(...) do { } while (false)
+	#define LogReturn(hr) (hr)
 #endif

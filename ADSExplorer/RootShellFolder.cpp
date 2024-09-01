@@ -193,7 +193,7 @@ static HRESULT SHELL32_CoCreateInitSF(
 		NULL,
 		IID_PPV_ARGS(&psf)
 	);
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) return LogReturn(hr);
 
 	CComPtr<IPersistFolder> ppf;
 	CComPtr<IPersistFolder3> ppf3;
@@ -219,10 +219,10 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	m_pidlRoot = ILCloneFull(pidl);
 	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
 	HRESULT hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) return LogReturn(hr);
 	hr = SHGetDesktopFolder(&m_psfDesktop);
-	if (FAILED(hr)) return hr;
-	return hr;
+	if (FAILED(hr)) return LogReturn(hr);
+	return LogReturn(hr);
 }
 
 STDMETHODIMP
@@ -324,7 +324,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		// Create a view object
 		CComObject<CADSXRootShellView> *pViewObject;
 		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
-		if (FAILED(hr)) return hr;
+		if (FAILED(hr)) return LogReturn(hr);
 
 		// AddRef the object while we are using it
 		pViewObject->AddRef();
@@ -343,7 +343,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		// above by us, AddRef()'ed by Create)
 		pViewObject->Release();
 
-		return hr;
+		return LogReturn(hr);
 	}
 
 	// We do not handle other objects
@@ -366,7 +366,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	// Create an enumerator over this file system object's alternate data streams.
 	CComObject<CADSXEnumIDList> *pEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
-	if (FAILED(hr)) return hr;
+	if (FAILED(hr)) return LogReturn(hr);
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
@@ -381,7 +381,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_PPV_ARGS(ppEnumIDList));
-	return hr;
+	return LogReturn(hr);
 }
 
 // GetAttributesOf() returns the attributes for the items whose PIDLs are passed
@@ -466,7 +466,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// Create a COM object that exposes IDataObject
 		CComObject<CDataObject> *pDataObject;
 		hr = CComObject<CDataObject>::CreateInstance(&pDataObject);
-		if (FAILED(hr)) return hr;
+		if (FAILED(hr)) return LogReturn(hr);
 
 		// AddRef it while we are working with it to keep it from an early
 		// destruction.
@@ -479,7 +479,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
-		return hr;
+		return LogReturn(hr);
 	}
 
 	// TODO(garlic-os): implement other interfaces as listed in
@@ -599,7 +599,7 @@ static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 
 // 	PIDLIST_ABSOLUTE m_psfDesktop;
 // 	hr = SHGetIDListFromObject(psfDesktop, &m_psfDesktop);
-// 	if (FAILED(hr)) return hr;
+// 	if (FAILED(hr)) return LogReturn(hr);
 // 	defer({ CoTaskMemFree(m_psfDesktop); });
 
 // 	if (m_psfDesktop->CompareIDs(0, pidlFirst, m_psfDesktop) == 0) {
@@ -621,7 +621,7 @@ static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
 // 	defer({ CoTaskMemFree(pidlRootTemp); });
 
 // 	hr = ClipDesktop(&pidlRootTemp);
-// 	if (FAILED(hr)) return hr;
+// 	if (FAILED(hr)) return LogReturn(hr);
 
 // 	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
 // 		*ppidl = ILNext(*ppidl);
@@ -665,7 +665,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	);
 	if (FAILED(hr)) {
 		LOG(L" ** m_psfDesktop->ParseDisplayName failed: " << hr);
-		return hr;
+		return LogReturn(hr);
 	}
 
 	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
@@ -675,12 +675,12 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	// if (m_pidlPath == NULL) return E_OUTOFMEMORY;
 
 	// hr = ClipDesktop(&m_pidlPath);
-	// if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return LogReturn(hr);
 	// hr = ClipADSX(&m_pidlPath);
-	// if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return LogReturn(hr);
 
 
-	return hr;
+	return LogReturn(hr);
 }
 
 // TODO(garlic-os): should this be implemented?

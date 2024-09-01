@@ -34,3 +34,10 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 // 	L"ADS Explorer\\adsx.log",
 // 	std::ios::out | std::ios::trunc
 // );
+
+#ifdef _DEBUG
+	HRESULT LogReturn(HRESULT hr) {
+		LOG(L" -> " << hr);
+		return hr;
+	}
+#endif
