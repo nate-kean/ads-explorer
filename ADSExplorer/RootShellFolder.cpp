@@ -668,7 +668,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		return hr;
 	}
 
-	LOG("** Parsed: [" << PidlToString(*ppidl) << L"]");
+	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
 
 	
 	// m_pidlPath = ILClone(*ppidl);

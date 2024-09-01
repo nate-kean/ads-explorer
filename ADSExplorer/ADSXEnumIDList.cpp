@@ -42,7 +42,7 @@ static bool PushPidl(
 	if (sName.empty()) return true;
 
 	LOG(
-		L"** Stream: " << sName <<
+		L" ** Stream: " << sName <<
 		L" (" << fsd.StreamSize.QuadPart << L" bytes)"
 	);
 
@@ -111,11 +111,11 @@ HRESULT CADSXEnumIDList::NextInternal(
 	_Out_    ULONG         *pceltFetched  // actual number of pidls fetched
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
-		LOG(L"** Bad argument(s)");
+		LOG(L" ** Bad argument(s)");
 		return E_POINTER;
 	}
 	if (celt == 0) {
-		LOG(L"** 0 requested :/ vacuous success");
+		LOG(L" ** 0 requested :/ vacuous success");
 		*pceltFetched = 0;
 		return S_OK;
 	}
@@ -135,27 +135,27 @@ HRESULT CADSXEnumIDList::NextInternal(
 			switch (GetLastError()) {
 				case ERROR_SUCCESS:
 					LOG(
-						L"** FindFirstStreamW returned INVALID_HANDLE_VALUE "
+						L" ** FindFirstStreamW returned INVALID_HANDLE_VALUE "
 						L"but GetLastError() == ERROR_SUCCESS"
 					);
 					return E_FAIL;
 				case ERROR_HANDLE_EOF:
-					LOG(L"** No streams found");
+					LOG(L" ** No streams found");
 					*pceltFetched = 0;
 					return S_FALSE;
 				default:
-					LOG(L"** Error: " << GetLastError());
+					LOG(L" ** Error: " << GetLastError());
 					return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
 		if (GetLastError() == ERROR_HANDLE_EOF) {
-			LOG(L"** No streams found");
+			LOG(L" ** No streams found");
 			*pceltFetched = 0;
 			return S_FALSE;
 		}
 		bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 		if (!bPushPidlSuccess) {
-			LOG(L"** Error: " << GetLastError());
+			LOG(L" ** Error: " << GetLastError());
 			return HRESULT_FROM_WIN32(GetLastError());
 		}
 	}
@@ -170,14 +170,14 @@ HRESULT CADSXEnumIDList::NextInternal(
 				// Do nothing and let the loop end
 			} else {
 				// Stream has stopped unexpectedly
-				LOG(L"** Error: " << GetLastError());
+				LOG(L" ** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		} else {
 			// Consume stream
 			bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 			if (!bPushPidlSuccess) {
-				LOG(L"** Error: " << GetLastError());
+				LOG(L" ** Error: " << GetLastError());
 				return HRESULT_FROM_WIN32(GetLastError());
 			}
 		}
@@ -187,7 +187,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	}
 	m_nTotalFetched += nActual;
 	if (nActual < celt) {
-		LOG(L"** Ran out");
+		LOG(L" ** Ran out");
 		return S_FALSE;
 	}
 	return S_OK;
