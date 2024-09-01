@@ -124,7 +124,7 @@ class CShellFolderViewImpl : public CMessageMap,
 			lResult,
 			0
 		);
-		return bResult ? lResult : E_NOTIMPL;
+		return bResult ? static_cast<HRESULT>(lResult) : E_NOTIMPL;
 	}
 
    protected:

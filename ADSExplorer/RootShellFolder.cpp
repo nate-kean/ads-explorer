@@ -455,7 +455,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// (just to call IDataObject::GetData() and nothing else).
 	// https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample#HowItsDone_UseCasesFileDialog_ClickIcon
 	// TODO(garlic-os): It was a design descision for Hurni's NSE to support
-	// only one item at a time. I should consider supporting multiple items.
+	// only one item at a time. I should consider supporting multiple.
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
 		if (cidl != 1) return E_INVALIDARG;
@@ -519,9 +519,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	_COM_Outptr_ void **ppvOut
 ) {
 	LOG(P_RSF << L"BindToStorage()");
-	if (ppvOut != NULL) {
-		*ppvOut = NULL;
-	}
+	if (ppvOut != NULL) *ppvOut = NULL;
 	return E_NOTIMPL;
 }
 
@@ -636,7 +634,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        LPWSTR           pszDisplayName,
 	_Out_opt_   ULONG            *pchEaten,
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
-	_Inout_opt_ ULONG            *pdwAttributes
+	_Inout_opt_ ULONG            *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
 		L"name=\"" << pszDisplayName << L"\", "
@@ -661,7 +659,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		pszDisplayName,
 		pchEaten,
 		ppidl,
-		pdwAttributes
+		pfAttributes
 	);
 	if (FAILED(hr)) {
 		LOG(L" ** m_psfDesktop->ParseDisplayName failed: " << hr);
