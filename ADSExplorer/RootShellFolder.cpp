@@ -636,7 +636,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        LPWSTR           pszDisplayName,
 	_Out_opt_   ULONG            *pchEaten,
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
-	_Inout_opt_ ULONG            *pfAttributes
+	_Inout_opt_ ULONG            *pdwAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
 		L"name=\"" << pszDisplayName << L"\", "
@@ -661,7 +661,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		pszDisplayName,
 		pchEaten,
 		ppidl,
-		pfAttributes
+		pdwAttributes
 	);
 	if (FAILED(hr)) {
 		LOG(L" ** m_psfDesktop->ParseDisplayName failed: " << hr);
@@ -684,7 +684,13 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 }
 
 // TODO(garlic-os): should this be implemented?
-STDMETHODIMP CADSXRootShellFolder::SetNameOf(_In_ HWND, _In_ PCUITEMID_CHILD, _In_ LPCWSTR, _In_ SHGDNF, _Outptr_ PITEMID_CHILD *) {
+STDMETHODIMP CADSXRootShellFolder::SetNameOf(
+	_In_     HWND,
+	_In_     PCUITEMID_CHILD,
+	_In_     LPCWSTR,
+	_In_     SHGDNF,
+	_Outptr_ PITEMID_CHILD *
+) {
 	LOG(P_RSF << L"SetNameOf()");
 	return E_NOTIMPL;
 }
@@ -729,16 +735,17 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(Item->m_Name.length() <= INT_MAX);
-			pDetails->cxChar = (int) Item->m_Name.length();
+			pDetails->cxChar = static_cast<int>(Item->m_Name.length());
 			return SetReturnStringW(Item->m_Name.c_str(), pDetails->str)
 				? S_OK : E_OUTOFMEMORY;
 
 		case DETAILS_COLUMN_FILESIZE:
 			pDetails->fmt = LVCFMT_RIGHT;
-			constexpr UINT8 uLongLongStrLenMax = _countof("-9,223,372,036,854,775,808");
+			constexpr UINT8 uLongLongStrLenMax =
+				_countof("-9,223,372,036,854,775,808");
 			WCHAR pszSize[uLongLongStrLenMax] = {0};
 			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
-			pDetails->cxChar = (int) wcslen(pszSize);
+			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
 			return SetReturnStringW(pszSize, pDetails->str)
 				? S_OK : E_OUTOFMEMORY;
 	}
@@ -749,11 +756,11 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 //------------------------------------------------------------------------------
 // IShellFolder2
 
-STDMETHODIMP CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
+STDMETHODIMP CADSXRootShellFolder::EnumSearches(
+	_COM_Outptr_ IEnumExtraSearch **ppEnum
+) {
 	LOG(P_RSF << L"EnumSearches()");
-	if (ppEnum != NULL) {
-		*ppEnum = NULL;
-	}
+	if (ppEnum != NULL) *ppEnum = NULL;
 	return E_NOTIMPL;
 }
 
