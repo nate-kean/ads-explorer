@@ -65,14 +65,14 @@
 	}
 */
 // ATL message maps:
-//	If you did not handled the message set bHandled to FALSE. (Defaults to TRUE
-//when your message handler is called) 	This will return E_NOTIMPL to the caller
-//which means that the message was not handled. 	When you have handled the
-//message, return (as LRESULT) S_OK (which is 0) or any other valid value
-//described in 	the SDK for your message.
+// If you did not handled the message set bHandled to FALSE. (Defaults to TRUE
+// when your message handler is called) This will return E_NOTIMPL to the caller
+// which means that the message was not handled. When you have handled the
+// message, return (as LRESULT) S_OK (which is 0) or any other valid value
+// described in the SDK for your message.
 //
-//	In any of your message handler, you can use m_pISF which is a pointer to the
-//related IShellFolder.
+// In any of your message handler, you can use m_pISF which is a pointer to the
+// related IShellFolder.
 //
 //==============================================================================
 
