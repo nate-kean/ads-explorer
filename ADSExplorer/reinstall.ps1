@@ -2,18 +2,13 @@
 
 New-Item -ItemType Directory -Force -Path Active\ | Out-Null
 
-taskkill /f /im explorer.exe
+taskkill /f /im explorer.exe | Out-Null
 
 sudo {
 	Push-Location Active\
-		$ADSX_REG_PATH = `
-			"Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Classes\CLSID\{ED383D11-6797-4103-85EF-CBDB8DEB50E2}"
-		if (Test-Path $ADSX_REG_PATH) {
-			regsvr32 /u ADSExplorer.dll
-			if ($LastExitCode -ne 0) {
-				Write-Error "Failed to unregister the DLL"
-				exit $LastExitCode
-			}
+		regsvr32 /s /u ADSExplorer.dll | Out-Null
+		if ($LastExitCode -ne 0) {
+			Write-Warning "Failed to unregister ADSExplorer.dll (status $LastExitCode)"
 		}
 
 		Start-Process explorer.exe
@@ -21,6 +16,9 @@ sudo {
 		Copy-Item ..\x64\Debug\* .
 		Copy-Item ..\ADSExplorer\x64\Debug\ADSExplorer.tlb .
 
-		regsvr32 ADSExplorer.dll
+		regsvr32 /s ADSExplorer.dll | Out-Null
+		if ($LastExitCode -ne 0) {
+			Write-Warning "Failed to register ADSExplorer.dll (status $LastExitCode)"
+		}
 	Pop-Location
 }
