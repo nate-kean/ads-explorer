@@ -82,4 +82,6 @@ STDAPI DllRegisterServer() {
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
-STDAPI DllUnregisterServer() { return _Module.UnregisterServer(TRUE); }
+STDAPI DllUnregisterServer() {
+	return _Module.UnregisterServer(TRUE);
+}
