@@ -391,12 +391,14 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
 	_Inout_ SFGAOF                *pfAttribs
 ) {
-	LOG(P_RSF << L"GetAttributesOf(pidls=[" << PidlArrayToString(cidl, aPidls) << L"])");
+	LOG(P_RSF << L"GetAttributesOf("
+		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"]"
+	L")");
 
-	// We limit the tree by indicating that the favorites folder does not
-	// contain sub-folders
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
-		// Root folder attributes
+		// Root folder: [Desktop]\ADS Explorer
+		// Represents the ADS Explorer view of [Desktop]
+		// Not a real filesystem object -> not accessible from ADS Explorer
 		*pfAttribs &= SFGAO_HASSUBFOLDER |
 		              SFGAO_FOLDER |
 		              SFGAO_FILESYSTEM |
@@ -404,7 +406,9 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		            //   SFGAO_BROWSABLE |
 		              SFGAO_NONENUMERATED;
 	} else {
-		// Child file/folder attributes
+		// Child files/folders: [Desktop]\ADS Explorer\{fs object's path}
+		// Represents the ADS Explorer view of the file/folder at {fs object's path}
+		// Real filesystem object -> accessible from ADS Explorer
 		*pfAttribs &= SFGAO_FILESYSTEM |
 		              SFGAO_CANCOPY |
 		              SFGAO_CANMOVE |
