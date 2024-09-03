@@ -187,12 +187,32 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		if (*pfAttribs & SFGAO_PKEYSFGAOMASK) oss << L"PKEYSFGAOMASK | ";
 		return oss.str();
 	}
+
+	static std::wstring SHCONTFToString(const SHCONTF *pfAttribs) {
+		if (pfAttribs == NULL) return L"<null>";
+		std::wostringstream oss;
+		if (*pfAttribs & SHCONTF_CHECKING_FOR_CHILDREN) oss << L"CHECKING_FOR_CHILDREN | ";
+		if (*pfAttribs & SHCONTF_FOLDERS) oss << L"FOLDERS | ";
+		if (*pfAttribs & SHCONTF_NONFOLDERS) oss << L"NONFOLDERS | ";
+		if (*pfAttribs & SHCONTF_INCLUDEHIDDEN) oss << L"INCLUDEHIDDEN | ";
+		if (*pfAttribs & SHCONTF_INIT_ON_FIRST_NEXT) oss << L"INIT_ON_FIRST_NEXT | ";
+		if (*pfAttribs & SHCONTF_NETPRINTERSRCH) oss << L"NETPRINTERSRCH | ";
+		if (*pfAttribs & SHCONTF_SHAREABLE) oss << L"SHAREABLE | ";
+		if (*pfAttribs & SHCONTF_STORAGE) oss << L"STORAGE | ";
+		if (*pfAttribs & SHCONTF_NAVIGATION_ENUM) oss << L"NAVIGATION_ENUM | ";
+		if (*pfAttribs & SHCONTF_FASTITEMS) oss << L"FASTITEMS | ";
+		if (*pfAttribs & SHCONTF_FLATLIST) oss << L"FLATLIST | ";
+		if (*pfAttribs & SHCONTF_ENABLE_ASYNC) oss << L"ENABLE_ASYNC | ";
+		if (*pfAttribs & SHCONTF_INCLUDESUPERHIDDEN) oss << L"INCLUDESUPERHIDDEN | ";
+		return oss.str();
+	}
 #else
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
 	#define InitializationPidlToString(...) (void) 0
 	#define IIDToString(...) (void) 0
 	#define SFGAOToString(...) (void) 0
+	#define SHCONTFToString(...) (void) 0
 #endif
 
 
@@ -400,7 +420,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_         SHCONTF     dwFlags,
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
 ) {
-	LOG(P_RSF << L"EnumObjects(dwFlags=0x" << std::hex << dwFlags << L")");
+	LOG(P_RSF << L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return E_POINTER;
