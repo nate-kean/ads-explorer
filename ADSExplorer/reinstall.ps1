@@ -18,7 +18,8 @@ sudo {
 
 		regsvr32 /s ADSExplorer.dll | Out-Null
 		if ($LastExitCode -ne 0) {
-			Write-Warning "Failed to register ADSExplorer.dll (status $LastExitCode)"
+			Write-Error "Failed to register ADSExplorer.dll (status $LastExitCode)"
+			exit $LastExitCode
 		}
 	Pop-Location
 }
