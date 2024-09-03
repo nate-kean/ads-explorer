@@ -145,11 +145,54 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		auto sIID = std::wstring(pszGUID);
 		return IIDToString(sIID);
 	}
+
+	static std::wstring SFGAOToString(const SFGAOF *pfAttribs) {
+		if (pfAttribs == NULL) return L"<null>";
+		std::wostringstream oss;
+		if (*pfAttribs & SFGAO_CANCOPY) oss << L"CANCOPY | ";
+		if (*pfAttribs & SFGAO_CANMOVE) oss << L"CANMOVE | ";
+		if (*pfAttribs & SFGAO_CANLINK) oss << L"CANLINK | ";
+		if (*pfAttribs & SFGAO_STORAGE) oss << L"STORAGE | ";
+		if (*pfAttribs & SFGAO_CANRENAME) oss << L"CANRENAME | ";
+		if (*pfAttribs & SFGAO_CANDELETE) oss << L"CANDELETE | ";
+		if (*pfAttribs & SFGAO_HASPROPSHEET) oss << L"HASPROPSHEET | ";
+		if (*pfAttribs & SFGAO_DROPTARGET) oss << L"DROPTARGET | ";
+		if (*pfAttribs & SFGAO_CAPABILITYMASK) oss << L"CAPABILITYMASK | ";
+		if (*pfAttribs & SFGAO_PLACEHOLDER) oss << L"PLACEHOLDER | ";
+		if (*pfAttribs & SFGAO_SYSTEM) oss << L"SYSTEM | ";
+		if (*pfAttribs & SFGAO_ENCRYPTED) oss << L"ENCRYPTED | ";
+		if (*pfAttribs & SFGAO_ISSLOW) oss << L"ISSLOW | ";
+		if (*pfAttribs & SFGAO_GHOSTED) oss << L"GHOSTED | ";
+		if (*pfAttribs & SFGAO_LINK) oss << L"LINK | ";
+		if (*pfAttribs & SFGAO_SHARE) oss << L"SHARE | ";
+		if (*pfAttribs & SFGAO_READONLY) oss << L"READONLY | ";
+		if (*pfAttribs & SFGAO_HIDDEN) oss << L"HIDDEN | ";
+		if (*pfAttribs & SFGAO_DISPLAYATTRMASK) oss << L"DISPLAYATTRMASK | ";
+		if (*pfAttribs & SFGAO_FILESYSANCESTOR) oss << L"FILESYSANCESTOR | ";
+		if (*pfAttribs & SFGAO_FOLDER) oss << L"FOLDER | ";
+		if (*pfAttribs & SFGAO_FILESYSTEM) oss << L"FILESYSTEM | ";
+		if (*pfAttribs & SFGAO_HASSUBFOLDER) oss << L"HASSUBFOLDER | ";
+		if (*pfAttribs & SFGAO_CONTENTSMASK) oss << L"CONTENTSMASK | ";
+		if (*pfAttribs & SFGAO_VALIDATE) oss << L"VALIDATE | ";
+		if (*pfAttribs & SFGAO_REMOVABLE) oss << L"REMOVABLE | ";
+		if (*pfAttribs & SFGAO_COMPRESSED) oss << L"COMPRESSED | ";
+		if (*pfAttribs & SFGAO_BROWSABLE) oss << L"BROWSABLE | ";
+		if (*pfAttribs & SFGAO_NONENUMERATED) oss << L"NONENUMERATED | ";
+		if (*pfAttribs & SFGAO_NEWCONTENT) oss << L"NEWCONTENT | ";
+		if (*pfAttribs & SFGAO_CANMONIKER) oss << L"CANMONIKER | ";
+		if (*pfAttribs & SFGAO_HASSTORAGE) oss << L"HASSTORAGE | ";
+		if (*pfAttribs & SFGAO_STREAM) oss << L"STREAM | ";
+		if (*pfAttribs & SFGAO_STORAGEANCESTOR) oss << L"STORAGEANCESTOR | ";
+		if (*pfAttribs & SFGAO_STORAGECAPMASK) oss << L"STORAGECAPMASK | ";
+		if (*pfAttribs & SFGAO_PKEYSFGAOMASK) oss << L"PKEYSFGAOMASK | ";
+		return oss.str();
+	}
 #else
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
 	#define InitializationPidlToString(...) (void) 0
 	#define IIDToString(...) (void) 0
+	#define SFGAOToString(...) (void) 0
 #endif
 
 
@@ -392,7 +435,8 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	_Inout_ SFGAOF                *pfAttribs
 ) {
 	LOG(P_RSF << L"GetAttributesOf("
-		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"]"
+		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
+		L"pfAttribs=[" << SFGAOToString(pfAttribs) << L"]"
 	L")");
 
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
@@ -629,7 +673,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
 		L"name=\"" << pszDisplayName << L"\", "
-		L"attributes=" << ((pfAttributes != NULL) ? *pfAttributes : 9001) <<
+		L"attributes=[" << SFGAOToString(pfAttributes) << L"]"
 	L")");
 
 	if (pchEaten != NULL) {
