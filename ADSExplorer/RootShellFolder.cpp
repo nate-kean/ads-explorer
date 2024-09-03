@@ -398,31 +398,18 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
 		// Root folder attributes
 		*pfAttribs &= SFGAO_HASSUBFOLDER |
-					  SFGAO_FOLDER |
-					  SFGAO_FILESYSTEM |
-					  SFGAO_FILESYSANCESTOR |
-					  SFGAO_BROWSABLE;
-		// *pdwAttribs &= SFGAO_HASSUBFOLDER |
-		//                SFGAO_FOLDER |
-		//                SFGAO_FILESYSTEM |
-		//                SFGAO_FILESYSANCESTOR |
-		//                SFGAO_BROWSABLE |
-		//                SFGAO_NONENUMERATED;
+		              SFGAO_FOLDER |
+		              SFGAO_FILESYSTEM |
+		              SFGAO_FILESYSANCESTOR |
+		            //   SFGAO_BROWSABLE |
+		              SFGAO_NONENUMERATED;
 	} else {
-		// Child folder attributes
-		*pfAttribs &= SFGAO_FOLDER |
-					  SFGAO_FILESYSTEM |
-					  SFGAO_FILESYSANCESTOR |
-					  SFGAO_BROWSABLE |
-					  SFGAO_LINK;
-		// *pdwAttribs &= SFGAO_FILESYSTEM |
-		//             //    SFGAO_FOLDER |
-		//             //    SFGAO_BROWSABLE |
-		//                SFGAO_STREAM |
-		//                SFGAO_CANCOPY |
-		//                SFGAO_CANMOVE |
-		//                SFGAO_CANRENAME |
-		//                SFGAO_CANDELETE;
+		// Child file/folder attributes
+		*pfAttribs &= SFGAO_FILESYSTEM |
+		              SFGAO_CANCOPY |
+		              SFGAO_CANMOVE |
+		              SFGAO_CANRENAME |
+		              SFGAO_CANDELETE;
 	}
 
 	return S_OK;
