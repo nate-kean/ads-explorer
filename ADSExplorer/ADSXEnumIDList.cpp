@@ -43,7 +43,7 @@ static bool PushPidl(
 
 	LOG(
 		L" ** Stream: " << sName <<
-		L" (" << fsd.StreamSize.QuadPart << L" bytes)"
+		L" (" << std::dec << fsd.StreamSize.QuadPart << L" bytes)"
 	);
 
 	// Fill in the item
