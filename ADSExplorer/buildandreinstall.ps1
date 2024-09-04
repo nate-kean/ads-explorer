@@ -5,3 +5,5 @@ if ($LastExitCode -ne 0) {
     exit $LastExitCode
 }
 & ((Split-Path $MyInvocation.InvocationName) + "\reinstall.ps1")
+
+explorer.exe
