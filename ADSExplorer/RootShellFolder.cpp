@@ -115,20 +115,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return oss.str();
 	}
 
-	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
-		if (pidl == NULL) return L"<null>";
-		PWSTR name = NULL;
-		HRESULT hr = SHGetNameFromIDList(
-			pidl,
-			SIGDN_DESKTOPABSOLUTEPARSING,
-			&name
-		);
-		defer({ CoTaskMemFree(name); });
-		if (FAILED(hr)) return L"ERROR";
-		std::wstring wstrName(name);  // name is copied so this is safe
-		return wstrName;
-	}
-
 	static std::wstring IIDToString(const std::wstring &sIID) {
 		auto search = iids.find(sIID);
 		if (search != iids.end()) {
@@ -144,6 +130,25 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		defer({ CoTaskMemFree(pszGUID); });
 		auto sIID = std::wstring(pszGUID);
 		return IIDToString(sIID);
+	}
+
+	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
+		if (pidl == NULL) return L"<null>";
+		PWSTR pszPath = NULL;
+		HRESULT hr = SHGetNameFromIDList(
+			pidl,
+			SIGDN_DESKTOPABSOLUTEPARSING,
+			&pszPath
+		);
+		defer({ CoTaskMemFree(pszPath); });
+		if (FAILED(hr)) return L"ERROR";
+		std::wstring wstrPath(pszPath);  // name is copied so this is safe
+		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"[Desktop]\\ADS Explorer";
+		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"ADS Explorer";
+		}
+		return wstrPath;
 	}
 
 	static std::wstring SFGAOToString(const SFGAOF *pfAttribs) {
@@ -206,6 +211,17 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		if (*pfAttribs & SHCONTF_INCLUDESUPERHIDDEN) ss << L"INCLUDESUPERHIDDEN | ";
 		return ss.str();
 	}
+
+	static std::wstring SHGDNFToString(const SHGDNF *pfAttribs) {
+		if (pfAttribs == NULL) return L"<null>";
+		std::wostringstream oss;
+		if (*pfAttribs & SHGDN_NORMAL) oss << L"NORMAL | ";
+		if (*pfAttribs & SHGDN_INFOLDER) oss << L"INFOLDER | ";
+		if (*pfAttribs & SHGDN_FOREDITING) oss << L"FOREDITING | ";
+		if (*pfAttribs & SHGDN_FORADDRESSBAR) oss << L"FORADDRESSBAR | ";
+		if (*pfAttribs & SHGDN_FORPARSING) oss << L"FORPARSING | ";
+		return oss.str();
+	}
 #else
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
@@ -213,6 +229,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	#define IIDToString(...) (void) 0
 	#define SFGAOToString(...) (void) 0
 	#define SHCONTFToString(...) (void) 0
+	#define SHGDNFToString(...) (void) 0
 #endif
 
 
@@ -606,7 +623,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	_In_  SHGDNF          uFlags,
 	_Out_ STRRET          *pName
 ) {
-	LOG(P_RSF << L"GetDisplayNameOf(pidl=[" << PidlToString(pidl) << L"])");
+	LOG(P_RSF << L"GetDisplayNameOf("
+		L"pidl=[" << PidlToString(pidl) << L"], "
+		L"uFlags=[" << SHGDNFToString(&uFlags) << L"]"
+	L")");
 
 	if (pidl == NULL || pName == NULL) return LogReturn(E_POINTER);
 
@@ -618,6 +638,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// point which is in the form "::{GUID}" So we should return
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
+<<<<<<< HEAD
 				LOG(L" ** GetDisplayNameOf: Root NORMAL FORPARSING");
 				return LogReturn(
 					SetReturnStringW(
@@ -635,8 +656,22 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 						*pName
 					) ? S_OK : E_FAIL
 				);
+=======
+				LOG(L" ** GetDisplayNameOf: Root folder");
+				return SetReturnStringW(
+					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
+					*pName
+				) ? S_OK : E_FAIL;
+			default:
+				// We don't handle other combinations of flags for the root pidl
+				// return E_FAIL;
+				LOG(L" ** GetDisplayNameOf: Root folder");
+				return SetReturnStringW(L"GetDisplayNameOf test", *pName)
+					? S_OK : E_FAIL;
+>>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 		}
 	}
+	LOG(L" ** GetDisplayNameOf: Child file/folder");
 
 	// At this stage, the pidl should be one of ours
 	if (!CADSXItem::IsOwn(pidl)) return LogReturn(E_INVALIDARG);
@@ -644,7 +679,6 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	auto Item = CADSXItem::Get(pidl);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING:
-			LOG(L" ** GetDisplayNameOf: NORMAL FORPARSING");
 			// TODO(garlic-os): this should return:
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{Item->m_Name}"
 			return LogReturn(
@@ -653,16 +687,25 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
+<<<<<<< HEAD
 			LOG(L" ** GetDisplayNameOf: FOREDITING");
 			return LogReturn(E_FAIL);  // TODO(garlic-os)
+=======
+			return E_FAIL;  // TODO(garlic-os)
+>>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 
 		case SHGDN_INFOLDER:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
+<<<<<<< HEAD
 			LOG(L" ** GetDisplayNameOf: INFOLDER or other");
 			return LogReturn(
 				SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
 			);
+=======
+			return SetReturnStringW(Item->m_Name.c_str(), *pName)
+				? S_OK : E_FAIL;
+>>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 	}
 }
 
