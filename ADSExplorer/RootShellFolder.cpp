@@ -53,7 +53,7 @@
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
 	SIZE_T StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
-	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
 	if (str.pOleStr == NULL) {
 		return false;
 	}
@@ -64,7 +64,7 @@ bool SetReturnStringA(LPCSTR Source, STRRET &str) {
 bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	SIZE_T StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
-	str.pOleStr = (LPOLESTR) CoTaskMemAlloc(StringLen * sizeof(OLECHAR));
+	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
 	if (str.pOleStr == NULL) {
 		return false;
 	}
@@ -330,7 +330,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	_In_ PCUIDLIST_RELATIVE pidl2
 ) {
 	LOG(P_RSF << L"CompareIDs("
-		L"lParam=" << (int) lParam << L"), "
+		L"lParam=" << std::hex << static_cast<long>(lParam) << L"), "
 		L"pidl1=[" << PidlToString(pidl1) << L"], "
 		L"pidl2=[" << PidlToString(pidl2) << L"])"
 	);
@@ -356,7 +356,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 			Result = Item1->m_Name.compare(Item2->m_Name);
 			break;
 		case DETAILS_COLUMN_FILESIZE:
-			Result = (USHORT) (Item1->m_Filesize - Item2->m_Filesize);
+			Result = static_cast<USHORT>(Item1->m_Filesize - Item2->m_Filesize);
 			if (Result < 0) Result = -1;
 			else if (Result > 0) Result = 1;
 			break;

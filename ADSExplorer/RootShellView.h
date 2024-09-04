@@ -64,13 +64,14 @@
 	case name:                                                                   \
 		LOG(L"CADSXRootShellView(0x" << std::hex << this << L") " << _T(#name)); \
 		break;
-#define END_TRACE_MSG_NAME()                                                      \
-	default:                                                                      \
-		LOG(                                                                      \
-			L"CADSXRootShellView(0x" << std::hex << this << L") Msg: " <<         \
-			std::setw(2) << uMsg << L":" << std::hex << std::setw(2) << uMsg <<   \
-			L" w=" << (int) wParam << L", l=" << (int) lParam                     \
-		);                                                                        \
+#define END_TRACE_MSG_NAME()                                                    \
+	default:                                                                    \
+		LOG(                                                                    \
+			L"CADSXRootShellView(0x" << std::hex << this << L") Msg: " <<       \
+			std::setw(2) << uMsg << L":" << std::hex << std::setw(2) << uMsg << \
+			L" w=" << static_cast<int>(wParam) << L","                          \
+			L" l=" << static_cast<int>(lParam)                                  \
+		);                                                                      \
 	}
 
 
@@ -171,7 +172,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// When a user clicks on a column header in details mode
 	LRESULT
 	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		LOG(P_RSV << L"OnColumnClick(iColumn=" << (int) wParam << L")");
+		LOG(P_RSV << L"OnColumnClick(iColumn=" << static_cast<int>(wParam) << L")");
 
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
 		// SDK.
@@ -183,8 +184,8 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// use IShellFolder2::GetDetailsOf()
 	LRESULT
 	OnGetDetailsOf(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		int iColumn = (int) wParam;
-		DETAILSINFO *pDi = (DETAILSINFO *) lParam;
+		int iColumn = wParam;
+		auto pDi = reinterpret_cast<DETAILSINFO *>(lParam);
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 

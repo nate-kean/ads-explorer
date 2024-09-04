@@ -7,12 +7,16 @@ bool CADSXItem::IsOwn(PCUIDLIST_RELATIVE pidl) {
   return pidl != NULL &&
 		 pidl->mkid.cb == sizeof(ITEMIDLIST) + sizeof(CADSXItem) - sizeof(BYTE) &&
 		 ILIsChild(pidl) &&
-		 CADSXItem::Get((PCUITEMID_CHILD) pidl)->SIGNATURE == 'ADSX';
+		 CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->SIGNATURE == 'ADSX';
 }
 
 
-CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
-	return (CADSXItem *) &pidl->mkid.abID;
+CADSXItem *CADSXItem::Get(PUITEMID_CHILD pidl) {
+	return reinterpret_cast<CADSXItem *>(&pidl->mkid.abID);
+}
+
+const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
+	return reinterpret_cast<const CADSXItem *>(&pidl->mkid.abID);
 }
 
 
@@ -23,7 +27,7 @@ PITEMID_CHILD CADSXItem::ToPidl() const {
 	UINT cbSizeItemList = cbSizeItem + sizeof(SHITEMID);
 
 	// Allocate memory for this SHITEMID plus the final null SHITEMID.
-	auto pidlNew = (PITEMID_CHILD) CoTaskMemAlloc(cbSizeItemList);
+	auto pidlNew = static_cast<PITEMID_CHILD>(CoTaskMemAlloc(cbSizeItemList));
 	if (pidlNew == NULL) return NULL;
 
 	// Put the data object in the PIDL
@@ -32,7 +36,7 @@ PITEMID_CHILD CADSXItem::ToPidl() const {
 	pidlNew->mkid.cb = cbSizeItem;
 
 	// A sentinel PIDL at the end of the list as the ITEMIDLIST spec ordains
-	PUITEMID_CHILD pidlEnd = (PUITEMID_CHILD) ILNext(pidlNew);
+	PUITEMID_CHILD pidlEnd = static_cast<PUITEMID_CHILD>(ILNext(pidlNew));
 	pidlEnd->mkid.abID[0] = 0;
 	pidlEnd->mkid.cb = 0;
 

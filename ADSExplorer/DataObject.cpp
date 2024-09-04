@@ -64,7 +64,7 @@ CreateShellIDList(
 	);	// size of the pidls
 	if (hGlobal == NULL) return NULL;
 
-	LPIDA pData = (LPIDA) GlobalLock(hGlobal);
+	LPIDA pData = static_cast<LPIDA>(GlobalLock(hGlobal));
 	if (pData == NULL) return hGlobal;
 	defer({ GlobalUnlock(hGlobal); });
 
@@ -73,7 +73,7 @@ CreateShellIDList(
 
 	// add the PIDL for the parent folder
 	cbPidl = ILGetSize(pidlParent);
-	CopyMemory(LPBYTE(pData) + iCurPos, (LPBYTE) pidlParent, cbPidl);
+	CopyMemory(reinterpret_cast<LPBYTE>(pData) + iCurPos, pidlParent, cbPidl);
 	iCurPos += cbPidl;
 
 	// get the size of the PIDL
@@ -83,7 +83,7 @@ CreateShellIDList(
 	pData->aoffset[1] = iCurPos;
 
 	// copy the contents of the PIDL
-	CopyMemory((LPBYTE) (pData) + iCurPos, (LPBYTE) pidl, cbPidl);
+	CopyMemory(reinterpret_cast<LPBYTE>(pData) + iCurPos, pidl, cbPidl);
 
 	// set up the position of the next PIDL
 	iCurPos += cbPidl;

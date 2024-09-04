@@ -124,6 +124,7 @@ DEFINE_PROPERTYKEY(
 	7
 );
 
+// From propkeydef.h
 #define IsEqualPropertyKey(a, b) \
 	(((a).pid == (b).pid) && IsEqualIID((a).fmtid, (b).fmtid))
 
