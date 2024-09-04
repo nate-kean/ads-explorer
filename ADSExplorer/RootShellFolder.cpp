@@ -638,8 +638,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// point which is in the form "::{GUID}" So we should return
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
-<<<<<<< HEAD
-				LOG(L" ** GetDisplayNameOf: Root NORMAL FORPARSING");
+				LOG(L" ** GetDisplayNameOf: Root folder");
 				return LogReturn(
 					SetReturnStringW(
 						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
@@ -649,26 +648,13 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			default:
 				// We don't handle other combinations of flags for the root pidl
 				// return LogReturn(E_FAIL);
-				LOG(L" ** GetDisplayNameOf: Root default");
+				LOG(L" ** GetDisplayNameOf: Root folder");
 				return LogReturn(
 					SetReturnStringW(
 						L"GetDisplayNameOf test",
 						*pName
 					) ? S_OK : E_FAIL
 				);
-=======
-				LOG(L" ** GetDisplayNameOf: Root folder");
-				return SetReturnStringW(
-					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
-					*pName
-				) ? S_OK : E_FAIL;
-			default:
-				// We don't handle other combinations of flags for the root pidl
-				// return E_FAIL;
-				LOG(L" ** GetDisplayNameOf: Root folder");
-				return SetReturnStringW(L"GetDisplayNameOf test", *pName)
-					? S_OK : E_FAIL;
->>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 		}
 	}
 	LOG(L" ** GetDisplayNameOf: Child file/folder");
@@ -687,25 +673,17 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
-<<<<<<< HEAD
-			LOG(L" ** GetDisplayNameOf: FOREDITING");
 			return LogReturn(E_FAIL);  // TODO(garlic-os)
-=======
 			return E_FAIL;  // TODO(garlic-os)
->>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 
 		case SHGDN_INFOLDER:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
-<<<<<<< HEAD
-			LOG(L" ** GetDisplayNameOf: INFOLDER or other");
 			return LogReturn(
 				SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
 			);
-=======
 			return SetReturnStringW(Item->m_Name.c_str(), *pName)
 				? S_OK : E_FAIL;
->>>>>>> dec912b9de9fef51217a6f2061630a075744a310
 	}
 }
 
