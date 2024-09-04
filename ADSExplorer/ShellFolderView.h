@@ -98,11 +98,11 @@ class CShellFolderViewImpl : public CMessageMap,
 		IShellView *psvOuter = NULL
 	) {
 		m_hwndOwner = hwndOwner;
-		m_pISF = pISF;
+		m_psf = pISF;
 
 		SFV_CREATE sfv;
 		sfv.cbSize = sizeof(SFV_CREATE);
-		sfv.pshf = m_pISF;
+		sfv.pshf = m_psf;
 		sfv.psvOuter = psvOuter;
 		sfv.psfvcb = static_cast<IShellFolderViewCB *>(this);
 
@@ -132,7 +132,7 @@ class CShellFolderViewImpl : public CMessageMap,
 	// This one is not ref-counted. This object should be guaranteed to live
 	// until the view is destroyed. So the lifetime is handled by
 	// SHCreateShellFolderView().
-	IShellFolder *m_pISF;
+	IShellFolder *m_psf;
 };
 
 //==============================================================================

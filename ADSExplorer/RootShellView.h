@@ -185,7 +185,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	LRESULT
 	OnGetDetailsOf(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
 		int iColumn = static_cast<int>(wParam);
-		auto pDi = reinterpret_cast<DETAILSINFO *>(lParam);
+		auto pDetailsInfo = reinterpret_cast<DETAILSINFO *>(lParam);
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
@@ -194,18 +194,18 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;
 
-		IShellDetails *pISD;
-		hr = m_pISF->QueryInterface(IID_PPV_ARGS(&pISD));
+		IShellDetails *pShellDetails;
+		hr = m_psf->QueryInterface(IID_PPV_ARGS(&pShellDetails));
 		if (FAILED(hr)) return hr;
 
-		hr = pISD->GetDetailsOf(pDi->pidl, iColumn, &ShellDetails);
-		pISD->Release();
+		hr = pShellDetails->GetDetailsOf(pDetailsInfo->pidl, iColumn, &ShellDetails);
+		pShellDetails->Release();
 		if (FAILED(hr)) return hr;
 
-		pDi->cxChar = ShellDetails.cxChar;
-		pDi->fmt = ShellDetails.fmt;
-		pDi->str = ShellDetails.str;
-		pDi->iImage = 0;
+		pDetailsInfo->cxChar = ShellDetails.cxChar;
+		pDetailsInfo->fmt = ShellDetails.fmt;
+		pDetailsInfo->str = ShellDetails.str;
+		pDetailsInfo->iImage = 0;
 
 		return LogReturn(S_OK);
 	}
