@@ -441,6 +441,10 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	if (ppEnumIDList == NULL) return LogReturn(E_POINTER);
 	*ppEnumIDList = NULL;
 
+	// A path hasn't been browsed yet in this instance's lifetime, so there are
+	// no ADSes to enumerate.
+	if (m_pidlPath == NULL) return LogReturn(S_FALSE);
+
 	// Create an enumerator over this file system object's alternate data streams.
 	CComObject<CADSXEnumIDList> *pEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
