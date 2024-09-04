@@ -184,7 +184,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 	// use IShellFolder2::GetDetailsOf()
 	LRESULT
 	OnGetDetailsOf(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		int iColumn = wParam;
+		int iColumn = static_cast<int>(wParam);
 		auto pDi = reinterpret_cast<DETAILSINFO *>(lParam);
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
