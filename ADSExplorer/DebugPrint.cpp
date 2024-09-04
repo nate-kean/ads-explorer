@@ -35,6 +35,7 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 // 	std::ios::out | std::ios::trunc
 // );
 
+// #define _DEBUG
 #ifdef _DEBUG
 	#include <iomanip>
 	#include <sstream>
