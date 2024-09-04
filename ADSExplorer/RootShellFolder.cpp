@@ -342,6 +342,10 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	if (ppvOut == NULL) return LogReturn(E_POINTER);
 	*ppvOut = NULL;
 
+	if (riid != IID_IShellFolder || riid != IID_IShellFolder2) {
+		return LogReturn(E_NOINTERFACE);
+	}
+
 	// If the passed pidl is not ours, fail(?).
 	if (!CADSXItem::IsOwn(pidl)) return LogReturn(E_INVALIDARG);
 
