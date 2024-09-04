@@ -222,11 +222,11 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
 	, m_pidlPath(NULL) {
-	LOG(P_RSF << L"CONSTRUCTOR");
+	// LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 CADSXRootShellFolder::~CADSXRootShellFolder() {
-	LOG(P_RSF << L"DESTRUCTOR");
+	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_pidlPath != NULL) CoTaskMemFree(m_pidlPath);
 }
@@ -277,28 +277,34 @@ static HRESULT SHELL32_CoCreateInitSF(
 
 // Initialize() is passed the PIDL of the folder where our extension is.
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
-	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
+	// LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 
 	m_pidlRoot = ILCloneFull(pidl);
-	if (m_pidlRoot == NULL) return LogReturn(E_OUTOFMEMORY);
+	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
+	// if (m_pidlRoot == NULL) return LogReturn(E_OUTOFMEMORY);
 
 	HRESULT hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return LogReturn(hr);
 
 	hr = SHGetDesktopFolder(&m_psfDesktop);
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return LogReturn(hr);
 
-	return LogReturn(hr);
+	return hr;
+	// return LogReturn(hr);
 }
 
 STDMETHODIMP
 CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
-	LOG(P_RSF << L"GetCurFolder()");
-	if (ppidl == NULL) return LogReturn(E_POINTER);
+	// LOG(P_RSF << L"GetCurFolder()");
+	if (ppidl == NULL) return E_POINTER;
+	// if (ppidl == NULL) return LogReturn(E_POINTER);
 	*ppidl = ILCloneFull(m_pidlRoot);
-	return LogReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
+	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
+	// return LogReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
 }
 
 //-------------------------------------------------------------------------------
@@ -380,15 +386,18 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	_In_         REFIID riid,
 	_COM_Outptr_ void   **ppvOut
 ) {
-	LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
+	// Not logging all interface requests because there are too many
+	// LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
-	if (ppvOut == NULL) return LogReturn(E_POINTER);
+	if (ppvOut == NULL) return E_POINTER;
+	// if (ppvOut == NULL) return LogReturn(E_POINTER);
 	*ppvOut = NULL;
 
 	HRESULT hr;
 
 	// We handle only the IShellView
 	if (riid == IID_IShellView) {
+		LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 		// Create a view object
 		CComObject<CADSXRootShellView> *pViewObject;
 		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
@@ -415,7 +424,8 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	}
 
 	// We do not handle other objects
-	return LogReturn(E_NOINTERFACE);
+	return E_NOINTERFACE;
+	// return LogReturn(E_NOINTERFACE);
 }
 
 // Return a COM object that implements IEnumIDList and enumerates the ADSes in

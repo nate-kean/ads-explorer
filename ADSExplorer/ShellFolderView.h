@@ -37,7 +37,7 @@
 		HRESULT hr;
 
 		if (ppvOut == NULL)
-			return LogReturn(E_POINTER);
+			return E_POINTER;
 		*ppvOut = NULL;
 
 		if (riid == IID_IShellView)
@@ -61,7 +61,7 @@
 			return hr;
 		}
 
-		return LogReturn(E_NOINTERFACE);
+		return E_NOINTERFACE;
 	}
 */
 // ATL message maps:
