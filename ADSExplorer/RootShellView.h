@@ -166,7 +166,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 				*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
 			}
 		#endif
-		return S_OK;
+		return LogReturn(S_OK);
 	}
 
 	// When a user clicks on a column header in details mode
@@ -177,7 +177,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
 		// SDK.
 		SendFolderViewMessage(SFVM_REARRANGE, wParam);
-		return S_OK;
+		return LogReturn(S_OK);
 	}
 
 	// This message is used with shell version 4.7x, shell 5 and above prefer to
@@ -189,7 +189,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
-		if (pDi == NULL) return E_POINTER;
+		if (pDi == NULL) return LogReturn(E_POINTER);
 
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;
@@ -207,7 +207,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		pDi->str = ShellDetails.str;
 		pDi->iImage = 0;
 
-		return S_OK;
+		return LogReturn(S_OK);
 	}
 
    protected:
