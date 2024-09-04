@@ -462,7 +462,12 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	return LogReturn(hr);
 }
 
-// Return the attributes of the items represented by the given PIDLs
+// Return if the items represented by the given PIDLs have the attributes
+// requested.
+// For each bit flag:
+//   1 if the flag is set on input and all the given items have that attribute,
+//   0 if the flag is not set on input or if any of the given items do not have
+//   that attribute.
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
