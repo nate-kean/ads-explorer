@@ -115,20 +115,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		return oss.str();
 	}
 
-	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
-		if (pidl == NULL) return L"<null>";
-		PWSTR name = NULL;
-		HRESULT hr = SHGetNameFromIDList(
-			pidl,
-			SIGDN_DESKTOPABSOLUTEPARSING,
-			&name
-		);
-		defer({ CoTaskMemFree(name); });
-		if (FAILED(hr)) return L"ERROR";
-		std::wstring wstrName(name);  // name is copied so this is safe
-		return wstrName;
-	}
-
 	static std::wstring IIDToString(const std::wstring &sIID) {
 		auto search = iids.find(sIID);
 		if (search != iids.end()) {
@@ -144,6 +130,25 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		defer({ CoTaskMemFree(pszGUID); });
 		auto sIID = std::wstring(pszGUID);
 		return IIDToString(sIID);
+	}
+
+	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
+		if (pidl == NULL) return L"<null>";
+		PWSTR pszPath = NULL;
+		HRESULT hr = SHGetNameFromIDList(
+			pidl,
+			SIGDN_DESKTOPABSOLUTEPARSING,
+			&pszPath
+		);
+		defer({ CoTaskMemFree(pszPath); });
+		if (FAILED(hr)) return L"ERROR";
+		std::wstring wstrPath(pszPath);  // name is copied so this is safe
+		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"[Desktop]\\ADS Explorer";
+		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"ADS Explorer";
+		}
+		return wstrPath;
 	}
 
 	static std::wstring SFGAOToString(const SFGAOF *pfAttribs) {
