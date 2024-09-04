@@ -635,9 +635,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 }
 
-static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
-	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
-}
+// static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
+// 	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
+// }
 
 // Clip My Computer off the PIDL if it's there
 // TODO(garlic-os): Can SHGetSpecialFolderLocation be used instead of
