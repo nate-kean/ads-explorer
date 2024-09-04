@@ -615,16 +615,22 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
 				LOG(L" ** GetDisplayNameOf: Root NORMAL FORPARSING");
-				return SetReturnStringW(
-					L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
-					*pName
-				) ? S_OK : E_FAIL;
+				return LogReturn(
+					SetReturnStringW(
+						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
+						*pName
+					) ? S_OK : E_FAIL
+				);
 			default:
 				// We don't handle other combinations of flags for the root pidl
 				// return LogReturn(E_FAIL);
 				LOG(L" ** GetDisplayNameOf: Root default");
-				return SetReturnStringW(L"GetDisplayNameOf test", *pName)
-					? S_OK : E_FAIL;
+				return LogReturn(
+					SetReturnStringW(
+						L"GetDisplayNameOf test",
+						*pName
+					) ? S_OK : E_FAIL
+				);
 		}
 	}
 
@@ -637,8 +643,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			LOG(L" ** GetDisplayNameOf: NORMAL FORPARSING");
 			// TODO(garlic-os): this should return:
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{Item->m_Name}"
-			return SetReturnStringW(Item->m_Name.c_str(), *pName)
-				? S_OK : E_FAIL;
+			return LogReturn(
+				SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
+			);
 
 		case SHGDN_NORMAL | SHGDN_FOREDITING:
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
@@ -649,8 +656,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
 			LOG(L" ** GetDisplayNameOf: INFOLDER or other");
-			return SetReturnStringW(Item->m_Name.c_str(), *pName)
-				? S_OK : E_FAIL;
+			return LogReturn(
+				SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
+			);
 	}
 }
 
@@ -797,8 +805,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
-		return SetReturnString(ColumnName, pDetails->str)
-			? S_OK : E_OUTOFMEMORY;
+		return LogReturn(
+			SetReturnString(ColumnName, pDetails->str) ? S_OK : E_OUTOFMEMORY
+		);
 	}
 
 	// Okay, this time it's for a real item
@@ -808,8 +817,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(Item->m_Name.length() <= INT_MAX);
 			pDetails->cxChar = static_cast<int>(Item->m_Name.length());
-			return SetReturnStringW(Item->m_Name.c_str(), pDetails->str)
-				? S_OK : E_OUTOFMEMORY;
+			return LogReturn(
+				SetReturnStringW(Item->m_Name.c_str(), pDetails->str) ? S_OK : E_OUTOFMEMORY
+			);
 
 		case DETAILS_COLUMN_FILESIZE:
 			pDetails->fmt = LVCFMT_RIGHT;
@@ -818,8 +828,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			WCHAR pszSize[uLongLongStrLenMax] = {0};
 			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
-			return SetReturnStringW(pszSize, pDetails->str)
-				? S_OK : E_OUTOFMEMORY;
+			return LogReturn(
+				SetReturnStringW(pszSize, pDetails->str) ? S_OK : E_OUTOFMEMORY
+			);
 	}
 
 	return LogReturn(E_INVALIDARG);
@@ -898,23 +909,22 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 		// only available on XP SP2+ on, so it won't harm 9x.
 		if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_TileInfo");
-			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
+			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo");
-			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
+			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_PreviewDetails");
-			return InitVariantFromString(L"prop:System.ItemPathDisplay", pv);
+			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_FullDetails");
-			return InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv);
+			return LogReturn(InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
 			LOG(L" ** GetDetailsEx: PKEY_ItemType");
-			return InitVariantFromString(L"Directory", pv);
+			return LogReturn(InitVariantFromString(L"Directory", pv));
 		}
 	#endif
 
-	LOG(L" ** GetDetailsEx: Not implemented");
 	return LogReturn(E_NOTIMPL);
 }
 
