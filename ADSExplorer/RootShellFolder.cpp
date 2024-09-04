@@ -325,7 +325,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	if (ppvOut == NULL) return LogReturn(E_POINTER);
 	*ppvOut = NULL;
 
-	// If the passed pidl is not ours, fail.
+	// If the passed pidl is not ours, fail(?).
 	if (!CADSXItem::IsOwn(pidl)) return LogReturn(E_INVALIDARG);
 
 	// All items in an ADS Explorer view are children
