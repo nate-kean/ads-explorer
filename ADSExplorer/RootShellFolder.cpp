@@ -214,12 +214,12 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 
 	static std::wstring SHGDNFToString(const SHGDNF *pfAttribs) {
 		if (pfAttribs == NULL) return L"<null>";
-		std::wostringstream oss;
-		if (*pfAttribs & SHGDN_NORMAL) oss << L"NORMAL | ";
-		if (*pfAttribs & SHGDN_INFOLDER) oss << L"INFOLDER | ";
-		if (*pfAttribs & SHGDN_FOREDITING) oss << L"FOREDITING | ";
-		if (*pfAttribs & SHGDN_FORADDRESSBAR) oss << L"FORADDRESSBAR | ";
-		if (*pfAttribs & SHGDN_FORPARSING) oss << L"FORPARSING | ";
+		std::wostringstream ss;
+		if (*pfAttribs & SHGDN_NORMAL) ss << L"NORMAL | ";
+		if (*pfAttribs & SHGDN_INFOLDER) ss << L"INFOLDER | ";
+		if (*pfAttribs & SHGDN_FOREDITING) ss << L"FOREDITING | ";
+		if (*pfAttribs & SHGDN_FORADDRESSBAR) ss << L"FORADDRESSBAR | ";
+		if (*pfAttribs & SHGDN_FORPARSING) ss << L"FORPARSING | ";
 		return oss.str();
 	}
 #else
