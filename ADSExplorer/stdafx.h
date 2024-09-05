@@ -30,12 +30,12 @@
 
 #pragma once
 
-#ifndef STRICT_TYPED_ITEMIDS
-	#define STRICT_TYPED_ITEMIDS
-#endif
+#define STRICT_TYPED_ITEMIDS
 
-#include <fstream>
-#include <iostream>
+#ifdef _DEBUG
+	#include <fstream>
+	#include <iostream>
+#endif
 
 // Property keys on Windows Vista, used for tile view subtitles.
 // On older platforms, this can usually be still defined, but polyfilled.
