@@ -293,6 +293,7 @@ static HRESULT SHELL32_CoCreateInitSF(
 }
 
 // Initialize() is passed the PIDL of the folder where our extension is.
+// Copies and does not take ownership of pidl.
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	// LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 
