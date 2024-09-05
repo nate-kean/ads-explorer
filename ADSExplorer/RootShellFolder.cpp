@@ -465,7 +465,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 
 	// A path hasn't been browsed yet in this instance's lifetime, so there are
 	// no ADSes to enumerate.
-	if (m_pidlPath == NULL) return LogReturn(S_FALSE);
+	// if (m_pidlPath == NULL)e return LogReturn(S_FALSE);
 
 	// Create an enumerator over this file system object's alternate data streams.
 	CComObject<CADSXEnumIDList> *pEnum;
@@ -474,12 +474,15 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
-	// wchar_t pszPath[MAX_PATH];
-	// SHGetPathFromIDListW(m_pidlPath, pszPath);
-	// std::wstring wstrPath(pszPath);
-	std::wstring wstrPath =
-		L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-		L"ADS Explorer\\Test\\Files\\3streams.txt";
+	wchar_t pszPath[MAX_PATH];
+	SHGetPathFromIDListW(m_pidlRoot, pszPath);
+	std::wstring wstrPath(pszPath);
+	// std::wstring wstrPath =
+	// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+	// 	L"ADS Explorer\\Test\\Files\\3streams.txt";
+	// std::wstring wstrPath =
+	// 	L"C:\\Users\\sisdf\\Documents\\GitHub\\ads-explorer"
+	// 	L"\\Test\\Files\\3streams.txt";
 	LOG(L" ** EnumObjects: Path=" << wstrPath);
 	pEnum->Init(this->GetUnknown(), wstrPath);
 
