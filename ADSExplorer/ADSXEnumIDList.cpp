@@ -219,17 +219,17 @@ HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	if (ppEnum == NULL) return LogReturn(E_POINTER);
 	*ppEnum = NULL;
 
-	CComObject<CADSXEnumIDList> *pNewEnum;
-	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pNewEnum);
+	CComObject<CADSXEnumIDList> *pEnumNew;
+	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnumNew);
 	if (FAILED(hr)) return hr;
 	std::wstring sPathCopy = m_sPath;
-	pNewEnum->Init(m_pUnkOwner, sPathCopy);
+	pEnumNew->Init(m_pUnkOwner, sPathCopy);
 	
 	// Unfortunately I don't see any more an efficient way to do this with
 	// the Find Stream API :(
-	pNewEnum->Skip(m_nTotalFetched);
+	pEnumNew->Skip(m_nTotalFetched);
 
-	hr = pNewEnum->QueryInterface(IID_PPV_ARGS(ppEnum));
+	hr = pEnumNew->QueryInterface(IID_PPV_ARGS(ppEnum));
 	if (FAILED(hr)) return hr;
 	return LogReturn(S_OK);
 }
