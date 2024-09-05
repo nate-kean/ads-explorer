@@ -343,7 +343,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	if (ppvOut == NULL) return LogReturn(E_POINTER);
 	*ppvOut = NULL;
 
-	if (riid != IID_IShellFolder || riid != IID_IShellFolder2) {
+	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
 		return LogReturn(E_NOINTERFACE);
 	}
 
