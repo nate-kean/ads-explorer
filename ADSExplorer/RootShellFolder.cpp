@@ -352,7 +352,24 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 
 	// All items in an ADS Explorer view are children
 	// (until I implement pseudofolders)
-	return LogReturn(E_NOTIMPL);
+	// return LogReturn(E_NOTIMPL);
+
+	HRESULT hr;
+	CComObject<CADSXRootShellFolder> *prsfNew;
+	hr = CComObject<CADSXRootShellFolder>::CreateInstance(&prsfNew);
+	if (FAILED(hr)) return LogReturn(hr);
+	prsfNew->AddRef();
+	defer({ prsfNew->Release(); });
+
+	PIDLIST_ABSOLUTE pidlAbs = ILCombine(m_pidlRoot, pidl);
+	if (pidlAbs == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlAbs); });
+
+	hr = prsfNew->Initialize(pidlAbs);
+	if (FAILED(hr)) return LogReturn(hr);
+
+	hr = prsfNew->QueryInterface(riid, ppvOut);
+	return LogReturn(hr);
 }
 
 // Return the sort order of two PIDLs.
