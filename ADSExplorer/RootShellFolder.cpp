@@ -348,7 +348,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	}
 
 	// If the passed pidl is not ours, fail(?).
-	if (!CADSXItem::IsOwn(pidl)) return LogReturn(E_INVALIDARG);
+	// if (!CADSXItem::IsOwn(pidl)) return LogReturn(E_INVALIDARG);
 
 	// All items in an ADS Explorer view are children
 	// (until I implement pseudofolders)
