@@ -220,7 +220,7 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		if (*pfAttribs & SHGDN_FOREDITING) ss << L"FOREDITING | ";
 		if (*pfAttribs & SHGDN_FORADDRESSBAR) ss << L"FORADDRESSBAR | ";
 		if (*pfAttribs & SHGDN_FORPARSING) ss << L"FORPARSING | ";
-		return oss.str();
+		return ss.str();
 	}
 #else
 	#define PidlToString(...) (void) 0
