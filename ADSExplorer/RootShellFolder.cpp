@@ -793,10 +793,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		ppidl,
 		pfAttributes
 	);
-	if (FAILED(hr)) {
-		LOG(L" ** m_psfDesktop->ParseDisplayName failed: " << hr);
-		return LogReturn(hr);
-	}
+	if (FAILED(hr)) return LogReturn(hr);
 
 	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
 
