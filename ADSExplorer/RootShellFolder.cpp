@@ -316,10 +316,14 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	PUIDLIST_RELATIVE pidlObjPath = ILCloneFull(m_pidlRoot);
 	if (pidlObjPath == NULL) return LogReturn(E_OUTOFMEMORY);
 	defer({ CoTaskMemFree(pidlObjPath); });
-	hr = this->ClipADSX(&pidlObjPath);
-	if (FAILED(hr)) return LogReturn(hr);
-	LOG(L" ** " << InitializationPidlToString(pidl));
-	
+
+	static bool letsgo = false;
+	if (letsgo) {
+		hr = this->ClipADSX(pidlObjPath);
+		if (FAILED(hr)) return LogReturn(hr);
+		LOG(L" ** " << InitializationPidlToString(pidl));
+	}
+
 	// hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
 	// hr = SHBindToObject(NULL, pidlObjPath, NULL, IID_PPV_ARGS(&m_psfObjPath));
 	// if (FAILED(hr)) return hr;
@@ -730,21 +734,32 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 }
 
-static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
-	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
+// Make a clone of the pidl starting at its next value, then free the old pidl.
+void ILRemoveFirstID(_Inout_opt_ PUIDLIST_RELATIVE pidl) {
+	if (ILIsEmpty(pidl)) return;
+
+	PUIDLIST_RELATIVE pidlOld = pidl;
+	defer({ CoTaskMemFree(pidlOld); });
+
+	LOG(L" ** " << PidlToString(pidl));
+	PUIDLIST_RELATIVE pidlNext = ILNext(pidl);
+	LOG(L" ** " << PidlToString(pidlNext));
+	if (ILIsEmpty(pidlNext)) return;
+
+	pidl = ILClone(pidlNext);
 }
 
 // Clip [Desktop] off the PIDL if it's there
 // TODO(garlic-os): Can SHGetSpecialFolderLocation be used instead of
 // SHGetIDListFromObject and psfDesktop?
-HRESULT CADSXRootShellFolder::ClipDesktop(PUIDLIST_RELATIVE *ppidl) {
-	LOG(P_RSF << L"ClipDesktop(pidl=[" << PidlToString(*ppidl) << L"])");
+HRESULT CADSXRootShellFolder::ClipDesktop(PUIDLIST_RELATIVE pidl) {
+	LOG(P_RSF << L"ClipDesktop(pidl=[" << PidlToString(pidl) << L"])");
 	HRESULT hr;
 
-	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	PITEMID_CHILD pidlFirst = ILCloneFirst(pidl);
 	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
 	defer({ CoTaskMemFree(pidlFirst); });
-	LOG(L" ** First: " << PidlToString(pidlFirst));
+	// LOG(L" ** First: " << PidlToString(pidlFirst));
 
 	// Every method for getting the [Desktop] PIDL just gives me an empty PIDL,
 	// so I'll get [Desktop] by cloning the first IDL from another known PIDL
@@ -762,39 +777,49 @@ HRESULT CADSXRootShellFolder::ClipDesktop(PUIDLIST_RELATIVE *ppidl) {
 	PITEMID_CHILD pidlDesktop = ILCloneFirst(pidlDocuments);
 	if (pidlDesktop == NULL) return LogReturn(E_OUTOFMEMORY);
 	defer({ CoTaskMemFree(pidlDesktop); });
-	LOG(L" ** Desktop: " << PidlToString(pidlDesktop));
+	// LOG(L" ** Desktop: " << PidlToString(pidlDesktop));
 
-	if (m_psfDesktop->CompareIDs(0, pidlFirst, pidlDesktop) == 0) {
-		*ppidl = ILNext(*ppidl);
+	hr = m_psfDesktop->CompareIDs(0, pidlFirst, pidlDesktop);
+	if (FAILED(hr)) return LogReturn(hr);
+	if ((short) HRESULT_CODE(hr) == 0) {  // pidlFirst and pidlDesktop are equal
+		ILRemoveFirstID(pidl);
+		LOG(L" ** " << PidlToString(pidl));
 		return LogReturn(S_OK);
+	} else {
+		LOG(L" ** " << PidlToString(pidl));
+		return LogReturn(S_FALSE);
 	}
-	return LogReturn(S_FALSE);
 }
 
 // Clip `[Desktop]\ADS Explorer` or `ADS Explorer\` off the PIDL if either are
 // there
-HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PUIDLIST_RELATIVE *ppidl) {
-	LOG(P_RSF << L"ClipADSX(pidl=[" << PidlToString(*ppidl) << L"])");
+HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PUIDLIST_RELATIVE pidl) {
+	LOG(P_RSF << L"ClipADSX(pidl=[" << PidlToString(pidl) << L"])");
 	HRESULT hr;
 
-	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	PITEMID_CHILD pidlFirst = ILCloneFirst(pidl);
 	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
 	defer({ CoTaskMemFree(pidlFirst); });
-	LOG(L" ** First: " << PidlToString(pidlFirst));
+	// LOG(L" ** First: " << PidlToString(pidlFirst));
 
 	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
 	if (pidlRootTemp == NULL) return LogReturn(E_OUTOFMEMORY);
 	defer({ CoTaskMemFree(pidlRootTemp); });
-	LOG(L" ** Root: " << PidlToString(pidlRootTemp));
+	// LOG(L" ** Root: " << PidlToString(pidlRootTemp));
 
-	hr = this->ClipDesktop(&pidlRootTemp);
+	hr = this->ClipDesktop(pidlRootTemp);
 	if (FAILED(hr)) return LogReturn(hr);
 
-	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
-		*ppidl = ILNext(*ppidl);
+	hr = this->CompareIDs(0, pidlFirst, pidlRootTemp);
+	if (FAILED(hr)) return LogReturn(hr);
+	if ((short) HRESULT_CODE(hr) == 0) {  // pidlFirst and pidlRootTemp are equal
+		ILRemoveFirstID(pidl);
+		LOG(L" ** " << PidlToString(pidl));
 		return LogReturn(S_OK);
+	} else {
+		LOG(L" ** " << PidlToString(pidl));
+		return LogReturn(S_FALSE);
 	}
-	return LogReturn(S_FALSE);
 }
 
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(

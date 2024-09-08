@@ -121,8 +121,8 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// Helper member functions
-	HRESULT ClipDesktop(PUIDLIST_RELATIVE *ppidl);
-	HRESULT ClipADSX(PUIDLIST_RELATIVE *ppidl);
+	HRESULT ClipDesktop(PUIDLIST_RELATIVE pidl);
+	HRESULT ClipADSX(PUIDLIST_RELATIVE pidl);
 
 	//--------------------------------------------------------------------------
 
