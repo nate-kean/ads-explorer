@@ -121,13 +121,14 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// Helper member functions
-	HRESULT ClipADSX(PIDLIST_RELATIVE *ppidl);
+	HRESULT ClipDesktop(PUIDLIST_RELATIVE *ppidl);
+	HRESULT ClipADSX(PUIDLIST_RELATIVE *ppidl);
 
 	//--------------------------------------------------------------------------
 
    protected:
 	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
 	PIDLIST_ABSOLUTE m_pidlPath;  // The path to the filesystem object to view ADSes of, relative to [Desktop]
-	CComPtr<IShellFolder2> m_psfRoot;
+	CComPtr<IShellFolder2> m_psfObjPath;
 	CComPtr<IShellFolder> m_psfDesktop;
 };

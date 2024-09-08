@@ -295,24 +295,38 @@ static HRESULT SHELL32_CoCreateInitSF(
 // Initialize() is passed the PIDL of the folder where our extension is.
 // Copies and does not take ownership of pidl.
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
-	// LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
+	LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidl) << L"])");
 
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 
 	m_pidlRoot = ILCloneFull(pidl);
-	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
-	// if (m_pidlRoot == NULL) return LogReturn(E_OUTOFMEMORY);
+	// if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
+	if (m_pidlRoot == NULL) return LogReturn(E_OUTOFMEMORY);
 
-	HRESULT hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
-	if (FAILED(hr)) return hr;
-	// if (FAILED(hr)) return LogReturn(hr);
+	HRESULT hr;
 
+	// ADSX uses a [Desktop] folder instance in some places
 	hr = SHGetDesktopFolder(&m_psfDesktop);
-	if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return hr;
+	if (FAILED(hr)) return LogReturn(hr);
+
+	// [Desktop]\ADS Explorer\Path To\FS Object
+	// →
+	// Path To\FS Object
+	PUIDLIST_RELATIVE pidlObjPath = ILCloneFull(m_pidlRoot);
+	if (pidlObjPath == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlObjPath); });
+	hr = this->ClipADSX(&pidlObjPath);
+	if (FAILED(hr)) return LogReturn(hr);
+	LOG(L" ** " << InitializationPidlToString(pidl));
+	
+	// hr = SHELL32_CoCreateInitSF(m_pidlRoot, IID_PPV_ARGS(&m_psfRoot));
+	// hr = SHBindToObject(NULL, pidlObjPath, NULL, IID_PPV_ARGS(&m_psfObjPath));
+	// if (FAILED(hr)) return hr;
 	// if (FAILED(hr)) return LogReturn(hr);
 
-	return hr;
-	// return LogReturn(hr);
+	// return hr;
+	return LogReturn(S_OK);
 }
 
 STDMETHODIMP
@@ -491,15 +505,19 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
+	// TODO: use SHGetPathFromIDListEx
 	wchar_t pszPath[MAX_PATH];
 	SHGetPathFromIDListW(m_pidlRoot, pszPath);
 	std::wstring wstrPath(pszPath);
+
+	// Overrides
 	// std::wstring wstrPath =
 	// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
 	// 	L"ADS Explorer\\Test\\Files\\3streams.txt";
 	// std::wstring wstrPath =
 	// 	L"C:\\Users\\sisdf\\Documents\\GitHub\\ads-explorer"
 	// 	L"\\Test\\Files\\3streams.txt";
+
 	LOG(L" ** EnumObjects: Path=" << wstrPath);
 	pEnum->Init(this->GetUnknown(), wstrPath);
 
@@ -712,53 +730,72 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 }
 
-// static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
-// 	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
-// }
+static bool StartsWith(LPCWSTR pszText, LPCWSTR pszComparand) {
+	return wcsncmp(pszText, pszComparand, sizeof(pszComparand) - 1) == 0;
+}
 
-// Clip My Computer off the PIDL if it's there
+// Clip [Desktop] off the PIDL if it's there
 // TODO(garlic-os): Can SHGetSpecialFolderLocation be used instead of
 // SHGetIDListFromObject and psfDesktop?
-// TODO(garlic-os): Can m_psf be used instead of psfDesktop?
-// HRESULT ClipDesktop(PIDLIST_RELATIVE *ppidl) {
-// 	HRESULT hr;
+HRESULT CADSXRootShellFolder::ClipDesktop(PUIDLIST_RELATIVE *ppidl) {
+	LOG(P_RSF << L"ClipDesktop(pidl=[" << PidlToString(*ppidl) << L"])");
+	HRESULT hr;
 
-// 	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
-// 	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
-// 	defer({ CoTaskMemFree(pidlFirst); });
+	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlFirst); });
+	LOG(L" ** First: " << PidlToString(pidlFirst));
 
-// 	PIDLIST_ABSOLUTE m_psfDesktop;
-// 	hr = SHGetIDListFromObject(psfDesktop, &m_psfDesktop);
-// 	if (FAILED(hr)) return LogReturn(hr);
-// 	defer({ CoTaskMemFree(m_psfDesktop); });
+	// Every method for getting the [Desktop] PIDL just gives me an empty PIDL,
+	// so I'll get [Desktop] by cloning the first IDL from another known PIDL
+	PIDLIST_ABSOLUTE pidlDocuments;
+	hr = SHGetKnownFolderIDList(
+		// FOLDERID_Desktop,
+		FOLDERID_ComputerFolder,
+		KF_FLAG_DEFAULT,
+		NULL,
+		&pidlDocuments
+	);
+	if (FAILED(hr)) return LogReturn(hr);
+	defer({ CoTaskMemFree(pidlDocuments); });
 
-// 	if (m_psfDesktop->CompareIDs(0, pidlFirst, m_psfDesktop) == 0) {
-// 		*ppidl = ILNext(*ppidl);
-// 		return LogReturn(S_OK);
-// 	}
-// 	return LogReturn(S_FALSE);
-// }
+	PITEMID_CHILD pidlDesktop = ILCloneFirst(pidlDocuments);
+	if (pidlDesktop == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlDesktop); });
+	LOG(L" ** Desktop: " << PidlToString(pidlDesktop));
 
-// HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PIDLIST_RELATIVE *ppidl) {
-// 	HRESULT hr;
+	if (m_psfDesktop->CompareIDs(0, pidlFirst, pidlDesktop) == 0) {
+		*ppidl = ILNext(*ppidl);
+		return LogReturn(S_OK);
+	}
+	return LogReturn(S_FALSE);
+}
 
-// 	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
-// 	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
-// 	defer({ CoTaskMemFree(pidlFirst); });
+// Clip `[Desktop]\ADS Explorer` or `ADS Explorer\` off the PIDL if either are
+// there
+HRESULT CADSXRootShellFolder::ClipADSX(_Inout_ PUIDLIST_RELATIVE *ppidl) {
+	LOG(P_RSF << L"ClipADSX(pidl=[" << PidlToString(*ppidl) << L"])");
+	HRESULT hr;
 
-// 	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
-// 	if (pidlRootTemp == NULL) return LogReturn(E_OUTOFMEMORY);
-// 	defer({ CoTaskMemFree(pidlRootTemp); });
+	PITEMID_CHILD pidlFirst = ILCloneFirst(*ppidl);
+	if (pidlFirst == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlFirst); });
+	LOG(L" ** First: " << PidlToString(pidlFirst));
 
-// 	hr = ClipDesktop(&pidlRootTemp);
-// 	if (FAILED(hr)) return LogReturn(hr);
+	PIDLIST_RELATIVE pidlRootTemp = ILCloneFull(m_pidlRoot);
+	if (pidlRootTemp == NULL) return LogReturn(E_OUTOFMEMORY);
+	defer({ CoTaskMemFree(pidlRootTemp); });
+	LOG(L" ** Root: " << PidlToString(pidlRootTemp));
 
-// 	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
-// 		*ppidl = ILNext(*ppidl);
-// 		return LogReturn(S_OK);
-// 	}
-// 	return LogReturn(S_FALSE);
-// }
+	hr = this->ClipDesktop(&pidlRootTemp);
+	if (FAILED(hr)) return LogReturn(hr);
+
+	if (this->CompareIDs(0, pidlFirst, pidlRootTemp) == 0) {
+		*ppidl = ILNext(*ppidl);
+		return LogReturn(S_OK);
+	}
+	return LogReturn(S_FALSE);
+}
 
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        HWND             hwnd,
@@ -785,7 +822,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 
 	HRESULT hr;
 
-	hr = m_psfDesktop->ParseDisplayName(
+	hr = m_psfObjPath->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
@@ -796,17 +833,6 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	if (FAILED(hr)) return LogReturn(hr);
 
 	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
-
-	
-	// m_pidlPath = ILClone(*ppidl);
-	// if (m_pidlPath == NULL) return LogReturn(E_OUTOFMEMORY);
-
-	// hr = ClipDesktop(&m_pidlPath);
-	// if (FAILED(hr)) return LogReturn(hr);
-	// hr = ClipADSX(&m_pidlPath);
-	// if (FAILED(hr)) return LogReturn(hr);
-
-
 	return LogReturn(hr);
 }
 
