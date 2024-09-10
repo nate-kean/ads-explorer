@@ -12,7 +12,7 @@
 #define P_EIDL L"CADSXEnumIDList(0x" << std::hex << this << L")::"
 
 
-// Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array
+/// Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array.
 // pushin p
 static bool PushPidl(
 	_In_    const WIN32_FIND_STREAM_DATA &fsd,
@@ -66,7 +66,7 @@ static bool PushPidl(
 	return true;
 }
 
-// Find one or more items with NextInternal and discard them.
+/// Find one or more items with NextInternal and discard them.
 static bool NoOp(const WIN32_FIND_STREAM_DATA &, PITEMID_CHILD **, ULONG *) {
 	return true;
 }
@@ -92,8 +92,8 @@ void CADSXEnumIDList::Init(_In_ IUnknown *pUnkOwner, _In_ std::wstring sPath) {
 }
 
 
-// Find one or more items with NextInternal and push them to the
-// output array rgelt with PushPidl.
+/// Find one or more items with NextInternal and push them to the
+/// output array rgelt with PushPidl.
 HRESULT CADSXEnumIDList::Next(
 	_In_ ULONG celt,
 	_Outptr_ PITEMID_CHILD *rgelt,
