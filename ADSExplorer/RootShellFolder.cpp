@@ -892,6 +892,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	return LogReturn(hr);
 }
 
+
 // TODO(garlic-os): should this be implemented?
 STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 	_In_     HWND,
