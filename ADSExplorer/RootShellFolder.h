@@ -120,15 +120,15 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	STDMETHOD(MapColumnToSCID)(_In_ UINT, _Out_ SHCOLUMNID*);
 
 	//--------------------------------------------------------------------------
-	// Helper member functions
-	HRESULT ClipDesktop(PUIDLIST_RELATIVE pidl);
-	HRESULT ClipADSX(PUIDLIST_RELATIVE pidl);
-
-	//--------------------------------------------------------------------------
 
    protected:
 	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
-	PIDLIST_ABSOLUTE m_pidlPath;  // The path to the filesystem object to view ADSes of, relative to [Desktop]
-	CComPtr<IShellFolder2> m_psfObjPath;
-	CComPtr<IShellFolder> m_psfDesktop;
+
+	// Our inner model of where we are in the filesystem as Windows drills from
+	// the root of the namespace to whatever path we're getting the ADSX view
+	// of.
+	// Ends up needed in both PIDL and IShellFolder form throughout the
+	// implementation.
+	PIDLIST_ABSOLUTE m_pidlFSPath;
+	CComPtr<IShellFolder> m_psfFSPath;
 };
