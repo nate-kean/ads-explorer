@@ -33,6 +33,7 @@
 #endif
 
 #include <atlstr.h>
+#include <sstream>
 #include <string>
 
 #include "ADSXEnumIDList.h"
@@ -51,17 +52,17 @@
 
 // STRRET helper functions
 bool SetReturnStringA(LPCSTR Source, STRRET &str) {
+	LOG(L" ** " << Source);
 	SIZE_T StringLen = strlen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
-	if (str.pOleStr == NULL) {
-		return false;
-	}
+	if (str.pOleStr == NULL) return false;
 
 	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
 bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
+	LOG(L" ** " << Source);
 	SIZE_T StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
 	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
@@ -76,8 +77,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 
 // #define _DEBUG
 #ifdef _DEBUG
-	#include <sstream>
-	#include <string>
 	#include "iids.h"
 
 	static std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
@@ -88,10 +87,9 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			if (!first) {
 				oss << L"--";
 			}
-			PITEMID_CHILD pidlChild = ILCloneFirst(pidl);
-			defer({ CoTaskMemFree(pidlChild); });
 			if (CADSXItem::IsOwn(pidl)) {
-				oss << CADSXItem::Get(pidlChild)->m_Name;
+				oss <<
+					CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->m_Name;
 			} else {
 				WCHAR tmp[16];
 				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
@@ -100,6 +98,26 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 			first = false;
 		}
 		return oss.str();
+	}
+
+	static std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl) {
+		PWSTR pszPath = NULL;
+		HRESULT hr = SHGetNameFromIDList(
+			pidl,
+			SIGDN_DESKTOPABSOLUTEPARSING,
+			&pszPath
+		);
+		if (FAILED(hr)) return L"ERROR";
+		defer({ CoTaskMemFree(pszPath); });
+		std::wstring wstrPath(pszPath);
+		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") {
+			return L"[Desktop]";
+		} else if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"[Desktop\\ADS Explorer]";
+		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"[ADS Explorer]";
+		}
+		return wstrPath;
 	}
 
 	static std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) {
@@ -143,95 +161,96 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 		defer({ CoTaskMemFree(pszPath); });
 		if (FAILED(hr)) return L"ERROR";
 		std::wstring wstrPath(pszPath);  // name is copied so this is safe
-		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[Desktop]\\ADS Explorer";
+		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") {
+			return L"[Desktop]";
+		} else if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
+			return L"[Desktop\\ADS Explorer]";
 		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"ADS Explorer";
+			return L"[ADS Explorer]";
 		}
 		return wstrPath;
 	}
 
-	static std::wstring SFGAOToString(const SFGAOF *pfAttribs) {
+	static std::wstring SFGAOFToString(const SFGAOF *pfAttribs) {
 		if (pfAttribs == NULL) return L"<null>";
-		std::wstringstream ss;
-		if (*pfAttribs & SFGAO_CANCOPY) ss << L"CANCOPY | ";
-		if (*pfAttribs & SFGAO_CANMOVE) ss << L"CANMOVE | ";
-		if (*pfAttribs & SFGAO_CANLINK) ss << L"CANLINK | ";
-		if (*pfAttribs & SFGAO_STORAGE) ss << L"STORAGE | ";
-		if (*pfAttribs & SFGAO_CANRENAME) ss << L"CANRENAME | ";
-		if (*pfAttribs & SFGAO_CANDELETE) ss << L"CANDELETE | ";
-		if (*pfAttribs & SFGAO_HASPROPSHEET) ss << L"HASPROPSHEET | ";
-		if (*pfAttribs & SFGAO_DROPTARGET) ss << L"DROPTARGET | ";
-		if (*pfAttribs & SFGAO_CAPABILITYMASK) ss << L"CAPABILITYMASK | ";
-		if (*pfAttribs & SFGAO_PLACEHOLDER) ss << L"PLACEHOLDER | ";
-		if (*pfAttribs & SFGAO_SYSTEM) ss << L"SYSTEM | ";
-		if (*pfAttribs & SFGAO_ENCRYPTED) ss << L"ENCRYPTED | ";
-		if (*pfAttribs & SFGAO_ISSLOW) ss << L"ISSLOW | ";
-		if (*pfAttribs & SFGAO_GHOSTED) ss << L"GHOSTED | ";
-		if (*pfAttribs & SFGAO_LINK) ss << L"LINK | ";
-		if (*pfAttribs & SFGAO_SHARE) ss << L"SHARE | ";
-		if (*pfAttribs & SFGAO_READONLY) ss << L"READONLY | ";
-		if (*pfAttribs & SFGAO_HIDDEN) ss << L"HIDDEN | ";
-		if (*pfAttribs & SFGAO_DISPLAYATTRMASK) ss << L"DISPLAYATTRMASK | ";
-		if (*pfAttribs & SFGAO_FILESYSANCESTOR) ss << L"FILESYSANCESTOR | ";
-		if (*pfAttribs & SFGAO_FOLDER) ss << L"FOLDER | ";
-		if (*pfAttribs & SFGAO_FILESYSTEM) ss << L"FILESYSTEM | ";
-		if (*pfAttribs & SFGAO_HASSUBFOLDER) ss << L"HASSUBFOLDER | ";
-		if (*pfAttribs & SFGAO_CONTENTSMASK) ss << L"CONTENTSMASK | ";
-		if (*pfAttribs & SFGAO_VALIDATE) ss << L"VALIDATE | ";
-		if (*pfAttribs & SFGAO_REMOVABLE) ss << L"REMOVABLE | ";
-		if (*pfAttribs & SFGAO_COMPRESSED) ss << L"COMPRESSED | ";
-		if (*pfAttribs & SFGAO_BROWSABLE) ss << L"BROWSABLE | ";
-		if (*pfAttribs & SFGAO_NONENUMERATED) ss << L"NONENUMERATED | ";
-		if (*pfAttribs & SFGAO_NEWCONTENT) ss << L"NEWCONTENT | ";
-		if (*pfAttribs & SFGAO_CANMONIKER) ss << L"CANMONIKER | ";
-		if (*pfAttribs & SFGAO_HASSTORAGE) ss << L"HASSTORAGE | ";
-		if (*pfAttribs & SFGAO_STREAM) ss << L"STREAM | ";
-		if (*pfAttribs & SFGAO_STORAGEANCESTOR) ss << L"STORAGEANCESTOR | ";
-		if (*pfAttribs & SFGAO_STORAGECAPMASK) ss << L"STORAGECAPMASK | ";
-		if (*pfAttribs & SFGAO_PKEYSFGAOMASK) ss << L"PKEYSFGAOMASK | ";
-		return ss.str();
+		std::wostringstream oss;
+		if (*pfAttribs & SFGAO_CANCOPY) oss << L"CANCOPY | ";
+		if (*pfAttribs & SFGAO_CANMOVE) oss << L"CANMOVE | ";
+		if (*pfAttribs & SFGAO_CANLINK) oss << L"CANLINK | ";
+		if (*pfAttribs & SFGAO_STORAGE) oss << L"STORAGE | ";
+		if (*pfAttribs & SFGAO_CANRENAME) oss << L"CANRENAME | ";
+		if (*pfAttribs & SFGAO_CANDELETE) oss << L"CANDELETE | ";
+		if (*pfAttribs & SFGAO_HASPROPSHEET) oss << L"HASPROPSHEET | ";
+		if (*pfAttribs & SFGAO_DROPTARGET) oss << L"DROPTARGET | ";
+		if (*pfAttribs & SFGAO_CAPABILITYMASK) oss << L"CAPABILITYMASK | ";
+		if (*pfAttribs & SFGAO_PLACEHOLDER) oss << L"PLACEHOLDER | ";
+		if (*pfAttribs & SFGAO_SYSTEM) oss << L"SYSTEM | ";
+		if (*pfAttribs & SFGAO_ENCRYPTED) oss << L"ENCRYPTED | ";
+		if (*pfAttribs & SFGAO_ISSLOW) oss << L"ISSLOW | ";
+		if (*pfAttribs & SFGAO_GHOSTED) oss << L"GHOSTED | ";
+		if (*pfAttribs & SFGAO_LINK) oss << L"LINK | ";
+		if (*pfAttribs & SFGAO_SHARE) oss << L"SHARE | ";
+		if (*pfAttribs & SFGAO_READONLY) oss << L"READONLY | ";
+		if (*pfAttribs & SFGAO_HIDDEN) oss << L"HIDDEN | ";
+		if (*pfAttribs & SFGAO_DISPLAYATTRMASK) oss << L"DISPLAYATTRMASK | ";
+		if (*pfAttribs & SFGAO_FILESYSANCESTOR) oss << L"FILESYSANCESTOR | ";
+		if (*pfAttribs & SFGAO_FOLDER) oss << L"FOLDER | ";
+		if (*pfAttribs & SFGAO_FILESYSTEM) oss << L"FILESYSTEM | ";
+		if (*pfAttribs & SFGAO_HASSUBFOLDER) oss << L"HASSUBFOLDER | ";
+		if (*pfAttribs & SFGAO_CONTENTSMASK) oss << L"CONTENTSMASK | ";
+		if (*pfAttribs & SFGAO_VALIDATE) oss << L"VALIDATE | ";
+		if (*pfAttribs & SFGAO_REMOVABLE) oss << L"REMOVABLE | ";
+		if (*pfAttribs & SFGAO_COMPRESSED) oss << L"COMPRESSED | ";
+		if (*pfAttribs & SFGAO_BROWSABLE) oss << L"BROWSABLE | ";
+		if (*pfAttribs & SFGAO_NONENUMERATED) oss << L"NONENUMERATED | ";
+		if (*pfAttribs & SFGAO_NEWCONTENT) oss << L"NEWCONTENT | ";
+		if (*pfAttribs & SFGAO_CANMONIKER) oss << L"CANMONIKER | ";
+		if (*pfAttribs & SFGAO_HASSTORAGE) oss << L"HASSTORAGE | ";
+		if (*pfAttribs & SFGAO_STREAM) oss << L"STREAM | ";
+		if (*pfAttribs & SFGAO_STORAGEANCESTOR) oss << L"STORAGEANCESTOR | ";
+		if (*pfAttribs & SFGAO_STORAGECAPMASK) oss << L"STORAGECAPMASK | ";
+		if (*pfAttribs & SFGAO_PKEYSFGAOMASK) oss << L"PKEYSFGAOMASK | ";
+		return oss.str();
 	}
 
 	static std::wstring SHCONTFToString(const SHCONTF *pfAttribs) {
 		if (pfAttribs == NULL) return L"<null>";
-		std::wstringstream ss;
-		if (*pfAttribs & SHCONTF_CHECKING_FOR_CHILDREN) ss << L"CHECKING_FOR_CHILDREN | ";
-		if (*pfAttribs & SHCONTF_FOLDERS) ss << L"FOLDERS | ";
-		if (*pfAttribs & SHCONTF_NONFOLDERS) ss << L"NONFOLDERS | ";
-		if (*pfAttribs & SHCONTF_INCLUDEHIDDEN) ss << L"INCLUDEHIDDEN | ";
-		if (*pfAttribs & SHCONTF_INIT_ON_FIRST_NEXT) ss << L"INIT_ON_FIRST_NEXT | ";
-		if (*pfAttribs & SHCONTF_NETPRINTERSRCH) ss << L"NETPRINTERSRCH | ";
-		if (*pfAttribs & SHCONTF_SHAREABLE) ss << L"SHAREABLE | ";
-		if (*pfAttribs & SHCONTF_STORAGE) ss << L"STORAGE | ";
-		if (*pfAttribs & SHCONTF_NAVIGATION_ENUM) ss << L"NAVIGATION_ENUM | ";
-		if (*pfAttribs & SHCONTF_FASTITEMS) ss << L"FASTITEMS | ";
-		if (*pfAttribs & SHCONTF_FLATLIST) ss << L"FLATLIST | ";
-		if (*pfAttribs & SHCONTF_ENABLE_ASYNC) ss << L"ENABLE_ASYNC | ";
-		if (*pfAttribs & SHCONTF_INCLUDESUPERHIDDEN) ss << L"INCLUDESUPERHIDDEN | ";
-		return ss.str();
+		std::wostringstream oss;
+		if (*pfAttribs & SHCONTF_CHECKING_FOR_CHILDREN) oss << L"CHECKING_FOR_CHILDREN | ";
+		if (*pfAttribs & SHCONTF_FOLDERS) oss << L"FOLDERS | ";
+		if (*pfAttribs & SHCONTF_NONFOLDERS) oss << L"NONFOLDERS | ";
+		if (*pfAttribs & SHCONTF_INCLUDEHIDDEN) oss << L"INCLUDEHIDDEN | ";
+		if (*pfAttribs & SHCONTF_INIT_ON_FIRST_NEXT) oss << L"INIT_ON_FIRST_NEXT | ";
+		if (*pfAttribs & SHCONTF_NETPRINTERSRCH) oss << L"NETPRINTERSRCH | ";
+		if (*pfAttribs & SHCONTF_SHAREABLE) oss << L"SHAREABLE | ";
+		if (*pfAttribs & SHCONTF_STORAGE) oss << L"STORAGE | ";
+		if (*pfAttribs & SHCONTF_NAVIGATION_ENUM) oss << L"NAVIGATION_ENUM | ";
+		if (*pfAttribs & SHCONTF_FASTITEMS) oss << L"FASTITEMS | ";
+		if (*pfAttribs & SHCONTF_FLATLIST) oss << L"FLATLIST | ";
+		if (*pfAttribs & SHCONTF_ENABLE_ASYNC) oss << L"ENABLE_ASYNC | ";
+		if (*pfAttribs & SHCONTF_INCLUDESUPERHIDDEN) oss << L"INCLUDESUPERHIDDEN | ";
+		return oss.str();
 	}
 
 	static std::wstring SHGDNFToString(const SHGDNF *pfAttribs) {
 		if (pfAttribs == NULL) return L"<null>";
-		std::wostringstream ss;
-		if (*pfAttribs & SHGDN_NORMAL) ss << L"NORMAL | ";
-		if (*pfAttribs & SHGDN_INFOLDER) ss << L"INFOLDER | ";
-		if (*pfAttribs & SHGDN_FOREDITING) ss << L"FOREDITING | ";
-		if (*pfAttribs & SHGDN_FORADDRESSBAR) ss << L"FORADDRESSBAR | ";
-		if (*pfAttribs & SHGDN_FORPARSING) ss << L"FORPARSING | ";
-		return ss.str();
+		std::wostringstream oss;
+		if (*pfAttribs & SHGDN_NORMAL) oss << L"NORMAL | ";
+		if (*pfAttribs & SHGDN_INFOLDER) oss << L"INFOLDER | ";
+		if (*pfAttribs & SHGDN_FOREDITING) oss << L"FOREDITING | ";
+		if (*pfAttribs & SHGDN_FORADDRESSBAR) oss << L"FORADDRESSBAR | ";
+		if (*pfAttribs & SHGDN_FORPARSING) oss << L"FORPARSING | ";
+		return oss.str();
 	}
 #else
 	#define PidlToString(...) (void) 0
 	#define PidlArrayToString(...) (void) 0
 	#define InitializationPidlToString(...) (void) 0
 	#define IIDToString(...) (void) 0
-	#define SFGAOToString(...) (void) 0
+	#define SFGAOFToString(...) (void) 0
 	#define SHCONTFToString(...) (void) 0
 	#define SHGDNFToString(...) (void) 0
 #endif
-
 
 
 //==============================================================================
@@ -333,6 +352,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidl) {
 	return LogReturn(S_OK);
 }
 
+
 STDMETHODIMP
 CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// LOG(P_RSF << L"GetCurFolder()");
@@ -343,6 +363,7 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// return LogReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
 }
 
+
 //-------------------------------------------------------------------------------
 // IShellFolder
 
@@ -351,15 +372,15 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx           *pbc,
 	_In_         REFIID             riid,
-	_COM_Outptr_ void               **ppvOut
+	_COM_Outptr_ void               **ppv
 ) {
 	LOG(P_RSF << L"BindToObject("
 		L"pidl=[" << PidlToString(pidl) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 
-	if (ppvOut == NULL) return LogReturn(E_POINTER);
-	*ppvOut = NULL;
+	if (ppv == NULL) return LogReturn(E_POINTER);
+	*ppv = NULL;
 
 	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
 		return LogReturn(E_NOINTERFACE);
@@ -437,7 +458,8 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, /*-1,0,1*/ Result);
 }
 
-// Return a COM object that implements IShellView.
+
+/// Return a COM object that implements IShellView.
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
@@ -485,8 +507,11 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	// return LogReturn(E_NOINTERFACE);
 }
 
-// Return a COM object that implements IEnumIDList and enumerates the ADSes in
-// the current folder.
+
+/// Return a COM object that implements IEnumIDList and enumerates the ADSes in
+/// the current folder.
+/// @pre: Windows has browsed to a path of the format
+///       [Desktop\ADS Explorer\{FS path}]
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_         HWND        hwndOwner,
 	_In_         SHCONTF     dwFlags,
@@ -530,12 +555,13 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	return LogReturn(hr);
 }
 
-// Return if the items represented by the given PIDLs have the attributes
-// requested.
-// For each bit flag:
-//   1 if the flag is set on input and all the given items have that attribute,
-//   0 if the flag is not set on input or if any of the given items do not have
-//   that attribute.
+
+/// Return if the items represented by the given PIDLs have the attributes
+/// requested.
+/// For each bit flag:
+///   1 if the flag is set on input and all the given items have that attribute,
+///   0 if the flag is not set on input or if any of the given items do not have
+///   that attribute.
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
@@ -543,7 +569,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 ) {
 	LOG(P_RSF << L"GetAttributesOf("
 		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
-		L"pfAttribs=[" << SFGAOToString(pfAttribs) << L"]"
+		L"pfAttribs=[" << SFGAOFToString(pfAttribs) << L"]"
 	L")");
 
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
@@ -560,6 +586,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		// Child files/folders: [Desktop]\ADS Explorer\{fs object's path}
 		// Represents the ADS Explorer view of the file/folder at {fs object's path}
 		// Real filesystem object -> accessible from ADS Explorer
+		LOG(L" ** ADS");
 		*pfAttribs &= SFGAO_FILESYSTEM |
 		              SFGAO_CANCOPY |
 		              SFGAO_CANMOVE |
@@ -567,11 +594,13 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		              SFGAO_CANDELETE;
 	}
 
+	LOG(L" ** Result: " << SFGAOFToString(pfAttribs));
 	return LogReturn(S_OK);
 }
 
-// GetUIObjectOf() is called to get several sub-objects like IExtractIcon and
-// IDataObject
+
+/// GetUIObjectOf() is called to get several sub-objects like IExtractIcon and
+/// IDataObject
 STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	_In_         HWND                  hwndOwner,
 	_In_         UINT                  cidl,
@@ -654,6 +683,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	return LogReturn(E_NOINTERFACE);
 }
 
+
 STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	_In_         PCUIDLIST_RELATIVE,
 	_In_         IBindCtx *,
@@ -664,6 +694,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	if (ppvOut != NULL) *ppvOut = NULL;
 	return LogReturn(E_NOTIMPL);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	_In_  PCUITEMID_CHILD pidl,
@@ -685,7 +716,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// point which is in the form "::{GUID}" So we should return
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
-				LOG(L" ** GetDisplayNameOf: Root folder");
+				LOG(L" ** Root folder");
 				return LogReturn(
 					SetReturnStringW(
 						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
@@ -694,14 +725,14 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				);
 			default:
 				// We don't handle other combinations of flags for the root pidl
-				// return LogReturn(E_FAIL);
-				LOG(L" ** GetDisplayNameOf: Root folder");
-				return LogReturn(
-					SetReturnStringW(
-						L"GetDisplayNameOf test",
-						*pName
-					) ? S_OK : E_FAIL
-				);
+				return LogReturn(E_FAIL);
+				// LOG(L" ** Root folder");
+				// return LogReturn(
+				// 	SetReturnStringW(
+				// 		L"GetDisplayNameOf test",
+				// 		*pName
+				// 	) ? S_OK : E_FAIL
+				// );
 		}
 	}
 	LOG(L" ** GetDisplayNameOf: Child file/folder");
@@ -828,11 +859,11 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        LPWSTR           pszDisplayName,
 	_Out_opt_   ULONG            *pchEaten,
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
-	_Inout_opt_ ULONG            *pfAttributes
+	_Inout_opt_ SFGAOF           *pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
 		L"name=\"" << pszDisplayName << L"\", "
-		L"attributes=[" << SFGAOToString(pfAttributes) << L"]"
+		L"attributes=[" << SFGAOFToString(pfAttributes) << L"]"
 	L")");
 
 	if (pchEaten != NULL) {
@@ -873,6 +904,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 	return LogReturn(E_NOTIMPL);
 }
 
+
 //-------------------------------------------------------------------------------
 // IShellDetails
 
@@ -881,6 +913,7 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 	// Tell the caller to sort the column itself
 	return LogReturn(S_FALSE);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidl,
@@ -934,16 +967,17 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	return LogReturn(E_INVALIDARG);
 }
 
+
 //------------------------------------------------------------------------------
 // IShellFolder2
 
-STDMETHODIMP CADSXRootShellFolder::EnumSearches(
-	_COM_Outptr_ IEnumExtraSearch **ppEnum
-) {
+STDMETHODIMP
+CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
 	if (ppEnum != NULL) *ppEnum = NULL;
 	return LogReturn(E_NOTIMPL);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 	_In_  DWORD dwReserved,
@@ -959,6 +993,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 
 	return LogReturn(S_OK);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 	_In_  UINT uColumn,
@@ -986,10 +1021,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 	return LogReturn(S_OK);
 }
 
+
 STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 	LOG(P_RSF << L"GetDefaultSearchGUID()");
 	return LogReturn(E_NOTIMPL);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 	_In_  PCUITEMID_CHILD pidl,
@@ -1025,6 +1062,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 
 	return LogReturn(E_NOTIMPL);
 }
+
 
 STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 	_In_ UINT uColumn,
