@@ -9,6 +9,7 @@
 const std::map<const std::wstring, LPCWSTR> iids{
     {L"{20D04FE0-3AEA-1069-A2D8-08002B30309D}", L"CLSID_MyComputer"},
     {L"{ED383D11-6797-4103-85EF-CBDB8DEB50E2}", L"CLSID_ADSExplorerRootShellFolder"},
+    {L"{000214E4-0000-0000-C000-000000000046}", L"IContextMenu"},
     {L"{00000122-0000-0000-C000-000000000046}", L"IDropTarget"},
     {L"{000214EB-0000-0000-C000-000000000046}", L"IExtractIconA"},
     {L"{000214FA-0000-0000-C000-000000000046}", L"IExtractIconW"},
@@ -26,6 +27,8 @@ const std::map<const std::wstring, LPCWSTR> iids{
     {L"{886D8EEB-8CF2-4446-8D02-CDBA1DBDCF99}", L"IPropertyStore"},
     {L"{BC110B6D-57E8-4148-A9C6-91015AB2F3A5}", L"IPropertyStoreFactory"},
     {L"{3017056D-9A91-4E90-937D-746C72ABBF4F}", L"IPropertyStoreCache"},
+    {L"{711B2CFD-93D1-422B-BDF4-69BE923F2449}", L"IShellFolder3"},
     {L"{8279FEB8-5CA4-45C4-BE27-770DCDEA1DEB}", L"ITopViewAwareItem"},
     {L"{A39EE748-6A27-4817-A6F2-13914BEF5890}", L"IUri"},
+    {L"{9D264146-A94F-4195-9F9F-3BB12CE0C955}", L"IViewStateIdentityItem"},
 };
