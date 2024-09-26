@@ -275,22 +275,26 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 
 
 /// Initialize() is passed the PIDL of the folder where our extension is.
-/// Copies, and does not take ownership of, the PIDL.
+/// Copies, does not take ownership of, the PIDL.
 /// @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
+///       (I _assume_ those are the only two values Explorer ever passes to us.)
+/// @pre: PIDL length <= 2.
 /// @post: this CADSXRootShellFolder instance is ready to be used.
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidlRoot) << L"])");
 
 	// Enforce that this function is only called once
-	if (m_pidlRoot != NULL) {
-		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
-	}
+	ATLASSERT(m_pidlRoot != NULL);
+	// if (m_pidlRoot != NULL) {
+	// 	return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
+	// }
 
 	// Validate input PIDL
-	if (!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot)))) {
-		// PIDL length is more than 2
-		// I have never seen Windows give this function a PIDL that isn't
-		// [Desktop\ADS Explorer] or [ADS Explorer]
+	if (
+		ILIsEmpty(pidlRoot) ||
+		(!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot))))
+	) {
+		// PIDL length is 0 or more than 2
 		return E_INVALIDARG;
 	}
 
@@ -343,6 +347,8 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	HRESULT hr;
 
 	// TODO(garlic-os): Better way to check when we're at the end of the path?
+	// Assumption here is BindToObject receives a PIDL of length 1 iff we are at
+	// the end of the path.
 	if (ILIsChild(pidl)) {
 		// We've made it to the target FS object's direct parent.
 		// Our normal ShellFolder companion cannot browse any farther. It is now
@@ -380,6 +386,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 
 /// Return the sort order of two PIDLs.
 /// lParam can be the 0-based Index of the details column
+/// @pre pidl1 and pidl2 hold CADSXItems.
 STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	_In_ LPARAM             lParam,
 	_In_ PCUIDLIST_RELATIVE pidl1,
@@ -391,21 +398,22 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 		L"pidl2=[" << PidlToString(pidl2) << L"])"
 	);
 
-	// First check if the pidl are ours
+	// Check if the PIDLs are ours
+	ATLASSERT(CADSXItem::IsOwn(pidl1) && CADSXItem::IsOwn(pidl2));
 	if (!CADSXItem::IsOwn(pidl1) || !CADSXItem::IsOwn(pidl2)) {
 		return LogReturn(E_INVALIDARG);
 	}
 
-	// Now check if the pidl are one or multi level, in case they are
-	// multi-level, return non-equality
+	// Only child PIDLs supported
+	ATLASSERT(ILIsChild(pidl1) && ILIsChild(pidl2));
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 1);
 	}
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
-	auto Item1 = CADSXItem::Get((PCUITEMID_CHILD) pidl1);
-	auto Item2 = CADSXItem::Get((PCUITEMID_CHILD) pidl2);
+	auto Item1 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
+	auto Item2 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DETAILS_COLUMN_NAME:
@@ -441,7 +449,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 	HRESULT hr;
 
-	// We handle only the IShellView
+	// We only handle IShellView
 	if (riid == IID_IShellView) {
 		LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 		// Create a view object
@@ -469,7 +477,6 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		return LogReturn(hr);
 	}
 
-	// We do not handle other objects
 	return E_NOINTERFACE;
 	// return LogReturn(E_NOINTERFACE);
 }
