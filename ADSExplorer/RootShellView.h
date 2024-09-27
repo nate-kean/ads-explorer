@@ -28,7 +28,7 @@
 #include <iomanip>
 
 #include "ShellFolderView.h"
-#include "DebugPrint.h"
+#include "debug.h"
 
 // define some undocumented messages. See "shlext.h" from Henk Devos & Andrew Le
 // Bihan, at http://www.whirlingdervishes.com/nselib/public

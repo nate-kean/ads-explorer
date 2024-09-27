@@ -215,7 +215,7 @@
   <ItemGroup>
     <ClInclude Include="ADSXEnumIDList.h" />
     <ClInclude Include="ADSXItem.h" />
-    <ClInclude Include="DebugPrint.h" />
+    <ClInclude Include="debug.h" />
     <ClInclude Include="defer.h" />
     <ClInclude Include="iids.h" />
     <ClInclude Include="resource.h" />

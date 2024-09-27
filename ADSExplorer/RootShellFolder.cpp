@@ -38,7 +38,7 @@
 
 #include "ADSXEnumIDList.h"
 #include "ADSXItem.h"
-#include "DebugPrint.h"
+#include "debug.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
 #include "DataObject.h"
@@ -50,18 +50,8 @@
 // Debug log prefix for CADSXRootShellFolder
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
-// STRRET helper functions
-bool SetReturnStringA(LPCSTR Source, STRRET &str) {
-	LOG(L" ** " << Source);
-	SIZE_T StringLen = strlen(Source) + 1;
-	str.uType = STRRET_WSTR;
-	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
-	if (str.pOleStr == NULL) return false;
-
-	mbstowcs_s(NULL, str.pOleStr, StringLen, Source, StringLen);
-	return true;
-}
-bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
+// STRRET helper function
+bool SetReturnString(LPCWSTR Source, STRRET &str) {
 	LOG(L" ** " << Source);
 	SIZE_T StringLen = wcslen(Source) + 1;
 	str.uType = STRRET_WSTR;
@@ -71,184 +61,6 @@ bool SetReturnStringW(LPCWSTR Source, STRRET &str) {
 	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
 	return true;
 }
-
-
-// #define _DEBUG
-#ifdef _DEBUG
-	#include "iids.h"
-
-	static std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
-		if (pidl == NULL) return L"<null>";
-		std::wostringstream oss;
-		bool first = true;
-		for (; !ILIsEmpty(pidl); pidl = ILNext(pidl)) {
-			if (!first) {
-				oss << L"--";
-			}
-			if (CADSXItem::IsOwn(pidl)) {
-				oss <<
-					CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->m_Name;
-			} else {
-				WCHAR tmp[16];
-				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
-				oss << tmp;
-			}
-			first = false;
-		}
-		return oss.str();
-	}
-
-	static std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl) {
-		PWSTR pszPath = NULL;
-		HRESULT hr = SHGetNameFromIDList(
-			pidl,
-			SIGDN_DESKTOPABSOLUTEPARSING,
-			&pszPath
-		);
-		if (FAILED(hr)) return L"ERROR";
-		defer({ CoTaskMemFree(pszPath); });
-		std::wstring wstrPath(pszPath);
-		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") {
-			return L"[Desktop]";
-		} else if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[Desktop\\ADS Explorer]";
-		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[ADS Explorer]";
-		}
-		return wstrPath;
-	}
-
-	static std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) {
-		std::wostringstream oss;
-		oss << L"[";
-		defer({ oss << L"]"; });
-		for (UINT i = 0; i < cidl; i++) {
-			oss << PidlToString(aPidls[i]);
-			if (i < cidl - 1) {
-				oss << L", ";
-			}
-		}
-		return oss.str();
-	}
-
-	static std::wstring IIDToString(const std::wstring &sIID) {
-		auto search = iids.find(sIID);
-		if (search != iids.end()) {
-			return std::wstring(search->second);
-		} else {
-			return sIID;
-		}
-	}
-	static std::wstring IIDToString(const IID &iid) {
-		LPOLESTR pszGUID = NULL;
-		HRESULT hr = StringFromCLSID(iid, &pszGUID);
-		if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
-		defer({ CoTaskMemFree(pszGUID); });
-		auto sIID = std::wstring(pszGUID);
-		return IIDToString(sIID);
-	}
-
-	static std::wstring InitializationPidlToString(PCIDLIST_ABSOLUTE pidl) {
-		if (pidl == NULL) return L"<null>";
-		PWSTR pszPath = NULL;
-		HRESULT hr = SHGetNameFromIDList(
-			pidl,
-			SIGDN_DESKTOPABSOLUTEPARSING,
-			&pszPath
-		);
-		defer({ CoTaskMemFree(pszPath); });
-		if (FAILED(hr)) return L"ERROR";
-		std::wstring wstrPath(pszPath);  // name is copied so this is safe
-		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") {
-			return L"[Desktop]";
-		} else if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[Desktop\\ADS Explorer]";
-		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[ADS Explorer]";
-		}
-		return wstrPath;
-	}
-
-	static std::wstring SFGAOFToString(const SFGAOF *pfAttribs) {
-		if (pfAttribs == NULL) return L"<null>";
-		std::wostringstream oss;
-		if (*pfAttribs & SFGAO_CANCOPY) oss << L"CANCOPY | ";
-		if (*pfAttribs & SFGAO_CANMOVE) oss << L"CANMOVE | ";
-		if (*pfAttribs & SFGAO_CANLINK) oss << L"CANLINK | ";
-		if (*pfAttribs & SFGAO_STORAGE) oss << L"STORAGE | ";
-		if (*pfAttribs & SFGAO_CANRENAME) oss << L"CANRENAME | ";
-		if (*pfAttribs & SFGAO_CANDELETE) oss << L"CANDELETE | ";
-		if (*pfAttribs & SFGAO_HASPROPSHEET) oss << L"HASPROPSHEET | ";
-		if (*pfAttribs & SFGAO_DROPTARGET) oss << L"DROPTARGET | ";
-		if (*pfAttribs & SFGAO_CAPABILITYMASK) oss << L"CAPABILITYMASK | ";
-		if (*pfAttribs & SFGAO_PLACEHOLDER) oss << L"PLACEHOLDER | ";
-		if (*pfAttribs & SFGAO_SYSTEM) oss << L"SYSTEM | ";
-		if (*pfAttribs & SFGAO_ENCRYPTED) oss << L"ENCRYPTED | ";
-		if (*pfAttribs & SFGAO_ISSLOW) oss << L"ISSLOW | ";
-		if (*pfAttribs & SFGAO_GHOSTED) oss << L"GHOSTED | ";
-		if (*pfAttribs & SFGAO_LINK) oss << L"LINK | ";
-		if (*pfAttribs & SFGAO_SHARE) oss << L"SHARE | ";
-		if (*pfAttribs & SFGAO_READONLY) oss << L"READONLY | ";
-		if (*pfAttribs & SFGAO_HIDDEN) oss << L"HIDDEN | ";
-		if (*pfAttribs & SFGAO_DISPLAYATTRMASK) oss << L"DISPLAYATTRMASK | ";
-		if (*pfAttribs & SFGAO_FILESYSANCESTOR) oss << L"FILESYSANCESTOR | ";
-		if (*pfAttribs & SFGAO_FOLDER) oss << L"FOLDER | ";
-		if (*pfAttribs & SFGAO_FILESYSTEM) oss << L"FILESYSTEM | ";
-		if (*pfAttribs & SFGAO_HASSUBFOLDER) oss << L"HASSUBFOLDER | ";
-		if (*pfAttribs & SFGAO_CONTENTSMASK) oss << L"CONTENTSMASK | ";
-		if (*pfAttribs & SFGAO_VALIDATE) oss << L"VALIDATE | ";
-		if (*pfAttribs & SFGAO_REMOVABLE) oss << L"REMOVABLE | ";
-		if (*pfAttribs & SFGAO_COMPRESSED) oss << L"COMPRESSED | ";
-		if (*pfAttribs & SFGAO_BROWSABLE) oss << L"BROWSABLE | ";
-		if (*pfAttribs & SFGAO_NONENUMERATED) oss << L"NONENUMERATED | ";
-		if (*pfAttribs & SFGAO_NEWCONTENT) oss << L"NEWCONTENT | ";
-		if (*pfAttribs & SFGAO_CANMONIKER) oss << L"CANMONIKER | ";
-		if (*pfAttribs & SFGAO_HASSTORAGE) oss << L"HASSTORAGE | ";
-		if (*pfAttribs & SFGAO_STREAM) oss << L"STREAM | ";
-		if (*pfAttribs & SFGAO_STORAGEANCESTOR) oss << L"STORAGEANCESTOR | ";
-		if (*pfAttribs & SFGAO_STORAGECAPMASK) oss << L"STORAGECAPMASK | ";
-		if (*pfAttribs & SFGAO_PKEYSFGAOMASK) oss << L"PKEYSFGAOMASK | ";
-		return oss.str();
-	}
-
-	static std::wstring SHCONTFToString(const SHCONTF *pfAttribs) {
-		if (pfAttribs == NULL) return L"<null>";
-		std::wostringstream oss;
-		if (*pfAttribs & SHCONTF_CHECKING_FOR_CHILDREN) oss << L"CHECKING_FOR_CHILDREN | ";
-		if (*pfAttribs & SHCONTF_FOLDERS) oss << L"FOLDERS | ";
-		if (*pfAttribs & SHCONTF_NONFOLDERS) oss << L"NONFOLDERS | ";
-		if (*pfAttribs & SHCONTF_INCLUDEHIDDEN) oss << L"INCLUDEHIDDEN | ";
-		if (*pfAttribs & SHCONTF_INIT_ON_FIRST_NEXT) oss << L"INIT_ON_FIRST_NEXT | ";
-		if (*pfAttribs & SHCONTF_NETPRINTERSRCH) oss << L"NETPRINTERSRCH | ";
-		if (*pfAttribs & SHCONTF_SHAREABLE) oss << L"SHAREABLE | ";
-		if (*pfAttribs & SHCONTF_STORAGE) oss << L"STORAGE | ";
-		if (*pfAttribs & SHCONTF_NAVIGATION_ENUM) oss << L"NAVIGATION_ENUM | ";
-		if (*pfAttribs & SHCONTF_FASTITEMS) oss << L"FASTITEMS | ";
-		if (*pfAttribs & SHCONTF_FLATLIST) oss << L"FLATLIST | ";
-		if (*pfAttribs & SHCONTF_ENABLE_ASYNC) oss << L"ENABLE_ASYNC | ";
-		if (*pfAttribs & SHCONTF_INCLUDESUPERHIDDEN) oss << L"INCLUDESUPERHIDDEN | ";
-		return oss.str();
-	}
-
-	static std::wstring SHGDNFToString(const SHGDNF *pfAttribs) {
-		if (pfAttribs == NULL) return L"<null>";
-		std::wostringstream oss;
-		if (*pfAttribs & SHGDN_NORMAL) oss << L"NORMAL | ";
-		if (*pfAttribs & SHGDN_INFOLDER) oss << L"INFOLDER | ";
-		if (*pfAttribs & SHGDN_FOREDITING) oss << L"FOREDITING | ";
-		if (*pfAttribs & SHGDN_FORADDRESSBAR) oss << L"FORADDRESSBAR | ";
-		if (*pfAttribs & SHGDN_FORPARSING) oss << L"FORPARSING | ";
-		return oss.str();
-	}
-#else
-	#define PidlToString(...) (void) 0
-	#define PidlArrayToString(...) (void) 0
-	#define InitializationPidlToString(...) (void) 0
-	#define IIDToString(...) (void) 0
-	#define SFGAOFToString(...) (void) 0
-	#define SHCONTFToString(...) (void) 0
-	#define SHGDNFToString(...) (void) 0
-#endif
 
 
 //==============================================================================
@@ -274,14 +86,16 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 }
 
 
-/// Initialize() is passed the PIDL of the folder where our extension is.
-/// Copies, does not take ownership of, the PIDL.
-/// @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
-///       (I _assume_ those are the only two values Explorer ever passes to us.)
-/// @pre: PIDL length <= 2.
-/// @post: this CADSXRootShellFolder instance is ready to be used.
+/**
+ * Initialize() is passed the PIDL of the folder where our extension is.
+ * Copies, does not take ownership of, the PIDL.
+ * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
+ *       (I _assume_ those are the only two values Explorer ever passes to us.)
+ * @pre: PIDL length <= 2.
+ * @post: this CADSXRootShellFolder instance is ready to be used.
+ */
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
-	// LOG(P_RSF << L"Initialize(pidl=[" << InitializationPidlToString(pidlRoot) << L"])");
+	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
 
 	// Enforce that this function is only called once
 	ATLASSERT(m_pidlRoot != NULL);

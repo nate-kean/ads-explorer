@@ -48,7 +48,7 @@
     <ClInclude Include="iids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DebugPrint.h">
+    <ClInclude Include="debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

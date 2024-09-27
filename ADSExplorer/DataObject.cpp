@@ -31,7 +31,7 @@
 #include <combaseapi.h>
 
 #include "defer.h"
-#include "DebugPrint.h"
+#include "debug.h"
 
 // Debug log prefix for CDataObject
 #define P_DO L"CDataObject(0x" << std::hex << this << L")::"

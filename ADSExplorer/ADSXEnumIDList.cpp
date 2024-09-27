@@ -6,7 +6,7 @@
 #include <winnt.h>
 
 #include "ADSXItem.h"
-#include "DebugPrint.h"
+#include "debug.h"
 
 // Debug log prefix for CADSXEnumIDList
 #define P_EIDL L"CADSXEnumIDList(0x" << std::hex << this << L")::"
