@@ -518,7 +518,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
 				LOG(L" ** Root folder");
 				return LogReturn(
-					SetReturnStringW(
+					SetReturnString(
 						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
 						*pName
 					) ? S_OK : E_FAIL
@@ -528,7 +528,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				return LogReturn(E_FAIL);
 				// LOG(L" ** Root folder");
 				// return LogReturn(
-				// 	SetReturnStringW(
+				// 	SetReturnString(
 				// 		L"GetDisplayNameOf test",
 				// 		*pName
 				// 	) ? S_OK : E_FAIL
@@ -560,7 +560,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			std::wostringstream ossPath;
 			ossPath << pszPath << L":" << Item->m_Name;
 			return LogReturn(
-				SetReturnStringW(ossPath.str().c_str(), *pName) ? S_OK : E_FAIL
+				SetReturnString(ossPath.str().c_str(), *pName) ? S_OK : E_FAIL
 			);
 		}
 
@@ -572,9 +572,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
 			return LogReturn(
-				SetReturnStringW(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
+				SetReturnString(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
 			);
-			// return SetReturnStringW(Item->m_Name.c_str(), *pName)
+			// return SetReturnString(Item->m_Name.c_str(), *pName)
 			// 	? S_OK : E_FAIL;
 	}
 }
@@ -671,7 +671,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			ATLASSERT(Item->m_Name.length() <= INT_MAX);
 			pDetails->cxChar = static_cast<int>(Item->m_Name.length());
 			return LogReturn(
-				SetReturnStringW(Item->m_Name.c_str(), pDetails->str) ? S_OK : E_OUTOFMEMORY
+				SetReturnString(Item->m_Name.c_str(), pDetails->str) ? S_OK : E_OUTOFMEMORY
 			);
 
 		case DETAILS_COLUMN_FILESIZE:
@@ -682,7 +682,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
 			return LogReturn(
-				SetReturnStringW(pszSize, pDetails->str) ? S_OK : E_OUTOFMEMORY
+				SetReturnString(pszSize, pDetails->str) ? S_OK : E_OUTOFMEMORY
 			);
 	}
 

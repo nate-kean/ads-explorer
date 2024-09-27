@@ -34,16 +34,8 @@
 //==============================================================================
 
 // Set the return string 'Source' in the STRRET struct.
-// Note that it always allocate a UNICODE copy of the string.
 // Returns false if memory allocation fails.
-bool SetReturnStringA(LPCSTR Source, STRRET &str);
-bool SetReturnStringW(LPCWSTR Source, STRRET &str);
-
-#ifdef _UNICODE
-#define SetReturnString SetReturnStringW
-#else
-#define SetReturnString SetReturnStringA
-#endif
+bool SetReturnString(LPCWSTR Source, STRRET &str);
 
 
 //==============================================================================
