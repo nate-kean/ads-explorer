@@ -438,14 +438,14 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
-	_COM_Outptr_ void   **ppvOut
+	_COM_Outptr_ void   **ppv
 ) {
 	// Not logging all interface requests because there are too many
 	// LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
-	if (ppvOut == NULL) return E_POINTER;
-	// if (ppvOut == NULL) return LogReturn(E_POINTER);
-	*ppvOut = NULL;
+	if (ppv == NULL) return E_POINTER;
+	// if (ppv == NULL) return LogReturn(E_POINTER);
+	*ppv = NULL;
 
 	HRESULT hr;
 
@@ -465,7 +465,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 		// Create the view
 		hr = pViewObject->Create(
-			reinterpret_cast<IShellView **>(ppvOut),
+			reinterpret_cast<IShellView **>(ppv),
 			hwndOwner,
 			static_cast<IShellFolder *>(this)
 		);
@@ -593,7 +593,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	_In_         PCUITEMID_CHILD_ARRAY aPidls,
 	_In_         REFIID                riid,
 	_Inout_      UINT                  *rgfReserved,
-	_COM_Outptr_ void                  **ppvOut
+	_COM_Outptr_ void                  **ppv
 ) {
 	LOG(P_RSF << L"GetUIObjectOf("
 		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
@@ -603,8 +603,8 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	HRESULT hr;
 
-	if (ppvOut == NULL) return LogReturn(E_POINTER);
-	*ppvOut = NULL;
+	if (ppv == NULL) return LogReturn(E_POINTER);
+	*ppv = NULL;
 
 	if (cidl == 0) return LogReturn(E_INVALIDARG);
 
@@ -632,7 +632,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// and embed the PIDL in the data
 		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
 		// Return the requested interface to the caller
-		hr = pDataObject->QueryInterface(riid, ppvOut);
+		hr = pDataObject->QueryInterface(riid, ppv);
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
@@ -643,7 +643,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellfolder-getuiobjectof#remarks.
 	// OpenWindows had the luxury of their objects being real/normal filesystem
 	// objects (i.e., the folders other Explorer windows were open to), so it
-	// could just proxy these requests on to those objects' parent folders.
+	// could just proxy these requests on to those objects ('s parent folders).
 	// Our objects are not real/normal filesystem objects, so we have to
 	// implement these interfaces ourselves.
 	else if (riid == IID_IContextMenu) {
@@ -674,10 +674,10 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	_In_         PCUIDLIST_RELATIVE,
 	_In_         IBindCtx *,
 	_In_         REFIID,
-	_COM_Outptr_ void **ppvOut
+	_COM_Outptr_ void **ppv
 ) {
 	LOG(P_RSF << L"BindToStorage()");
-	if (ppvOut != NULL) *ppvOut = NULL;
+	if (ppv != NULL) *ppv = NULL;
 	return LogReturn(E_NOTIMPL);
 }
 

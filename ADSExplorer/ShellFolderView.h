@@ -32,13 +32,13 @@
 //	CRootShellView is a CShellFolderViewImpl subclass
 /*
 	STDMETHODIMP CRootShellFolder::CreateViewObject(HWND hwndOwner, REFIID riid,
-   void** ppvOut)
+   void** ppv)
 	{
 		HRESULT hr;
 
-		if (ppvOut == NULL)
+		if (ppv == NULL)
 			return E_POINTER;
-		*ppvOut = NULL;
+		*ppv = NULL;
 
 		if (riid == IID_IShellView)
 		{
@@ -52,7 +52,7 @@
 			pViewObject->AddRef();
 
 			// Create the view
-			hr = pViewObject->Create((IShellView**)ppvOut, hwndOwner,
+			hr = pViewObject->Create((IShellView**)ppv, hwndOwner,
    (IShellFolder*)this);
 
 			// We are finished with our own use of the view object (AddRef()'ed
