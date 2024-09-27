@@ -73,7 +73,7 @@ CreateShellIDList(
 
 	// add the PIDL for the parent folder
 	cbPidl = ILGetSize(pidlParent);
-	CopyMemory(reinterpret_cast<LPBYTE>(pData) + iCurPos, pidlParent, cbPidl);
+	CopyMemory(VOID_OFFSET(pData, iCurPos), pidlParent, cbPidl);
 	iCurPos += cbPidl;
 
 	// get the size of the PIDL
@@ -83,7 +83,7 @@ CreateShellIDList(
 	pData->aoffset[1] = iCurPos;
 
 	// copy the contents of the PIDL
-	CopyMemory(reinterpret_cast<LPBYTE>(pData) + iCurPos, pidl, cbPidl);
+	CopyMemory(VOID_OFFSET(pData, iCurPos), pidl, cbPidl);
 
 	// set up the position of the next PIDL
 	iCurPos += cbPidl;

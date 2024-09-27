@@ -51,14 +51,16 @@
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
 // STRRET helper function
-bool SetReturnString(LPCWSTR Source, STRRET &str) {
-	LOG(L" ** " << Source);
-	SIZE_T StringLen = wcslen(Source) + 1;
-	str.uType = STRRET_WSTR;
-	str.pOleStr = static_cast<LPOLESTR>(CoTaskMemAlloc(StringLen * sizeof(OLECHAR)));
-	if (str.pOleStr == NULL) return false;
+bool SetReturnString(LPCWSTR pszSource, STRRET &strret) {
+	LOG(L" ** " << pszSource);
+	SIZE_T cwStringLen = wcslen(pszSource) + 1;
+	strret.uType = STRRET_WSTR;
+	strret.pOleStr = static_cast<LPOLESTR>(
+		CoTaskMemAlloc(cwStringLen * sizeof(OLECHAR))
+	);
+	if (strret.pOleStr == NULL) return false;
 
-	wcsncpy_s(str.pOleStr, StringLen, Source, StringLen);
+	wcsncpy_s(strret.pOleStr, cwStringLen, pszSource, cwStringLen);
 	return true;
 }
 
