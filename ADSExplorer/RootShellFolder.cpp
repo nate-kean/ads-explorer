@@ -486,6 +486,8 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 /// the current folder.
 /// @pre: Windows has browsed to a path of the format
 ///       [Desktop\ADS Explorer\{FS path}]
+/// @pre: i.e., m_pidlFSPath is [Desktop\{FS path}]
+/// @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_         HWND        hwndOwner,
 	_In_         SHCONTF     dwFlags,
