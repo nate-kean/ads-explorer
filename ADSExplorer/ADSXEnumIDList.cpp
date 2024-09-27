@@ -1,3 +1,7 @@
+/**
+ * 2024 Nate Kean
+ */
+
 #include "stdafx.h"  // MUST be included first
 
 #include "ADSXEnumIDList.h"

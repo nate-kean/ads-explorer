@@ -1,3 +1,10 @@
+/**
+ * 2024 Nate Kean
+ *
+ * A Windows Enumerator object that produces LPITEMIDLISTs that contain
+ * CADSXItem structures.
+ */
+
 #pragma once
 
 #include "stdafx.h"

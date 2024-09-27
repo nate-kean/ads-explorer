@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2024 Nate Kean
+ */
+
 #pragma once
 
 #include "stdafx.h"
