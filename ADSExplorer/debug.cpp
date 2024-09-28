@@ -9,7 +9,9 @@
 // #include <fstream>
 
 
-CDebugStream::CDebugStream() : std::wostream(this) {}
+CDebugStream::CDebugStream()
+	: std::wostream(this)
+	, m_initial_flags(this->flags()) {}
 CDebugStream::~CDebugStream() {}
 
 
@@ -18,6 +20,7 @@ CDebugStream::xsputn(const CDebugStream::Base::char_type* s, std::streamsize n) 
 	// #define _DEBUG
 	#ifdef _DEBUG
 		OutputDebugStringW(s);
+		this->flags(m_initial_flags);
 	#endif
 	return n;
 };
@@ -29,6 +32,7 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		WCHAR w = c;
 		WCHAR s[2] = {w, '\0'};
 		OutputDebugStringW(s);
+		this->flags(m_initial_flags);
 	#endif
 	return 1;
 }

@@ -38,6 +38,7 @@ class CDebugStream
 	xsputn(const CDebugStream::Base::char_type* s, std::streamsize n) override;
 	Base::int_type
 	overflow(Base::int_type c) override;
+	std::ios_base::fmtflags m_initial_flags;
 
   private:
 	// --- Singleton ---
