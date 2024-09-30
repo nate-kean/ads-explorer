@@ -5,9 +5,16 @@
 #include "StdAfx.h"
 
 #include "debug.h"
-
 // #include <fstream>
-#include "ADSXItem.h"
+
+// #define _DEBUG
+#ifdef _DEBUG
+	#include "ADSXItem.h"
+	#include "defer.h"
+	#include "iids.h"
+	#include <iomanip>
+	#include <sstream>
+#endif
 
 
 CDebugStream::CDebugStream()
@@ -44,38 +51,11 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 // 	std::ios::out | std::ios::trunc
 // );
 
-// #define _DEBUG
 #ifdef _DEBUG
-	#include <iomanip>
-	#include <sstream>
-
-	std::wstring HRESULTToString(HRESULT hr) {
-		switch (hr) {
-			case S_OK: return L"S_OK";
-			case S_FALSE: return L"S_FALSE";
-			case E_NOTIMPL: return L"E_NOTIMPL";
-			case E_NOINTERFACE: return L"E_NOINTERFACE";
-			case E_POINTER: return L"E_POINTER";
-			case E_OUTOFMEMORY: return L"E_OUTOFMEMORY";
-			case E_INVALIDARG: return L"E_INVALIDARG";
-			case E_FAIL: return L"E_FAIL";
-			default:
-				std::wstringstream ss;
-				ss << std::hex << std::setw(8) << std::setfill(L'0') << hr;
-				return ss.str();
-		}
-	}
-
-	HRESULT LogReturn(HRESULT hr) {
+	_Post_equal_to_(hr) HRESULT LogReturn(_In_ HRESULT hr) {
 		LOG(L" -> " << HRESULTToString(hr));
 		return hr;
 	}
-#endif
-
-
-// #define _DEBUG
-#ifdef _DEBUG
-	#include "iids.h"
 
 	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
 		if (pidl == NULL) return L"<null>";
@@ -218,5 +198,22 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		if (*pfAttribs & SHGDN_FORADDRESSBAR) oss << L"FORADDRESSBAR | ";
 		if (*pfAttribs & SHGDN_FORPARSING) oss << L"FORPARSING | ";
 		return oss.str();
+	}
+
+	std::wstring HRESULTToString(HRESULT hr) {
+		switch (hr) {
+			case S_OK: return L"S_OK";
+			case S_FALSE: return L"S_FALSE";
+			case E_NOTIMPL: return L"E_NOTIMPL";
+			case E_NOINTERFACE: return L"E_NOINTERFACE";
+			case E_POINTER: return L"E_POINTER";
+			case E_OUTOFMEMORY: return L"E_OUTOFMEMORY";
+			case E_INVALIDARG: return L"E_INVALIDARG";
+			case E_FAIL: return L"E_FAIL";
+			default:
+				std::wstringstream ss;
+				ss << std::hex << std::setw(8) << std::setfill(L'0') << hr;
+				return ss.str();
+		}
 	}
 #endif

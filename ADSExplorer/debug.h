@@ -8,12 +8,6 @@
 
 #include <ostream>
 
-#ifndef _DEBUG
-	// Require a semicolon after LOG() to avoid "expected ';' after expression"
-	// error while still compiling down to nothing in release builds.
-	#define DBG_NOTHING do { } while (false)
-#endif
-
 // Implements wstreambuf, but only for itself.
 // Then implements wostream publicly, so this class can be used as an ostream
 // that acts on its internal wstreambuf.
@@ -50,24 +44,16 @@ class CDebugStream
 extern std::wostream g_DebugStream;
 // extern std::wofstream g_DebugStream;
 
-// https://stackoverflow.com/a/3371577
-// Usage: LOG(L"Hello" << ' ' << L"World!" << 1);
 // #define _DEBUG
 #ifdef _DEBUG
+	// https://stackoverflow.com/a/3371577
+	// Usage: LOG(L"Hello" << ' ' << L"World!" << 1);
 	#define LOG(psz) do { \
 		CDebugStream::get_instance() << psz << std::endl; \
 		/* g_DebugStream << psz << std::endl; */ \
 	} while(false)
 
-	HRESULT LogReturn(HRESULT hr);
-#else
-	#define LOG(_) DBG_NOTHING
-	#define LogReturn(hr) (hr)
-#endif
-
-
-// #define _DEBUG
-#ifdef _DEBUG
+	_Post_equal_to_(hr) HRESULT LogReturn(_In_ HRESULT hr);
 	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl);
 	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl);
 	std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls);
@@ -78,6 +64,12 @@ extern std::wostream g_DebugStream;
 	std::wstring SHGDNFToString(const SHGDNF *pfAttribs);
 	std::wstring HRESULTToString(HRESULT hr);
 #else
+	// Require a semicolon after LOG() to avoid "expected ';' after expression"
+	// error while still compiling down to nothing in release builds.
+	#define DBG_NOTHING do { } while (false)
+
+	#define LOG(_) DBG_NOTHING
+	#define LogReturn(hr) (hr)
 	#define PidlToString(_) DBG_NOTHING
 	#define PidlArrayToString(_) DBG_NOTHING
 	#define IIDToString(_) DBG_NOTHING
