@@ -312,7 +312,6 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	if (FAILED(hr)) return LogReturn(hr);
 	hr = StrRetToStrW(&pName, pidlFSPathLast, &pszName);
 	if (FAILED(hr)) return LogReturn(hr);
-	defer({ CoTaskMemFree(pszName); });
 
 	LOG(L" ** EnumObjects: Path=" << pszName);
 	pEnum->Init(this->GetUnknown(), pszName);
