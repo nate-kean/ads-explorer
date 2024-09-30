@@ -315,7 +315,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	defer({ CoTaskMemFree(pszName); });
 
 	LOG(L" ** EnumObjects: Path=" << pszName);
-	pEnum->Init(this->GetUnknown(), std::wstring(pszName));
+	pEnum->Init(this->GetUnknown(), pszName);
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_PPV_ARGS(ppEnumIDList));

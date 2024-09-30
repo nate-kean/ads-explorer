@@ -39,9 +39,9 @@
 #include <Windows.h>
 
 #include <ShlObj.h>  // Shell objects like IShellFolder
-
 #include <atlbase.h>  // Defines CComModule and required by atlwin.h
 #include <atlwin.h>  // CMessageMap, ProcessWindowMessage, MESSAGE_HANDLER
+
 #include <string>  // TODO: Remove C++ STL
 
 #include "debug.h"

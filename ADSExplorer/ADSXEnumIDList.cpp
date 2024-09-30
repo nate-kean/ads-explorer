@@ -74,7 +74,8 @@ static bool NoOp(const WIN32_FIND_STREAM_DATA &, PITEMID_CHILD **, ULONG *) {
 
 CADSXEnumIDList::CADSXEnumIDList()
 	: m_hFinder(NULL)
-	, m_nTotalFetched(0) {
+	, m_nTotalFetched(0)
+	, m_bPathBeingShared(false) {
 	LOG(P_EIDL << L"CADSXEnumIDList()");
 }
 
@@ -83,12 +84,15 @@ CADSXEnumIDList::~CADSXEnumIDList() {
 	if (m_hFinder != NULL) {
 		FindClose(m_hFinder);
 	}
+	if (!m_bPathBeingShared) {
+		CoTaskMemFree(m_pszPath);
+	}
 }
 
-void CADSXEnumIDList::Init(_In_ IUnknown *pUnkOwner, _In_ std::wstring sPath) {
+void CADSXEnumIDList::Init(_In_ IUnknown *pUnkOwner, _In_ LPWSTR pszPath) {
 	LOG(P_EIDL << L"Init()");
 	m_pUnkOwner = pUnkOwner;
-	m_sPath = sPath;
+	m_pszPath = pszPath;
 }
 
 
@@ -129,7 +133,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 	// Call the callback on this first item.
 	// Hopes and Streams
 	if (m_hFinder == NULL) {
-		m_hFinder = FindFirstStreamW(m_sPath.c_str(), FindStreamInfoStandard, &fsd, 0);
+		m_hFinder = FindFirstStreamW(m_pszPath, FindStreamInfoStandard, &fsd, 0);
 		if (m_hFinder == INVALID_HANDLE_VALUE) {
 			m_hFinder = NULL;
 			switch (GetLastError()) {
@@ -222,9 +226,9 @@ HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	CComObject<CADSXEnumIDList> *pEnumNew;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnumNew);
 	if (FAILED(hr)) return hr;
-	std::wstring sPathCopy = m_sPath;
-	pEnumNew->Init(m_pUnkOwner, sPathCopy);
-	
+	pEnumNew->Init(m_pUnkOwner, m_pszPath);
+	m_bPathBeingShared = true;
+
 	// Unfortunately I don't see any more an efficient way to do this with
 	// the Find Stream API :(
 	pEnumNew->Skip(m_nTotalFetched);

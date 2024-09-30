@@ -25,11 +25,14 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	CADSXEnumIDList();
 	virtual ~CADSXEnumIDList();
 	
-	// Initialization logic in a separate method because COM object constructors
-	// are called in a weird way that makes it so that AFAIK they can't have
-	// parameters
-	// @post: this takes ownership of pszPath
-	void Init(_In_ IUnknown *pUnkOwner, _In_ std::wstring sPath);
+	/**
+	 * Initialization logic in a separate method because COM object constructors
+	 * are called in a weird way that makes it so that AFAIK they can't have
+	 * parameters
+	 * @pre: pszPath is allocated with CoTaskMemAlloc
+	 * @post: this takes ownership of pszPath
+	 */
+	void Init(_In_ IUnknown *pUnkOwner, _In_ LPWSTR pszPath);
 
 	// IEnumIDList
 	STDMETHOD(Next)(_In_ ULONG, _Outptr_ PITEMID_CHILD*, _Out_ ULONG*);
@@ -56,7 +59,8 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	// This exists to prevent the owner object from being freed before this one.
 	CComPtr<IUnknown> m_pUnkOwner;
 
-	std::wstring m_sPath;  // path on which to find streams
+	LPWSTR m_pszPath;  // path on which to find streams
 	HANDLE m_hFinder;
 	ULONG m_nTotalFetched;  // just to bring a clone up to speed
+	bool m_bPathBeingShared;  // if the path is shared with another object
 };
