@@ -157,7 +157,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);$(SolutionDir)ADSExplorer\$(IntDir)*.obj;comsuppw.lib;$(SolutionDir)ADSExplorer\$(IntDir)DataObject.obj;$(SolutionDir)ADSExplorer\$(IntDir)stdafx.obj;$(SolutionDir)ADSExplorer\$(IntDir)ADSExplorer.obj;$(SolutionDir)ADSExplorer\$(IntDir)RootShellFolder.obj</AdditionalDependencies>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);$(SolutionDir)ADSExplorer\$(IntDir)*.obj;comsuppw.lib;$(SolutionDir)ADSExplorer\$(IntDir)DataObject.obj;$(SolutionDir)ADSExplorer\$(IntDir)StdAfx.obj;$(SolutionDir)ADSExplorer\$(IntDir)ADSExplorer.obj;$(SolutionDir)ADSExplorer\$(IntDir)RootShellFolder.obj</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

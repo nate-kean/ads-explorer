@@ -5,7 +5,7 @@
 #pragma once
 
 
-#include "stdafx.h"  // MUST be included first
+#include "StdAfx.h"  // MUST be included first
 
 #include "ADSExplorer_h.h"
 

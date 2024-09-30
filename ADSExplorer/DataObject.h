@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "stdafx.h"  // Precompiled header; include first
+#include "StdAfx.h"  // Precompiled header; include first
 
 //==============================================================================
 // Light implementation of IDataObject.

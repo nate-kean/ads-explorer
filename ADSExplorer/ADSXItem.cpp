@@ -1,4 +1,4 @@
-#include "stdafx.h"  // MUST be included first
+#include "StdAfx.h"  // MUST be included first
 
 #include "ADSXItem.h"
 

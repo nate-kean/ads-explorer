@@ -2,7 +2,7 @@
  * 2024 Nate Kean
  */
 
-#include "stdafx.h"
+#include "StdAfx.h"
 
 #include "debug.h"
 

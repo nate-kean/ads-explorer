@@ -59,7 +59,7 @@
 
 #pragma once
 
-#include "stdafx.h"  // MUST be included first
+#include "StdAfx.h"  // MUST be included first
 
 class CShellFolderViewImpl : public CMessageMap,
 							 public CComObjectRoot,

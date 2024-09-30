@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Nate Kean
  */
 
-#include "stdafx.h"  // Precompiled header; include first
+#include "StdAfx.h"  // Precompiled header; include first
 
 #include "DataObject.h"
 

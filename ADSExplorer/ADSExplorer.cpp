@@ -4,7 +4,7 @@
  */
 
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include "stdafx.h"  // MUST be included first
+#include "StdAfx.h"  // MUST be included first
 
 #if _MSC_VER > 1200
 #include "ADSExplorer_h.h"
