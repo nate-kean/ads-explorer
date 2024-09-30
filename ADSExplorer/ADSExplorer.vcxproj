@@ -249,7 +249,7 @@
     </ClCompile>
     <ClCompile Include="ADSXEnumIDList.cpp" />
     <ClCompile Include="ADSXItem.cpp" />
-    <ClCompile Include="DebugPrint.cpp" />
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="RootShellFolder.cpp" />
     <ClCompile Include="DataObject.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -4,15 +4,9 @@
  * Copyright (c) 2024 Nate Kean
  */
 
-// vscode says it doesn't need this but it fails to compile without it
-#include "stdafx.h"
+#include "stdafx.h"  // Precompiled header; include first
 
 #include "DataObject.h"
-
-#include <combaseapi.h>
-
-#include "defer.h"
-#include "debug.h"
 
 // Debug log prefix for CDataObject
 #define P_DO L"CDataObject(0x" << std::hex << this << L")::"

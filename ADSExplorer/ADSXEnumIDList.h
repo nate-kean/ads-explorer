@@ -10,7 +10,6 @@
 #include "stdafx.h"
 
 #include <functional>
-#include <string>
 
 
 class ATL_NO_VTABLE CADSXEnumIDList

@@ -3,7 +3,6 @@
 #include "stdafx.h"
 
 #include <map>
-#include <string>
 
 
 const std::map<const std::wstring, LPCWSTR> iids{

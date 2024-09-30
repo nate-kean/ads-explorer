@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include "stdafx.h"
-
-#include <combaseapi.h>
-#include <comutil.h>
-
+#include "stdafx.h"  // Precompiled header; include first
 
 //==============================================================================
 // Light implementation of IDataObject.

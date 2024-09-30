@@ -2,9 +2,6 @@
 
 #include "stdafx.h"  // MUST be included first
 
-#include <string>
-
-
 struct CADSXItem {
 	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG m_Filesize;

@@ -66,6 +66,7 @@ extern std::wostream g_DebugStream;
 #endif
 
 
+// #define _DEBUG
 #ifdef _DEBUG
 	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl);
 	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl);

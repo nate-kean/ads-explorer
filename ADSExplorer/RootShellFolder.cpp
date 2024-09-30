@@ -15,15 +15,12 @@
 
 #include <atlstr.h>
 #include <sstream>
-#include <string>
 
 #include "ADSXEnumIDList.h"
 #include "ADSXItem.h"
-#include "debug.h"
+#include "DataObject.h"
 #include "RootShellFolder.h"
 #include "RootShellView.h"
-#include "DataObject.h"
-#include "defer.h"
 
 //==============================================================================
 // Helpers

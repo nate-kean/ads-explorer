@@ -5,8 +5,9 @@
 #include "stdafx.h"
 
 #include "debug.h"
-#include <winnt.h>
+
 // #include <fstream>
+#include "ADSXItem.h"
 
 
 CDebugStream::CDebugStream()
@@ -47,7 +48,6 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 #ifdef _DEBUG
 	#include <iomanip>
 	#include <sstream>
-	#include <string>
 
 	std::wstring HRESULTToString(HRESULT hr) {
 		switch (hr) {

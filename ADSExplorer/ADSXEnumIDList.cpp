@@ -2,15 +2,11 @@
  * 2024 Nate Kean
  */
 
-#include "stdafx.h"  // MUST be included first
+#include "stdafx.h"  // Precompiled header; include first
 
 #include "ADSXEnumIDList.h"
 
-#include <handleapi.h>
-#include <winnt.h>
-
 #include "ADSXItem.h"
-#include "debug.h"
 
 // Debug log prefix for CADSXEnumIDList
 #define P_EIDL L"CADSXEnumIDList(0x" << std::hex << this << L")::"
