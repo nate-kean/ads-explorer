@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StdAfx.h"  // MUST be included first
+#include "StdAfx.h"  // Precompiled header; include first
 
 struct CADSXItem {
 	UINT32 SIGNATURE = 'ADSX';

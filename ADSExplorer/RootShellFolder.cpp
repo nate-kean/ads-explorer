@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Nate Kean
  */
 
-#include "StdAfx.h"  // MUST be included first
+#include "StdAfx.h"  // Precompiled header; include first
 
 #if _MSC_VER > 1200
 	#include "ADSExplorer_h.h"

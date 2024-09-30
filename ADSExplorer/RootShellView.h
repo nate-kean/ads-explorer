@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "StdAfx.h"  // MUST be included first
+#include "StdAfx.h"  // Precompiled header; include first
 
 #include <iomanip>
 
