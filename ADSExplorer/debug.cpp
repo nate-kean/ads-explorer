@@ -5,7 +5,6 @@
 #include "StdAfx.h"
 
 #include "debug.h"
-// #include <fstream>
 
 // #define _DEBUG
 #ifdef _DEBUG
@@ -45,11 +44,14 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 	return 1;
 }
 
-// std::wofstream g_DebugStream(
-// 	L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
-// 	L"ADS Explorer\\adsx.log",
-// 	std::ios::out | std::ios::trunc
-// );
+#ifdef DBG_LOG_TO_FILE
+	#include <fstream>
+	std::wofstream g_DebugStream(
+		L"G:\\Garlic\\Documents\\Code\\Visual Studio\\ADS Explorer Saga\\"
+		L"ADS Explorer\\adsx.log",
+		std::ios::out | std::ios::trunc
+	);
+#endif
 
 #ifdef _DEBUG
 	_Post_equal_to_(hr) HRESULT LogReturn(_In_ HRESULT hr) {

@@ -41,8 +41,12 @@ class CDebugStream
 	// --- /Singleton ---
 };
 
-extern std::wostream g_DebugStream;
-// extern std::wofstream g_DebugStream;
+// #define DBG_LOG_TO_FILE
+#ifdef DBG_LOG_TO_FILE
+	extern std::wofstream g_DebugStream;
+#else
+	extern CDebugStream g_DebugStream;
+#endif
 
 // #define _DEBUG
 #ifdef _DEBUG
