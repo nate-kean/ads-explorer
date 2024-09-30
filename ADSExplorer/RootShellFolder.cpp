@@ -74,7 +74,7 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
  * Copies, does not take ownership of, the PIDL.
  * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
  *       (I _assume_ those are the only two values Explorer ever passes to us.)
- * @pre: PIDL length <= 2.
+ * @pre: 0 < PIDL length < 3.
  * @post: this CADSXRootShellFolder instance is ready to be used.
  */
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
