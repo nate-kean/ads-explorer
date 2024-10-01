@@ -535,6 +535,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				SIGDN_DESKTOPABSOLUTEPARSING,
 				&pszPath
 			);
+			if (FAILED(hr)) return LogReturn(hr);
 			defer({ CoTaskMemFree(pszPath); });
 			std::wostringstream ossPath;
 			ossPath << pszPath << L":" << Item->m_Name;
