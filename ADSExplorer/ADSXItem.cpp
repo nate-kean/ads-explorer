@@ -20,6 +20,8 @@ const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 }
 
 
+/// Allocates a PIDL (PITEMID_CHILD) whose mkid contains a copy of this item.
+/// @post: The caller owns the return value and must free it with CoTaskMemFree.
 PITEMID_CHILD CADSXItem::ToPidl() const {
 	// The item copy is manually allocated, as opposed to using C++'s `new`,
 	// because COM requires memory to be allocated with CoTaskMemAlloc.
@@ -32,6 +34,7 @@ PITEMID_CHILD CADSXItem::ToPidl() const {
 
 	// Put the data object in the PIDL
 	new (pidlNew->mkid.abID) CADSXItem();
+	// shallow copy (and that's enough since CADSXItem is only primitives)
 	(CADSXItem &) pidlNew->mkid.abID = *this;
 	pidlNew->mkid.cb = cbSizeItem;
 

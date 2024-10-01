@@ -214,7 +214,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 			Result = Item1->m_Name.compare(Item2->m_Name);
 			break;
 		case DETAILS_COLUMN_FILESIZE:
-			Result = static_cast<USHORT>(Item1->m_Filesize - Item2->m_Filesize);
+			Result = static_cast<USHORT>(Item1->llFilesize - Item2->llFilesize);
 			if (Result < 0) Result = -1;
 			else if (Result > 0) Result = 1;
 			break;
@@ -659,7 +659,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			constexpr UINT8 uLongLongStrLenMax =
 				_countof("-9,223,372,036,854,775,808");
 			WCHAR pszSize[uLongLongStrLenMax] = {0};
-			StrFormatByteSizeW(Item->m_Filesize, pszSize, uLongLongStrLenMax);
+			StrFormatByteSizeW(Item->llFilesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
 			return LogReturn(
 				SetReturnString(pszSize, pDetails->str) ? S_OK : E_OUTOFMEMORY

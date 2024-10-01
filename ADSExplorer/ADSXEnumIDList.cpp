@@ -13,7 +13,9 @@
 
 
 /// Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array.
-// pushin p
+/// pushin p
+/// @post: ppelt array cursor is advanced by one element
+/// @post: nActual is incremented
 static bool PushPidl(
 	_In_    const WIN32_FIND_STREAM_DATA &fsd,
 	// POINTER! to the destination array cursor because we're going to
@@ -24,7 +26,7 @@ static bool PushPidl(
 	_Inout_ ULONG                        *nActual
 ) {
 	// Reusable item
-	static CADSXItem Item;
+	static CADSXItem Item = { .pszName = NULL };
 
 	std::wstring sName = std::wstring(fsd.cStreamName);
 	// All ADSes follow this name pattern AFAIK, but if they don't,
@@ -43,12 +45,16 @@ static bool PushPidl(
 
 	LOG(
 		L" ** Stream: " << sName <<
-		L" (" << std::dec << fsd.StreamSize.QuadPart << L" bytes)"
+		L" (" << fsd.StreamSize.QuadPart << L" bytes)"
 	);
 
 	// Fill in the item
-	Item.m_Filesize = fsd.StreamSize.QuadPart;
-	Item.m_Name = sName;
+	Item.llFilesize = fsd.StreamSize.QuadPart;
+	if (Item.pszName != NULL) CoTaskMemFree(Item.pszName);
+	Item.pszName = static_cast<LPWSTR>(
+		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
+	);
+	sName.copy(Item.pszName, sName.length());
 
 	// Copy this item into a PIDL
 	PITEMID_CHILD pidl = Item.ToPidl();
