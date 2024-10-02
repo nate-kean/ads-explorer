@@ -16,7 +16,7 @@
 
 // Set the return string 'Source' in the STRRET struct.
 // Returns false if memory allocation fails.
-bool SetReturnString(LPCWSTR Source, STRRET &str);
+bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret);
 
 
 //==============================================================================

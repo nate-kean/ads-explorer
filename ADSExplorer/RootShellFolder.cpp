@@ -28,17 +28,17 @@
 // Debug log prefix for CADSXRootShellFolder
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
-// STRRET helper function
-bool SetReturnString(LPCWSTR pszSource, STRRET &strret) {
+/// STRRET maker
+bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
 	LOG(L" ** " << pszSource);
 	SIZE_T cwStringLen = wcslen(pszSource) + 1;
-	strret.uType = STRRET_WSTR;
-	strret.pOleStr = static_cast<LPOLESTR>(
+	strret->uType = STRRET_WSTR;
+	strret->pOleStr = static_cast<LPOLESTR>(
 		CoTaskMemAlloc(cwStringLen * sizeof(OLECHAR))
 	);
-	if (strret.pOleStr == NULL) return false;
+	if (strret->pOleStr == NULL) return false;
 
-	wcsncpy_s(strret.pOleStr, cwStringLen, pszSource, cwStringLen);
+	wcsncpy_s(strret->pOleStr, cwStringLen, pszSource, cwStringLen);
 	return true;
 }
 
@@ -211,7 +211,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DETAILS_COLUMN_NAME:
-			Result = Item1->m_Name.compare(Item2->m_Name);
+			Result = wcscmp(Item1->pszName, Item2->pszName);
 			break;
 		case DETAILS_COLUMN_FILESIZE:
 			Result = static_cast<USHORT>(Item1->llFilesize - Item2->llFilesize);
@@ -475,6 +475,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 }
 
 
+/// @pre: *pName struct is initialized
 STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  SHGDNF          uFlags,
@@ -499,7 +500,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				return LogReturn(
 					SetReturnString(
 						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
-						*pName
+						pName
 					) ? S_OK : E_FAIL
 				);
 			default:
@@ -509,7 +510,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				// return LogReturn(
 				// 	SetReturnString(
 				// 		L"GetDisplayNameOf test",
-				// 		*pName
+				// 		pName
 				// 	) ? S_OK : E_FAIL
 				// );
 		}
@@ -538,9 +539,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			if (FAILED(hr)) return LogReturn(hr);
 			defer({ CoTaskMemFree(pszPath); });
 			std::wostringstream ossPath;
-			ossPath << pszPath << L":" << Item->m_Name;
+			ossPath << pszPath << L":" << Item->pszName;
 			return LogReturn(
-				SetReturnString(ossPath.str().c_str(), *pName) ? S_OK : E_FAIL
+				SetReturnString(ossPath.str().c_str(), pName) ? S_OK : E_FAIL
 			);
 		}
 
@@ -552,7 +553,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
 			return LogReturn(
-				SetReturnString(Item->m_Name.c_str(), *pName) ? S_OK : E_FAIL
+				SetReturnString(Item->pszName, pName) ? S_OK : E_FAIL
 			);
 			// return SetReturnString(Item->m_Name.c_str(), *pName)
 			// 	? S_OK : E_FAIL;
@@ -639,7 +640,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
 		return LogReturn(
-			SetReturnString(ColumnName, pDetails->str) ? S_OK : E_OUTOFMEMORY
+			SetReturnString(
+				static_cast<LPCWSTR>(ColumnName),
+				&pDetails->str
+			) ? S_OK : E_OUTOFMEMORY
 		);
 	}
 
@@ -648,10 +652,13 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	switch (uColumn) {
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
-			ATLASSERT(Item->m_Name.length() <= INT_MAX);
-			pDetails->cxChar = static_cast<int>(Item->m_Name.length());
+			ATLASSERT(wcslen(Item->pszName) <= INT_MAX);
+			pDetails->cxChar = wcslen(Item->pszName);
 			return LogReturn(
-				SetReturnString(Item->m_Name.c_str(), pDetails->str) ? S_OK : E_OUTOFMEMORY
+				SetReturnString(
+					Item->pszName,
+					&pDetails->str
+				) ? S_OK : E_OUTOFMEMORY
 			);
 
 		case DETAILS_COLUMN_FILESIZE:
@@ -662,7 +669,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			StrFormatByteSizeW(Item->llFilesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
 			return LogReturn(
-				SetReturnString(pszSize, pDetails->str) ? S_OK : E_OUTOFMEMORY
+				SetReturnString(pszSize, &pDetails->str) ? S_OK : E_OUTOFMEMORY
 			);
 	}
 
