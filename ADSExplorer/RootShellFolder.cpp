@@ -666,7 +666,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		case DETAILS_COLUMN_NAME:
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(wcslen(Item->pszName) <= INT_MAX);
-			pDetails->cxChar = wcslen(Item->pszName);
+			pDetails->cxChar = static_cast<int>(wcslen(Item->pszName));
 			return LogReturn(
 				SetReturnString(
 					Item->pszName,
