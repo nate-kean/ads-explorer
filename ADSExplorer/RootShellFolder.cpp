@@ -80,11 +80,11 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
 
-	// Enforce that this function is only called once
-	ATLASSERT(m_pidlRoot != NULL);
-	// if (m_pidlRoot != NULL) {
-	// 	return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
-	// }
+	// Don't initialize more than once.
+	// This is necessary because for reasons beyond me Windows tries to.
+	if (m_pidlRoot != NULL) {
+		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
+	}
 
 	// Validate input PIDL
 	if (
