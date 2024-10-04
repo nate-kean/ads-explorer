@@ -20,8 +20,10 @@ const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 }
 
 
-/// Allocates a PIDL (PITEMID_CHILD) whose mkid contains a copy of this item.
-/// @post: The caller owns the return value and must free it with CoTaskMemFree.
+/**
+ * Allocates a PIDL (PITEMID_CHILD) whose mkid contains a copy of this item.
+ * @post: The caller owns the return value and must free it with CoTaskMemFree.
+ */
 PITEMID_CHILD CADSXItem::ToPidl() const {
 	// The item copy is manually allocated, as opposed to using C++'s `new`,
 	// because COM requires memory to be allocated with CoTaskMemAlloc.

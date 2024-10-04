@@ -28,7 +28,11 @@
 // Debug log prefix for CADSXRootShellFolder
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
-/// STRRET maker
+/**
+ * STRRET maker
+ *
+ * @pre: *strret is initialized
+ */
 bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
 	LOG(L" ** " << pszSource);
 	SIZE_T cwStringLen = wcslen(pszSource) + 1;
@@ -37,7 +41,6 @@ bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
 		CoTaskMemAlloc(cwStringLen * sizeof(OLECHAR))
 	);
 	if (strret->pOleStr == NULL) return false;
-
 	wcsncpy_s(strret->pOleStr, cwStringLen, pszSource, cwStringLen);
 	return true;
 }
@@ -118,8 +121,8 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 //-------------------------------------------------------------------------------
 // IShellFolder
 
-/// Called when an item in an ADSX folder is double-clicked.
-/// TODO(garlic-os): Explain this function better
+// Called when an item in an ADSX folder is double-clicked.
+// TODO(garlic-os): Explain this function better
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx           *pbc,
@@ -178,9 +181,11 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 }
 
 
-/// Return the sort order of two PIDLs.
-/// lParam can be the 0-based Index of the details column
-/// @pre pidl1 and pidl2 hold CADSXItems.
+/**
+ * Return the sort order of two PIDLs.
+ * lParam can be the 0-based Index of the details column
+ * @pre pidl1 and pidl2 hold CADSXItems.
+ */
 STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	_In_ LPARAM             lParam,
 	_In_ PCUIDLIST_RELATIVE pidl1,
@@ -228,7 +233,9 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 }
 
 
-/// Return a COM object that implements IShellView.
+/**
+ * Return a COM object that implements IShellView.
+ */
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
@@ -276,12 +283,14 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 }
 
 
-/// Return a COM object that implements IEnumIDList and enumerates the ADSes in
-/// the current folder.
-/// @pre: Windows has browsed to a path of the format
-///       [Desktop\ADS Explorer\{FS path}]
-/// @pre: i.e., m_pidlFSPath is [Desktop\{FS path}]
-/// @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
+/**
+ * Return a COM object that implements IEnumIDList and enumerates the ADSes in
+ * the current folder.
+ * @pre: Windows has browsed to a path of the format
+ *       [Desktop\ADS Explorer\{FS path}]
+ * @pre: i.e., m_pidlFSPath is [Desktop\{FS path}]
+ * @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
+ */
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_         HWND        hwndOwner,
 	_In_         SHCONTF     dwFlags,
@@ -322,12 +331,14 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 }
 
 
-/// Return if the items represented by the given PIDLs have the attributes
-/// requested.
-/// For each bit flag:
-///   1 if the flag is set on input and all the given items have that attribute,
-///   0 if the flag is not set on input or if any of the given items do not have
-///   that attribute.
+/**
+ * Return if the items represented by the given PIDLs have the attributes
+ * requested.
+ * For each bit flag:
+ *   1 if the flag is set on input and all the given items have that attribute,
+ *   0 if the flag is not set on input or if any of the given items do not have
+ *   that attribute.
+ */
 STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
@@ -378,8 +389,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 }
 
 
-/// GetUIObjectOf() is called to get several sub-objects like IExtractIcon and
-/// IDataObject
+// Provide any of several sub-objects like IExtractIcon and IDataObject.
 STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	_In_         HWND                  hwndOwner,
 	_In_         UINT                  cidl,
@@ -475,7 +485,11 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 }
 
 
-/// @pre: *pName struct is initialized
+/**
+ * Return a string form of the path this object represents.
+ *
+ * @pre: *pName struct is initialized
+ */
 STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  SHGDNF          uFlags,
@@ -547,7 +561,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
 			return LogReturn(E_FAIL);  // TODO(garlic-os)
-			// return E_FAIL;  // TODO(garlic-os)
+			// return E_FAIL;
 
 		case SHGDN_INFOLDER:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
@@ -555,8 +569,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			return LogReturn(
 				SetReturnString(Item->pszName, pName) ? S_OK : E_FAIL
 			);
-			// return SetReturnString(Item->m_Name.c_str(), *pName)
-			// 	? S_OK : E_FAIL;
+			// return SetReturnString(Item->pszName, *pName) ? S_OK : E_FAIL;
 	}
 }
 
