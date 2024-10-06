@@ -50,7 +50,9 @@ bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
 // CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
-	, m_pidlFSPath(NULL) {
+	, m_pidlFSPath(NULL)
+	, m_psdFSPath(NULL)
+	, m_bEndOfPath(false) {
 	// LOG(P_RSF << L"CONSTRUCTOR");
 }
 
@@ -59,13 +61,14 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
+	if (m_psdFSPath != NULL) m_psdFSPath->Release();
 }
 
 
 STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
-	if (pclsid == NULL) return LogReturn(E_POINTER);
+	if (pclsid == NULL) return WrapReturn(E_POINTER);
 	*pclsid = CLSID_ADSExplorerRootShellFolder;
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -111,10 +114,10 @@ STDMETHODIMP
 CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
-	// if (ppidl == NULL) return LogReturn(E_POINTER);
+	// if (ppidl == NULL) return WrapReturn(E_POINTER);
 	*ppidl = ILCloneFull(m_pidlRoot);
 	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
-	// return LogReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
+	// return WrapReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
 }
 
 
@@ -129,24 +132,27 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         REFIID             riid,
 	_COM_Outptr_ void               **ppShellFolder
 ) {
+	if (ppShellFolder == NULL) return E_POINTER;
+	*ppShellFolder = NULL;
+
+	// Don't log unsupported interfaces
+	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
+		return E_NOINTERFACE;
+	}
+	
 	LOG(P_RSF << L"BindToObject("
 		L"pidl=[" << PidlToString(pidl) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 
-	if (ppShellFolder == NULL) return LogReturn(E_POINTER);
-	*ppShellFolder = NULL;
-
-	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
-		return LogReturn(E_NOINTERFACE);
-	}
-
 	HRESULT hr;
+
+	m_bEndOfPath = ILIsChild(pidl);
 
 	// TODO(garlic-os): Better way to check when we're at the end of the path?
 	// Assumption here is BindToObject receives a PIDL of length 1 iff we are at
 	// the end of the path.
-	if (ILIsChild(pidl)) {
+	if (m_bEndOfPath) {
 		// We've made it to the target FS object's direct parent.
 		// Our normal ShellFolder companion cannot browse any farther. It is now
 		// right where we need it to be to get the target object's path for
@@ -158,16 +164,16 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(
 			ILAppendID(m_pidlFSPath, &pidl->mkid, TRUE)
 		);
-		if (m_pidlFSPath == NULL) return LogReturn(E_OUTOFMEMORY);
+		if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
 	} else {
 		// Browse this path internally.
 		hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppShellFolder);
-		if (FAILED(hr)) return LogReturn(hr);
+		if (FAILED(hr)) return WrapReturn(hr);
 		m_psfFSPath = static_cast<IShellFolder*>(*ppShellFolder);
 
 		if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
 		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
-		if (m_pidlFSPath == NULL) return LogReturn(E_OUTOFMEMORY);
+		if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
 	}
 
 	LOG(L" ** New m_pidlFSPath: " << PidlToString(m_pidlFSPath));
@@ -177,7 +183,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	// may expect a copy
 	this->AddRef();
 	*ppShellFolder = this;
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -197,16 +203,21 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 		L"pidl2=[" << PidlToString(pidl2) << L"])"
 	);
 
-	// Check if the PIDLs are ours
-	ATLASSERT(CADSXItem::IsOwn(pidl1) && CADSXItem::IsOwn(pidl2));
-	if (!CADSXItem::IsOwn(pidl1) || !CADSXItem::IsOwn(pidl2)) {
-		return LogReturn(E_INVALIDARG);
+	// Delegate PIDLs that aren't ours to the real ShellFolder
+	if (!CADSXItem::IsOwn(pidl1) && !CADSXItem::IsOwn(pidl2)) {
+		return m_psfFSPath->CompareIDs(lParam, pidl1, pidl2);
 	}
 
-	// Only child PIDLs supported
+	// Both PIDLs must either be ours or not ours
+	ATLASSERT(CADSXItem::IsOwn(pidl1) && CADSXItem::IsOwn(pidl2));
+	if (!CADSXItem::IsOwn(pidl1) || !CADSXItem::IsOwn(pidl2)) {
+		return WrapReturn(E_INVALIDARG);
+	}
+
+	// Only child ADS PIDLs supported
 	ATLASSERT(ILIsChild(pidl1) && ILIsChild(pidl2));
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
-		return MAKE_HRESULT(SEVERITY_SUCCESS, 0, 1);
+		return WrapReturn(E_INVALIDARG);
 	}
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
@@ -224,12 +235,12 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 			else if (Result > 0) Result = 1;
 			break;
 		default:
-			return LogReturn(E_INVALIDARG);
+			return WrapReturn(E_INVALIDARG);
 	}
 
 	// Warning: the last param MUST be unsigned, if not (ie: short) a negative
 	// value will trash the high order word of the HRESULT!
-	return MAKE_HRESULT(SEVERITY_SUCCESS, 0, /*-1,0,1*/ Result);
+	return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, 0, /*-1,0,1*/ Result));
 }
 
 
@@ -245,7 +256,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	// LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
 	if (ppViewObject == NULL) return E_POINTER;
-	// if (ppvViewObject == NULL) return LogReturn(E_POINTER);
+	// if (ppvViewObject == NULL) return WrapReturn(E_POINTER);
 	*ppViewObject = NULL;
 
 	HRESULT hr;
@@ -256,7 +267,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		// Create a view object
 		CComObject<CADSXRootShellView> *pViewObject;
 		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
-		if (FAILED(hr)) return LogReturn(hr);
+		if (FAILED(hr)) return WrapReturn(hr);
 
 		// AddRef the object while we are using it
 		pViewObject->AddRef();
@@ -275,11 +286,11 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 		// above by us, AddRef()'ed by Create)
 		pViewObject->Release();
 
-		return LogReturn(hr);
+		return WrapReturn(hr);
 	}
 
 	return E_NOINTERFACE;
-	// return LogReturn(E_NOINTERFACE);
+	// return WrapReturnFailOK(E_NOINTERFACE);
 }
 
 
@@ -299,17 +310,17 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	LOG(P_RSF << L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
-	if (ppEnumIDList == NULL) return LogReturn(E_POINTER);
+	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
 	*ppEnumIDList = NULL;
 
 	// Don't try to enumerate if nothing has been browsed yet
-	if (m_pidlFSPath == NULL) return LogReturn(S_FALSE);
+	if (m_pidlFSPath == NULL) return WrapReturn(S_FALSE);
 
 	// Create an enumerator over this file system object's
 	// alternate data streams.
 	CComObject<CADSXEnumIDList> *pEnum;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return WrapReturn(hr);
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
 
@@ -318,16 +329,16 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	LPWSTR pszName;
 	PUITEMID_CHILD pidlFSPathLast = ILFindLastID(m_pidlFSPath);
 	hr = m_psfFSPath->GetDisplayNameOf(pidlFSPathLast, SHGDN_FORPARSING, &pName);
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return WrapReturn(hr);
 	hr = StrRetToStrW(&pName, pidlFSPathLast, &pszName);
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return WrapReturn(hr);
 
 	LOG(L" ** EnumObjects: Path=" << pszName);
 	pEnum->Init(this->GetUnknown(), pszName);
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_PPV_ARGS(ppEnumIDList));
-	return LogReturn(hr);
+	return WrapReturn(hr);
 }
 
 
@@ -349,8 +360,8 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		L"pfAttribs=[" << SFGAOFToString(pfAttribs) << L"]"
 	L")");
 
-	if (cidl < 1) return LogReturn(E_INVALIDARG);  // TODO(garlic-os): support more than one item
-	if (aPidls == NULL) return LogReturn(E_POINTER);
+	if (cidl < 1) return WrapReturn(E_INVALIDARG);  // TODO(garlic-os): support more than one item
+	if (aPidls == NULL) return WrapReturn(E_POINTER);
 
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
 		// Root folder: [Desktop\ADS Explorer] or [ADS Explorer]
@@ -366,7 +377,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		// Folders along the way to and including the requested file/folder
 		LOG(L" ** FS Object");
 		// HRESULT hr = m_psfFSPath->GetAttributesOf(cidl, aPidls, pfAttribs);
-		// if (FAILED(hr)) return LogReturn(hr);
+		// if (FAILED(hr)) return WrapReturn(hr);
 		// *pfAttribs &= SFGAO_BROWSABLE;
 		*pfAttribs &= SFGAO_HASSUBFOLDER |
 		              SFGAO_FOLDER |
@@ -385,7 +396,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 	}
 
 	LOG(L" ** Result: " << SFGAOFToString(pfAttribs));
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -406,10 +417,10 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	HRESULT hr;
 
-	if (ppUIObject == NULL) return LogReturn(E_POINTER);
+	if (ppUIObject == NULL) return WrapReturn(E_POINTER);
 	*ppUIObject = NULL;
 
-	if (cidl == 0) return LogReturn(E_INVALIDARG);
+	if (cidl == 0) return WrapReturn(E_INVALIDARG);
 
 	// We must be in the FileDialog; it wants aPidls wrapped in an IDataObject
 	// (just to call IDataObject::GetData() and nothing else).
@@ -418,15 +429,15 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// only one item at a time. I should consider supporting multiple.
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
-		if (cidl != 1) return LogReturn(E_INVALIDARG);
+		if (cidl != 1) return WrapReturn(E_INVALIDARG);
 
 		// Is this really one of our item?
-		if (!CADSXItem::IsOwn(aPidls[0])) return LogReturn(E_INVALIDARG);
+		if (!CADSXItem::IsOwn(aPidls[0])) return WrapReturn(E_INVALIDARG);
 
 		// Create a COM object that exposes IDataObject
 		CComObject<CDataObject> *pDataObject;
 		hr = CComObject<CDataObject>::CreateInstance(&pDataObject);
-		if (FAILED(hr)) return LogReturn(hr);
+		if (FAILED(hr)) return WrapReturn(hr);
 
 		// AddRef it while we are working with it to keep it from an early
 		// destruction.
@@ -439,7 +450,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
-		return LogReturn(hr);
+		return WrapReturn(hr);
 	}
 
 	// TODO(garlic-os): implement other interfaces as listed in
@@ -450,26 +461,26 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// Our objects are not real/normal filesystem objects, so we have to
 	// implement these interfaces ourselves.
 	else if (riid == IID_IContextMenu) {
-		return LogReturn(E_NOINTERFACE);
+		return WrapReturnFailOK(E_NOINTERFACE);
 	}
 
 	else if (riid == IID_IContextMenu2) {
-		return LogReturn(E_NOINTERFACE);
+		return WrapReturnFailOK(E_NOINTERFACE);
 	}
 	
 	else if (riid == IID_IDropTarget) {
-		return LogReturn(E_NOINTERFACE);
+		return WrapReturnFailOK(E_NOINTERFACE);
 	}
 
 	else if (riid == IID_IExtractIcon) {
-		return LogReturn(E_NOINTERFACE);
+		return WrapReturnFailOK(E_NOINTERFACE);
 	}
 
 	else if (riid == IID_IQueryInfo) {
-		return LogReturn(E_NOINTERFACE);
+		return WrapReturnFailOK(E_NOINTERFACE);
 	}
 
-	return LogReturn(E_NOINTERFACE);
+	return WrapReturnFailOK(E_NOINTERFACE);
 }
 
 
@@ -481,7 +492,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 ) {
 	LOG(P_RSF << L"BindToStorage()");
 	if (ppStorage != NULL) *ppStorage = NULL;
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
@@ -500,7 +511,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		L"uFlags=[" << SHGDNFToString(&uFlags) << L"]"
 	L")");
 
-	if (pidl == NULL || pName == NULL) return LogReturn(E_POINTER);
+	if (pidl == NULL || pName == NULL) return WrapReturn(E_POINTER);
 
 	// Return name of Root
 	if (pidl->mkid.cb == 0) {
@@ -511,7 +522,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// "::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}".
 			case SHGDN_NORMAL | SHGDN_FORPARSING:
 				LOG(L" ** Root folder");
-				return LogReturn(
+				return WrapReturn(
 					SetReturnString(
 						L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}",
 						pName
@@ -519,9 +530,9 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				);
 			default:
 				// We don't handle other combinations of flags for the root pidl
-				return LogReturn(E_FAIL);
+				return WrapReturn(E_FAIL);
 				// LOG(L" ** Root folder");
-				// return LogReturn(
+				// return WrapReturn(
 				// 	SetReturnString(
 				// 		L"GetDisplayNameOf test",
 				// 		pName
@@ -532,14 +543,16 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 	if (!CADSXItem::IsOwn(pidl)) {
 		LOG(L" ** FS Object");
-		return LogReturn(m_psfFSPath->GetDisplayNameOf(pidl, uFlags, pName));
+		// NOTE(garlic-os): Has returned E_INVALIDARG on [Desktop\C:\] before
+		// and I don't know why
+		return WrapReturnFailOK(m_psfFSPath->GetDisplayNameOf(pidl, uFlags, pName));
 	}
 
 	LOG(L" ** ADS");
 	auto Item = CADSXItem::Get(pidl);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
-			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS's m_Name}"
+			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
 			PIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
 				m_pidlRoot,
 				ILNext(m_pidlFSPath)  // remove [Desktop]
@@ -550,23 +563,23 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 				SIGDN_DESKTOPABSOLUTEPARSING,
 				&pszPath
 			);
-			if (FAILED(hr)) return LogReturn(hr);
+			if (FAILED(hr)) return WrapReturn(hr);
 			defer({ CoTaskMemFree(pszPath); });
 			std::wostringstream ossPath;
 			ossPath << pszPath << L":" << Item->pszName;
-			return LogReturn(
+			return WrapReturn(
 				SetReturnString(ossPath.str().c_str(), pName) ? S_OK : E_FAIL
 			);
 		}
 
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
-			return LogReturn(E_FAIL);  // TODO(garlic-os)
+			return WrapReturn(E_FAIL);  // TODO(garlic-os)
 			// return E_FAIL;
 
 		case SHGDN_INFOLDER:
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
-			return LogReturn(
+			return WrapReturn(
 				SetReturnString(Item->pszName, pName) ? S_OK : E_FAIL
 			);
 			// return SetReturnString(Item->pszName, *pName) ? S_OK : E_FAIL;
@@ -600,11 +613,11 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		ppidl,
 		pfAttributes
 	);
-	if (FAILED(hr)) return LogReturn(hr);
+	if (FAILED(hr)) return WrapReturn(hr);
 	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
 	LOG(" ** Attributes: " << SFGAOFToString(pfAttributes));
 
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -617,7 +630,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 	_Outptr_ PITEMID_CHILD *
 ) {
 	LOG(P_RSF << L"SetNameOf()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
@@ -627,10 +640,12 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 	LOG(P_RSF << L"ColumnClick(uColumn=" << uColumn << L")");
 	// Tell the caller to sort the column itself
-	return LogReturn(S_FALSE);
+	return WrapReturn(S_FALSE);
 }
 
 
+// Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
+// (uColumn >= DETAILS_COLUMN_MAX)
 STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidl,
 	_In_     UINT uColumn,
@@ -641,7 +656,23 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		L"pidl=[" << PidlToString(pidl) << L"])"
 	);
 
-	if (uColumn >= DETAILS_COLUMN_MAX) return LogReturn(E_FAIL);
+	HRESULT hr;
+
+	// If not at end of path, delegate to the real filesystem object
+	if (!m_bEndOfPath) {
+		// Lazy load this because this doesn't happen during browsing's
+		// "drill down" phase
+		if (m_psdFSPath == NULL) {
+			hr = m_psfFSPath->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psdFSPath));
+			if (FAILED(hr)) return WrapReturn(hr);
+		}
+
+		return WrapReturnFailOK(
+			m_psdFSPath->GetDetailsOf(pidl, uColumn, pDetails)
+		);
+	}
+
+	if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
 
 	// Shell asks for the column headers
 	if (pidl == NULL) {
@@ -652,7 +683,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
-		return LogReturn(
+		return WrapReturn(
 			SetReturnString(
 				static_cast<LPCWSTR>(ColumnName),
 				&pDetails->str
@@ -667,7 +698,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(wcslen(Item->pszName) <= INT_MAX);
 			pDetails->cxChar = static_cast<int>(wcslen(Item->pszName));
-			return LogReturn(
+			return WrapReturn(
 				SetReturnString(
 					Item->pszName,
 					&pDetails->str
@@ -681,12 +712,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			WCHAR pszSize[uLongLongStrLenMax] = {0};
 			StrFormatByteSizeW(Item->llFilesize, pszSize, uLongLongStrLenMax);
 			pDetails->cxChar = static_cast<UINT8>(wcslen(pszSize));
-			return LogReturn(
+			return WrapReturn(
 				SetReturnString(pszSize, &pDetails->str) ? S_OK : E_OUTOFMEMORY
 			);
 	}
 
-	return LogReturn(E_INVALIDARG);
+	return WrapReturn(E_INVALIDARG);
 }
 
 
@@ -697,7 +728,7 @@ STDMETHODIMP
 CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
 	if (ppEnum != NULL) *ppEnum = NULL;
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
@@ -708,12 +739,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 ) {
 	LOG(P_RSF << L"GetDefaultColumn()");
 
-	if (pSort == NULL || pDisplay == NULL) return LogReturn(E_POINTER);
+	if (pSort == NULL || pDisplay == NULL) return WrapReturn(E_POINTER);
 
 	*pSort = DETAILS_COLUMN_NAME;
 	*pDisplay = DETAILS_COLUMN_NAME;
 
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -723,7 +754,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 ) {
 	LOG(P_RSF << L"GetDefaultColumnState(uColumn=" << uColumn << L")");
 
-	if (pcsFlags == NULL) return LogReturn(E_POINTER);
+	if (pcsFlags == NULL) return WrapReturn(E_POINTER);
 
 	// Seems that SHCOLSTATE_PREFER_VARCMP doesn't have any noticeable effect
 	// (if supplied or not) for Win2K, but don't set it for WinXP, since it will
@@ -737,16 +768,16 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 			*pcsFlags = SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT;
 			break;
 		default:
-			return LogReturn(E_INVALIDARG);
+			return WrapReturn(E_INVALIDARG);
 	}
 
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
 STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 	LOG(P_RSF << L"GetDefaultSearchGUID()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
@@ -766,26 +797,27 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 		// only available on XP SP2+ on, so it won't harm 9x.
 		if (IsEqualPropertyKey(*pscid, PKEY_PropList_TileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_TileInfo");
-			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
+			return WrapReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_ExtendedTileInfo)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_ExtendedTileInfo");
-			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
+			return WrapReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_PreviewDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_PreviewDetails");
-			return LogReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
+			return WrapReturn(InitVariantFromString(L"prop:System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_PropList_FullDetails)) {
 			LOG(L" ** GetDetailsEx: PKEY_PropList_FullDetails");
-			return LogReturn(InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv));
+			return WrapReturn(InitVariantFromString(L"prop:System.ItemNameDisplay;System.ItemPathDisplay", pv));
 		} else if (IsEqualPropertyKey(*pscid, PKEY_ItemType)) {
 			LOG(L" ** GetDetailsEx: PKEY_ItemType");
-			return LogReturn(InitVariantFromString(L"Directory", pv));
+			return WrapReturn(InitVariantFromString(L"Directory", pv));
 		}
 	#endif
 
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
+// Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
 STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 	_In_ UINT uColumn,
 	_Out_ SHCOLUMNID *pscid
@@ -798,15 +830,17 @@ STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 		switch (uColumn) {
 			case DETAILS_COLUMN_NAME:
 				*pscid = PKEY_ItemNameDisplay;
-				return LogReturn(S_OK);
+				return WrapReturn(S_OK);
 			case DETAILS_COLUMN_FILESIZE:
-				// TODO(garlic-os): is this right? where are PKEYs' documentation?
+				// TODO(garlic-os): is this right? where are PKEYs'
+				// documentation?
 				*pscid = PKEY_TotalFileSize;
 				// *pscid = PKEY_Size;
 				// *pscid = PKEY_FileAllocationSize;
-				return LogReturn(S_OK);
+				return WrapReturn(S_OK);
+			default:
+				return WrapReturnFailOK(E_FAIL);
 		}
-		return LogReturn(E_FAIL);
 	#endif
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }

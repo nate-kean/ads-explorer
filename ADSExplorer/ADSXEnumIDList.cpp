@@ -128,12 +128,12 @@ HRESULT CADSXEnumIDList::NextInternal(
 ) {
 	if (rgelt == NULL || (celt != 1 && pceltFetched == NULL)) {
 		LOG(L" ** Bad argument(s)");
-		return LogReturn(E_POINTER);
+		return WrapReturn(E_POINTER);
 	}
 	if (celt == 0) {
 		LOG(L" ** 0 requested :/ vacuous success");
 		*pceltFetched = 0;
-		return LogReturn(S_OK);
+		return WrapReturn(S_OK);
 	}
 
 	static WIN32_FIND_STREAM_DATA fsd;
@@ -154,11 +154,11 @@ HRESULT CADSXEnumIDList::NextInternal(
 						L" ** FindFirstStreamW returned INVALID_HANDLE_VALUE "
 						L"but GetLastError() == ERROR_SUCCESS"
 					);
-					return LogReturn(E_FAIL);
+					return WrapReturn(E_FAIL);
 				case ERROR_HANDLE_EOF:
 					LOG(L" ** No streams found");
 					*pceltFetched = 0;
-					return LogReturn(S_FALSE);
+					return WrapReturn(S_FALSE);
 				default:
 					LOG(L" ** Error: " << GetLastError());
 					return HRESULT_FROM_WIN32(GetLastError());
@@ -167,7 +167,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 		if (GetLastError() == ERROR_HANDLE_EOF) {
 			LOG(L" ** No streams found");
 			*pceltFetched = 0;
-			return LogReturn(S_FALSE);
+			return WrapReturn(S_FALSE);
 		}
 		bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 		if (!bPushPidlSuccess) {
@@ -204,9 +204,9 @@ HRESULT CADSXEnumIDList::NextInternal(
 	m_nTotalFetched += nActual;
 	if (nActual < celt) {
 		LOG(L" ** Ran out");
-		return LogReturn(S_FALSE);
+		return WrapReturn(S_FALSE);
 	}
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -218,7 +218,7 @@ HRESULT CADSXEnumIDList::Reset() {
 		m_nTotalFetched = 0;
 		if (!success) return HRESULT_FROM_WIN32(GetLastError());
 	}
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 
@@ -232,7 +232,7 @@ HRESULT CADSXEnumIDList::Skip(_In_ ULONG celt) {
 
 HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	LOG(P_EIDL << L"Clone()");
-	if (ppEnum == NULL) return LogReturn(E_POINTER);
+	if (ppEnum == NULL) return WrapReturn(E_POINTER);
 	*ppEnum = NULL;
 
 	CComObject<CADSXEnumIDList> *pEnumNew;
@@ -247,5 +247,5 @@ HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 
 	hr = pEnumNew->QueryInterface(IID_PPV_ARGS(ppEnum));
 	if (FAILED(hr)) return hr;
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }

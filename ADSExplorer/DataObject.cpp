@@ -82,76 +82,76 @@ void CDataObject::Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITE
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 	LOG(P_DO << L"GetData()");
-	if (pFE->cfFormat != m_cfShellIDList) return LogReturn(E_INVALIDARG);
+	if (pFE->cfFormat != m_cfShellIDList) return WrapReturn(E_INVALIDARG);
 
 	pStgMedium->hGlobal = CreateShellIDList(m_pidlParent, m_pidl);
-	if (pStgMedium->hGlobal == NULL) return LogReturn(E_OUTOFMEMORY);
+	if (pStgMedium->hGlobal == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	pStgMedium->tymed = TYMED_HGLOBAL;
 	// Even if our tymed is HGLOBAL, WinXP calls ReleaseStgMedium()
 	// which tries to call pUnkForRelease->Release() -- BANG!
 	pStgMedium->pUnkForRelease = NULL;
-	return LogReturn(S_OK);
+	return WrapReturn(S_OK);
 }
 
 STDMETHODIMP CDataObject::GetDataHere(LPFORMATETC, LPSTGMEDIUM) {
 	LOG(P_DO << L"GetDataHere()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::QueryGetData(LPFORMATETC) {
 	LOG(P_DO << L"QueryGetData()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::GetCanonicalFormatEtc(LPFORMATETC, LPFORMATETC) {
 	LOG(P_DO << L"GetCanonicalFormatEtc()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::SetData(LPFORMATETC, LPSTGMEDIUM, BOOL) {
 	LOG(P_DO << L"SetData()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC **) {
 	LOG(P_DO << L"EnumFormatEtc()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD) {
 	LOG(P_DO << L"DAdvise()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
 	LOG(P_DO << L"DUnadvise()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
 	LOG(P_DO << L"EnumDAdvise()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 //-------------------------------------------------------------------------------
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
 	LOG(P_DO << L"Next()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::Skip(ULONG) {
 	LOG(P_DO << L"Skip()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::Reset() {
 	LOG(P_DO << L"Reset()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
 	LOG(P_DO << L"Clone()");
-	return LogReturn(E_NOTIMPL);
+	return WrapReturnFailOK(E_NOTIMPL);
 }

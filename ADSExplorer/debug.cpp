@@ -53,8 +53,15 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 	);
 #endif
 
+// #define _DEBUG
 #ifdef _DEBUG
-	_Post_equal_to_(hr) HRESULT LogReturn(_In_ HRESULT hr) {
+	_Post_equal_to_(hr) HRESULT WrapReturn(_In_ HRESULT hr) {
+		LOG(L" -> " << HRESULTToString(hr));
+		ATLASSERT(SUCCEEDED(hr));
+		return hr;
+	}
+
+	_Post_equal_to_(hr) HRESULT WrapReturnFailOK(_In_ HRESULT hr) {
 		LOG(L" -> " << HRESULTToString(hr));
 		return hr;
 	}

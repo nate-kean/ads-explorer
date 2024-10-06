@@ -104,4 +104,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	// implementation.
 	PIDLIST_ABSOLUTE m_pidlFSPath;
 	CComPtr<IShellFolder> m_psfFSPath;
+	IShellDetails *m_psdFSPath;
+
+	bool m_bEndOfPath;
 };

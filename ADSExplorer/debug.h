@@ -57,7 +57,8 @@ class CDebugStream
 		/* g_DebugStream << psz << std::endl; */ \
 	} while(false)
 
-	_Post_equal_to_(hr) HRESULT LogReturn(_In_ HRESULT hr);
+	_Post_equal_to_(hr) HRESULT WrapReturn(_In_ HRESULT hr);
+	_Post_equal_to_(hr) HRESULT WrapReturnFailOK(_In_ HRESULT hr);
 	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl);
 	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl);
 	std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls);
@@ -73,7 +74,8 @@ class CDebugStream
 	#define DBG_NOTHING do { } while (false)
 
 	#define LOG(_) DBG_NOTHING
-	#define LogReturn(hr) (hr)
+	#define WrapReturn(hr) (hr)
+	#define WrapReturnFailOK(hr) (hr)
 	#define PidlToString(_) DBG_NOTHING
 	#define PidlArrayToString(_) DBG_NOTHING
 	#define IIDToString(_) DBG_NOTHING

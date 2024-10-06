@@ -146,7 +146,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 				*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
 			}
 		#endif
-		// return LogReturn(S_OK);
+		// return WrapReturn(S_OK);
 		return S_OK;
 	}
 
@@ -158,7 +158,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
 		// SDK.
 		SendFolderViewMessage(SFVM_REARRANGE, wParam);
-		// return LogReturn(S_OK);
+		// return WrapReturn(S_OK);
 		return S_OK;
 	}
 
@@ -171,7 +171,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 
 		LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
-		// if (pDetailsInfo == NULL) return LogReturn(E_POINTER);
+		// if (pDetailsInfo == NULL) return WrapReturn(E_POINTER);
 		if (pDetailsInfo == NULL) return E_POINTER;
 
 		HRESULT hr;
@@ -190,7 +190,7 @@ class CADSXRootShellView : public CShellFolderViewImpl {
 		pDetailsInfo->str = ShellDetails.str;
 		pDetailsInfo->iImage = 0;
 
-		// return LogReturn(S_OK);
+		// return WrapReturn(S_OK);
 		return S_OK;
 	}
 
