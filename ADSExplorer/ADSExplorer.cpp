@@ -48,9 +48,9 @@ _Check_return_
 STDAPI DllGetClassObject(
 	_In_     REFCLSID rclsid,
 	_In_     REFIID   riid,
-	_Outptr_ LPVOID   *ppv
+	_Outptr_ LPVOID   *ppObject
 ) {
-	return _Module.GetClassObject(rclsid, riid, ppv);
+	return _Module.GetClassObject(rclsid, riid, ppObject);
 }
 
 /////////////////////////////////////////////////////////////////////////////

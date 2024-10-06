@@ -127,15 +127,15 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx           *pbc,
 	_In_         REFIID             riid,
-	_COM_Outptr_ void               **ppv
+	_COM_Outptr_ void               **ppShellFolder
 ) {
 	LOG(P_RSF << L"BindToObject("
 		L"pidl=[" << PidlToString(pidl) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 
-	if (ppv == NULL) return LogReturn(E_POINTER);
-	*ppv = NULL;
+	if (ppShellFolder == NULL) return LogReturn(E_POINTER);
+	*ppShellFolder = NULL;
 
 	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
 		return LogReturn(E_NOINTERFACE);
@@ -161,9 +161,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 		if (m_pidlFSPath == NULL) return LogReturn(E_OUTOFMEMORY);
 	} else {
 		// Browse this path internally.
-		hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppv);
+		hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppShellFolder);
 		if (FAILED(hr)) return LogReturn(hr);
-		m_psfFSPath = static_cast<IShellFolder*>(*ppv);
+		m_psfFSPath = static_cast<IShellFolder*>(*ppShellFolder);
 
 		if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
 		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
@@ -176,7 +176,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	// TODO(garlic-os): Windows may not like receiving the same object back and
 	// may expect a copy
 	this->AddRef();
-	*ppv = this;
+	*ppShellFolder = this;
 	return LogReturn(S_OK);
 }
 
@@ -239,14 +239,14 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
-	_COM_Outptr_ void   **ppv
+	_COM_Outptr_ void   **ppViewObject
 ) {
 	// Not logging all interface requests because there are too many
 	// LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
-	if (ppv == NULL) return E_POINTER;
-	// if (ppv == NULL) return LogReturn(E_POINTER);
-	*ppv = NULL;
+	if (ppViewObject == NULL) return E_POINTER;
+	// if (ppvViewObject == NULL) return LogReturn(E_POINTER);
+	*ppViewObject = NULL;
 
 	HRESULT hr;
 
@@ -266,7 +266,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 
 		// Create the view
 		hr = pViewObject->Create(
-			reinterpret_cast<IShellView **>(ppv),
+			reinterpret_cast<IShellView **>(ppViewObject),
 			hwndOwner,
 			static_cast<IShellFolder *>(this)
 		);
@@ -396,7 +396,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	_In_         PCUITEMID_CHILD_ARRAY aPidls,
 	_In_         REFIID                riid,
 	_Inout_      UINT                  *rgfReserved,
-	_COM_Outptr_ void                  **ppv
+	_COM_Outptr_ void                  **ppUIObject
 ) {
 	LOG(P_RSF << L"GetUIObjectOf("
 		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
@@ -406,8 +406,8 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 
 	HRESULT hr;
 
-	if (ppv == NULL) return LogReturn(E_POINTER);
-	*ppv = NULL;
+	if (ppUIObject == NULL) return LogReturn(E_POINTER);
+	*ppUIObject = NULL;
 
 	if (cidl == 0) return LogReturn(E_INVALIDARG);
 
@@ -435,7 +435,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// and embed the PIDL in the data
 		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
 		// Return the requested interface to the caller
-		hr = pDataObject->QueryInterface(riid, ppv);
+		hr = pDataObject->QueryInterface(riid, ppUIObject);
 		// We do no more need our ref (note that the object will not die because
 		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
@@ -477,10 +477,10 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
 	_In_         PCUIDLIST_RELATIVE,
 	_In_         IBindCtx *,
 	_In_         REFIID,
-	_COM_Outptr_ void **ppv
+	_COM_Outptr_ void **ppStorage
 ) {
 	LOG(P_RSF << L"BindToStorage()");
-	if (ppv != NULL) *ppv = NULL;
+	if (ppStorage != NULL) *ppStorage = NULL;
 	return LogReturn(E_NOTIMPL);
 }
 

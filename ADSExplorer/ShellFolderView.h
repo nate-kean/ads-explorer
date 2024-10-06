@@ -9,42 +9,6 @@
 // and call Create() with the first param to the storage receiving the new
 // IShellView.
 //
-// Example:
-//	CRootShellView is a CShellFolderViewImpl subclass
-/*
-	STDMETHODIMP CRootShellFolder::CreateViewObject(HWND hwndOwner, REFIID riid,
-   void** ppv)
-	{
-		HRESULT hr;
-
-		if (ppv == NULL)
-			return E_POINTER;
-		*ppv = NULL;
-
-		if (riid == IID_IShellView)
-		{
-			// Create a view object
-			CComObject<CRootShellView>* pViewObject;
-			hr = CComObject<CRootShellView>::CreateInstance(&pViewObject);
-			if (FAILED(hr))
-				return hr;
-
-			// AddRef the object while we are using it
-			pViewObject->AddRef();
-
-			// Create the view
-			hr = pViewObject->Create((IShellView**)ppv, hwndOwner,
-   (IShellFolder*)this);
-
-			// We are finished with our own use of the view object (AddRef()'ed
-   above by us, AddRef()'ed by Create) pViewObject->Release();
-
-			return hr;
-		}
-
-		return E_NOINTERFACE;
-	}
-*/
 // ATL message maps:
 // If you did not handled the message set bHandled to FALSE. (Defaults to TRUE
 // when your message handler is called) This will return E_NOTIMPL to the caller
