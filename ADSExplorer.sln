@@ -6,6 +6,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADSExplorer", "ADSExplorer\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{D4668EB0-44B6-4A36-A673-984012137B1A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADSXContextMenu", "ADSXContextMenu\ADSXContextMenu.vcxproj", "{C310FA14-2467-492D-8790-A4CD0BCE7B13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -30,6 +32,14 @@ Global
 		{D4668EB0-44B6-4A36-A673-984012137B1A}.Release|Win32.Build.0 = Release|Win32
 		{D4668EB0-44B6-4A36-A673-984012137B1A}.Release|x64.ActiveCfg = Release|x64
 		{D4668EB0-44B6-4A36-A673-984012137B1A}.Release|x64.Build.0 = Release|x64
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Debug|Win32.Build.0 = Debug|Win32
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Debug|x64.ActiveCfg = Debug|x64
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Debug|x64.Build.0 = Debug|x64
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Release|Win32.ActiveCfg = Release|Win32
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Release|Win32.Build.0 = Release|Win32
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Release|x64.ActiveCfg = Release|x64
+		{C310FA14-2467-492D-8790-A4CD0BCE7B13}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
