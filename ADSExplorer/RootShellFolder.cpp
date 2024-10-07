@@ -219,11 +219,10 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
-
-	USHORT Result = 0;  // see note below (MAKE_HRESULT)
-
 	auto Item1 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
 	auto Item2 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
+
+	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DETAILS_COLUMN_NAME:
