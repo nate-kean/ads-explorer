@@ -170,7 +170,7 @@ FileLocksmithContextMenuCommand final
 
    private:
 	std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(
-		IDS_FILE_LOCKSMITH_CONTEXT_MENU_ENTRY,
+		IDS_CONTEXT_MENU_ENTRY,
 		L"Browse alternate data streams"
 	);
 };
