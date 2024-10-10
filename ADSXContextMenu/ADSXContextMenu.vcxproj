@@ -155,6 +155,9 @@
   <ItemGroup>
     <ResourceCompile Include="ADSXContextMenu.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="RegScript.rgs" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -52,7 +52,8 @@ CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
 	, m_pidlFSPath(NULL)
 	, m_psdFSPath(NULL)
-	, m_bEndOfPath(false) {
+	, m_bEndOfPath(false) 
+	, m_bPathIsFile(false) {
 	// LOG(P_RSF << L"CONSTRUCTOR");
 }
 
@@ -124,8 +125,7 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 //-------------------------------------------------------------------------------
 // IShellFolder
 
-// Called when an item in an ADSX folder is double-clicked.
-// TODO(garlic-os): Explain this function better
+// TODO(garlic-os): Explain this function
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx           *pbc,
@@ -149,32 +149,32 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 
 	m_bEndOfPath = ILIsChild(pidl);
 
-	// TODO(garlic-os): Better way to check when we're at the end of the path?
-	// Assumption here is BindToObject receives a PIDL of length 1 iff we are at
-	// the end of the path.
-	if (m_bEndOfPath) {
-		// We've made it to the target FS object's direct parent.
-		// Our normal ShellFolder companion cannot browse any farther. It is now
-		// right where we need it to be to get the target object's path for
-		// EnumObjects. From here, we browse one level deeper without it.
-		// m_psfFSPath and m_pidlFSPath had always stayed in sync, but now
-		// m_psfFSPath is ..\{fs object path}, and upon returning from this
-		// function m_pidlFSPath will be {fs object path}.
-		LOG(L" ** End of path reached");
+	// Browse this path internally.
+	hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppShellFolder);
+	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
+	if (SUCCEEDED(hr)) {
+		// Browsed into a folder
+		m_psfFSPath = static_cast<IShellFolder*>(*ppShellFolder);
+	} else if (hr == E_FAIL) {
+		// Tried to browse into a file, which is fine for us.
+		// When EnumObjects is called, we'll be enumerating the file's ADSes.
+		m_bPathIsFile = true;
+	} else {
+		return WrapReturnFailOK(hr);
+	}
+
+	// Update our internal PIDL.
+	// These are the two cases I've seen: either a child directly relative to
+	// our path, or an absolute path.
+	if (ILIsChild(pidl)) {
 		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(
 			ILAppendID(m_pidlFSPath, &pidl->mkid, TRUE)
 		);
-		if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
 	} else {
-		// Browse this path internally.
-		hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppShellFolder);
-		if (FAILED(hr)) return WrapReturn(hr);
-		m_psfFSPath = static_cast<IShellFolder*>(*ppShellFolder);
-
 		if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
 		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
-		if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
 	}
+	if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	LOG(L" ** New m_pidlFSPath: " << PidlToString(m_pidlFSPath));
 
@@ -326,11 +326,20 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	// Get the path this instance of ADSX is bound to in string form.
 	STRRET pName;
 	LPWSTR pszName;
-	PUITEMID_CHILD pidlFSPathLast = ILFindLastID(m_pidlFSPath);
-	hr = m_psfFSPath->GetDisplayNameOf(pidlFSPathLast, SHGDN_FORPARSING, &pName);
+	CComPtr<IShellFolder> psf;
+	PCUITEMID_CHILD pidlFSPathLast;
+	if (m_bPathIsFile) {
+		psf = m_psfFSPath;
+		pidlFSPathLast = ILFindLastID(m_pidlFSPath);
+	} else {
+		hr = SHBindToParent(m_pidlFSPath, IID_PPV_ARGS(&psf), &pidlFSPathLast);
+		if (FAILED(hr)) return WrapReturn(hr);
+	}
+	hr = psf->GetDisplayNameOf(pidlFSPathLast, SHGDN_FORPARSING, &pName);
 	if (FAILED(hr)) return WrapReturn(hr);
 	hr = StrRetToStrW(&pName, pidlFSPathLast, &pszName);
 	if (FAILED(hr)) return WrapReturn(hr);
+	defer({ CoTaskMemFree(pszName); });
 
 	LOG(L" ** EnumObjects: Path=" << pszName);
 	pEnum->Init(this->GetUnknown(), pszName);
@@ -372,8 +381,8 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		              SFGAO_FILESYSANCESTOR |
 		              SFGAO_NONENUMERATED;
 	} else if (!CADSXItem::IsOwn(aPidls[0])) {
-		// Parent folders
-		// Folders along the way to and including the requested file/folder
+		// Files and folders
+		// FS objects along the way to and including the requested file/folder
 		LOG(L" ** FS Object");
 		// HRESULT hr = m_psfFSPath->GetAttributesOf(cidl, aPidls, pfAttribs);
 		// if (FAILED(hr)) return WrapReturn(hr);
@@ -657,27 +666,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 
 	HRESULT hr;
 
-	// If not at end of path, delegate to the real filesystem object
-	if (!m_bEndOfPath) {
-		// Lazy load this because this doesn't happen during browsing's
-		// "drill down" phase
-		if (m_psdFSPath == NULL) {
-			hr = m_psfFSPath->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psdFSPath));
-			if (FAILED(hr)) return WrapReturn(hr);
-		}
-
-		return WrapReturnFailOK(
-			m_psdFSPath->GetDetailsOf(pidl, uColumn, pDetails)
-		);
-	}
-
-	if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
-
-	// Shell asks for the column headers
+	// Shell is asking for the column headers
 	if (pidl == NULL) {
 		// Load the uColumn based string from the resource
 		// TODO(garlic-os): do we haaave to use CString here?
 		// this entire kind of string is not used anywhere else in the program
+		if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
 		WORD wResourceID = IDS_COLUMN_NAME + uColumn;
 		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
@@ -689,6 +683,20 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 			) ? S_OK : E_OUTOFMEMORY
 		);
 	}
+
+	if (!CADSXItem::IsOwn(pidl)) {
+		// Lazy load this because this doesn't happen for every shellfolder
+		// instance (e.g., during browsing's "drill down" phase)
+		if (m_psdFSPath == NULL) {
+			hr = m_psfFSPath->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psdFSPath));
+			if (FAILED(hr)) return WrapReturnFailOK(hr);
+		}
+		return WrapReturnFailOK(
+			m_psdFSPath->GetDetailsOf(pidl, uColumn, pDetails)
+		);
+	}
+
+	if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
 
 	// Okay, this time it's for a real item
 	auto Item = CADSXItem::Get(pidl);

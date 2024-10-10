@@ -106,5 +106,6 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	CComPtr<IShellFolder> m_psfFSPath;
 	IShellDetails *m_psdFSPath;
 
-	bool m_bEndOfPath;
+	bool m_bEndOfPath;  // affects GetDetailsOf's behavior
+	bool m_bPathIsFile;  // affect's EnumObjects's behavior
 };

@@ -176,10 +176,10 @@ ADSExplorerContextMenuCommand final
 	ComPtr<IUnknown> m_punkSite;
 
    private:
-	// std::wstring m_stdstrContextMenuCaption = GET_RESOURCE_STRING_FALLBACK(
-	// 	IDS_ADS_EXPLORER_CONTEXT_MENU_ENTRY,
-	// 	L"Browse alternate data streams"
-	// );
+	std::wstring context_menu_caption = GET_RESOURCE_STRING_FALLBACK(
+		IDS_CONTEXT_MENU_ENTRY,
+		L"Browse alternate data streams"
+	);
 };
 
 CoCreatableClass(ADSExplorerContextMenuCommand)

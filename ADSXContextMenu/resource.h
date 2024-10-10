@@ -2,8 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by ADSXContextMenu.rc
 //
-#define IDS_STRING101                   101
-#define IDS_ADS_EXPLORER_CONTEXT_MENU_ENTRY 101
+#define IDS_CONTEXT_MENU_ENTRY 101
 
 // Next default values for new objects
 // 
