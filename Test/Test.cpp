@@ -4,7 +4,7 @@
 #include <comutil.h>
 
 #include "ADSXEnumIDList.h"
-#include "defer.h"
+#include "../Common/defer.h"
 
 #include <stdexcept>
 

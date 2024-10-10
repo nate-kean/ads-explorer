@@ -45,7 +45,7 @@
 #include <string>  // TODO: Remove C++ STL
 
 #include "debug.h"
-#include "defer.h"
+#include "../Common/defer.h"
 
 extern CComModule _Module;
 

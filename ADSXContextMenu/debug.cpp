@@ -2,15 +2,11 @@
  * 2024 Nate Kean
  */
 
-#include "StdAfx.h"
-
 #include "debug.h"
 
 // #define _DEBUG
 #ifdef _DEBUG
-	#include "ADSXItem.h"
-	#include "../Common/defer.h"
-	#include "iids.h"
+	// #include "iids.h"
 	#include <iomanip>
 	#include <sstream>
 #endif
@@ -66,76 +62,22 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		return hr;
 	}
 
-	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
-		if (pidl == NULL) return L"<null>";
-		std::wostringstream oss;
-		bool first = true;
-		for (; !ILIsEmpty(pidl); pidl = ILNext(pidl)) {
-			if (!first) {
-				oss << L"--";
-			}
-			if (CADSXItem::IsOwn(pidl)) {
-				oss <<
-					CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->pszName;
-			} else {
-				WCHAR tmp[16];
-				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
-				oss << tmp;
-			}
-			first = false;
-		}
-		return oss.str();
-	}
-
-	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl) {
-		PWSTR pszPath = NULL;
-		HRESULT hr = SHGetNameFromIDList(
-			pidl,
-			SIGDN_DESKTOPABSOLUTEPARSING,
-			&pszPath
-		);
-		if (FAILED(hr)) return L"ERROR";
-		defer({ CoTaskMemFree(pszPath); });
-		std::wstring wstrPath(pszPath);
-		if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}") {
-			return L"[Desktop]";
-		} else if (wstrPath == L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[Desktop\\ADS Explorer]";
-		} else if (wstrPath == L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}") {
-			return L"[ADS Explorer]";
-		}
-		return wstrPath;
-	}
-
-	std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls) {
-		std::wostringstream oss;
-		oss << L"[";
-		defer({ oss << L"]"; });
-		for (UINT i = 0; i < cidl; i++) {
-			oss << PidlToString(aPidls[i]);
-			if (i < cidl - 1) {
-				oss << L", ";
-			}
-		}
-		return oss.str();
-	}
-
-	std::wstring IIDToString(const std::wstring &sIID) {
-		auto search = iids.find(sIID);
-		if (search != iids.end()) {
-			return std::wstring(search->second);
-		} else {
-			return sIID;
-		}
-	}
-	std::wstring IIDToString(const IID &iid) {
-		LPOLESTR pszGUID = NULL;
-		HRESULT hr = StringFromCLSID(iid, &pszGUID);
-		if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
-		defer({ CoTaskMemFree(pszGUID); });
-		auto sIID = std::wstring(pszGUID);
-		return IIDToString(sIID);
-	}
+	// std::wstring IIDToString(const std::wstring &sIID) {
+	// 	auto search = iids.find(sIID);
+	// 	if (search != iids.end()) {
+	// 		return std::wstring(search->second);
+	// 	} else {
+	// 		return sIID;
+	// 	}
+	// }
+	// std::wstring IIDToString(const IID &iid) {
+	// 	LPOLESTR pszGUID = NULL;
+	// 	HRESULT hr = StringFromCLSID(iid, &pszGUID);
+	// 	if (FAILED(hr)) return L"Catastrophe! Failed to convert IID to string";
+	// 	defer({ CoTaskMemFree(pszGUID); });
+	// 	auto sIID = std::wstring(pszGUID);
+	// 	return IIDToString(sIID);
+	// }
 
 	std::wstring SFGAOFToString(const SFGAOF *pfAttribs) {
 		if (pfAttribs == NULL) return L"<null>";
