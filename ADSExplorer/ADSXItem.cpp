@@ -22,7 +22,9 @@ const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 
 /**
  * Allocate a PIDL (PITEMID_CHILD) and shallow copy into its mkid this item.
- * @post: The caller owns the return value and must free it with CoTaskMemFree.
+ * @post: Ownership of the return value is passed to the caller.
+ * @post: The return value must be freed with CoTaskMemFree.
+ * @post: Ownership of pszItem is transferred from this to the return value.
  */
 PITEMID_CHILD CADSXItem::ToPidl() const {
 	// The PIDL is manually allocated, as opposed to using `new`,
