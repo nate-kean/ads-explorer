@@ -215,9 +215,9 @@ HRESULT CADSXEnumIDList::NextInternal(
 STDMETHODIMP CADSXEnumIDList::Reset() {
 	LOG(P_EIDL << L"Reset()");
 	if (m_hFinder != NULL) {
-		BOOL success = FindClose(m_hFinder);
-		m_hFinder = NULL;
 		m_nTotalFetched = 0;
+		const BOOL success = FindClose(m_hFinder);
+		m_hFinder = NULL;
 		if (!success) return HRESULT_FROM_WIN32(GetLastError());
 	}
 	return WrapReturn(S_OK);

@@ -35,7 +35,7 @@
  */
 bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
 	LOG(L" ** " << pszSource);
-	SIZE_T cwStringLen = wcslen(pszSource) + 1;
+	const SIZE_T cwStringLen = wcslen(pszSource) + 1;
 	strret->uType = STRRET_WSTR;
 	strret->pOleStr = static_cast<LPOLESTR>(
 		CoTaskMemAlloc(cwStringLen * sizeof(OLECHAR))
@@ -562,7 +562,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
-			PIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
+			PCIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
 				m_pidlRoot,
 				ILNext(m_pidlFSPath)  // remove [Desktop]
 			);
@@ -673,8 +673,8 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		// TODO(garlic-os): do we haaave to use CString here?
 		// this entire kind of string is not used anywhere else in the program
 		if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
-		WORD wResourceID = IDS_COLUMN_NAME + uColumn;
-		CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
+		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
+		const CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
 		pDetails->cxChar = 32;
 		return WrapReturn(

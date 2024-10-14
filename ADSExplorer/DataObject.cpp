@@ -22,46 +22,46 @@ CreateShellIDList(
 	PCUITEMID_CHILD pidl
 ) {
 	// Get the combined size of the parent folder's PIDL and the other PIDL
-	UINT cbPidl = ILGetSize(pidlParent) + ILGetSize(pidl);
+	UINT cbpidl = ILGetSize(pidlParent) + ILGetSize(pidl);
 
 	// Find the end of the CIDA structure. This is the size of the
 	// CIDA structure itself (which includes one element of aoffset) plus the
 	// additional number of elements in aoffset.
-	UINT iCurPos = sizeof(CIDA) + (sizeof(UINT));
+	UINT uCurPos = sizeof(CIDA) + sizeof(UINT);
 
 	// Allocate the memory for the CIDA structure and it's variable length
 	// members.
-	HGLOBAL hGlobal = GlobalAlloc(
+	const HGLOBAL hGlobal = GlobalAlloc(
 		GPTR | GMEM_SHARE,
-		(size_t) (iCurPos +	// size of the CIDA structure and the additional
+		(size_t) (uCurPos +	// size of the CIDA structure and the additional
 							// aoffset elements
-				 (cbPidl + 1))
+				 (cbpidl + 1))
 	);	// size of the pidls
 	if (hGlobal == NULL) return NULL;
 
-	LPIDA pData = static_cast<LPIDA>(GlobalLock(hGlobal));
+	const LPIDA pData = static_cast<LPIDA>(GlobalLock(hGlobal));
 	if (pData == NULL) return hGlobal;
 	defer({ GlobalUnlock(hGlobal); });
 
 	pData->cidl = 1;
-	pData->aoffset[0] = iCurPos;
+	pData->aoffset[0] = uCurPos;
 
 	// add the PIDL for the parent folder
-	cbPidl = ILGetSize(pidlParent);
-	CopyMemory(VOID_OFFSET(pData, iCurPos), pidlParent, cbPidl);
-	iCurPos += cbPidl;
+	cbpidl = ILGetSize(pidlParent);
+	CopyMemory(VOID_OFFSET(pData, uCurPos), pidlParent, cbpidl);
+	uCurPos += cbpidl;
 
 	// get the size of the PIDL
-	cbPidl = ILGetSize(pidl);
+	cbpidl = ILGetSize(pidl);
 
 	// fill out the members of the CIDA structure.
-	pData->aoffset[1] = iCurPos;
+	pData->aoffset[1] = uCurPos;
 
 	// copy the contents of the PIDL
-	CopyMemory(VOID_OFFSET(pData, iCurPos), pidl, cbPidl);
+	CopyMemory(VOID_OFFSET(pData, uCurPos), pidl, cbpidl);
 
 	// set up the position of the next PIDL
-	iCurPos += cbPidl;
+	uCurPos += cbpidl;
 
 	return hGlobal;
 }
