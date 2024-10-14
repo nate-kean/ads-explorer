@@ -88,6 +88,7 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 	}
 
 	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl) {
+		if (pidl == NULL) return L"<null>";
 		PWSTR pszPath = NULL;
 		HRESULT hr = SHGetNameFromIDList(
 			pidl,
