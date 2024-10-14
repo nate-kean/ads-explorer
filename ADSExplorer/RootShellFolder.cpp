@@ -306,7 +306,9 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	_In_         SHCONTF     dwFlags,
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
 ) {
-	LOG(P_RSF << L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])");
+	LOG(P_RSF
+		<< L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])"
+		<< L", Path=[" << PidlToString(m_pidlFSPath) << L"]");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
@@ -341,7 +343,6 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	if (FAILED(hr)) return WrapReturn(hr);
 	defer({ CoTaskMemFree(pszName); });
 
-	LOG(L" ** EnumObjects: Path=" << pszName);
 	pEnum->Init(this->GetUnknown(), pszName);
 
 	// Return an IEnumIDList interface to the caller.
