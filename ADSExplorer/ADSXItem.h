@@ -15,8 +15,11 @@ struct CADSXItem {
 	static CADSXItem *Get(PUITEMID_CHILD pidl);
 	static const CADSXItem *Get(PCUITEMID_CHILD pidl);
 
-	// Create a new one-item-long PIDL containing this item in the abID.
-	// Ownership of the return value belongs to the caller.
-	// Return value must be freed with CoTaskMemFree.
-	PITEMID_CHILD ToPidl() const;
+	/**
+ 	* Allocate a new one-item-long PIDL containing this item in the abID.
+ 	* @post: Ownership of the return value is passed to the caller.
+ 	* @post: The return value must be freed with CoTaskMemFree.
+ 	* @post: Ownership of *this is transferred to the return value.
+ 	*/
+	PITEMID_CHILD ToPidl() &&;
 };
