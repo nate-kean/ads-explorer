@@ -112,7 +112,7 @@ HRESULT CADSXEnumIDList::Init(_In_ IUnknown *punkOwner, _In_ LPCWSTR pszPath) {
  * Find one or more items with NextInternal and push them to the
  * output array rgelt with PushPidl.
  */
-HRESULT CADSXEnumIDList::Next(
+STDMETHODIMP CADSXEnumIDList::Next(
 	_In_ ULONG celt,
 	_Outptr_ PITEMID_CHILD *rgelt,
 	_Out_ ULONG *pceltFetched
@@ -212,7 +212,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 }
 
 
-HRESULT CADSXEnumIDList::Reset() {
+STDMETHODIMP CADSXEnumIDList::Reset() {
 	LOG(P_EIDL << L"Reset()");
 	if (m_hFinder != NULL) {
 		BOOL success = FindClose(m_hFinder);
@@ -224,7 +224,7 @@ HRESULT CADSXEnumIDList::Reset() {
 }
 
 
-HRESULT CADSXEnumIDList::Skip(_In_ ULONG celt) {
+STDMETHODIMP CADSXEnumIDList::Skip(_In_ ULONG celt) {
 	LOG(P_EIDL << L"Skip(celt=" << celt << L")");
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD *rgeltFake = NULL;
@@ -232,7 +232,7 @@ HRESULT CADSXEnumIDList::Skip(_In_ ULONG celt) {
 }
 
 
-HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
+STDMETHODIMP CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	LOG(P_EIDL << L"Clone()");
 	if (ppEnum == NULL) return WrapReturn(E_POINTER);
 	*ppEnum = NULL;
