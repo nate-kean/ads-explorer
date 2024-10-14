@@ -20,13 +20,7 @@ const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 }
 
 
-/**
- * Allocate a PIDL (PITEMID_CHILD) and shallow copy into its mkid this item.
- * @post: Ownership of the return value is passed to the caller.
- * @post: The return value must be freed with CoTaskMemFree.
- * @post: Ownership of pszItem is transferred from this to the return value.
- */
-PITEMID_CHILD CADSXItem::ToPidl() const {
+PITEMID_CHILD CADSXItem::ToPidl() && {
 	// The PIDL is manually allocated, as opposed to using `new`,
 	// because COM requires memory to be allocated with CoTaskMemAlloc.
 	const UINT cbItem = FIELD_OFFSET(SHITEMID, abID[sizeof(CADSXItem)]);
