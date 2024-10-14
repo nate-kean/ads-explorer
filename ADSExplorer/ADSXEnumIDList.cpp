@@ -52,13 +52,17 @@ static bool PushPidl(
 
 	// Fill in the item
 	Item.llFilesize = fsd.StreamSize.QuadPart;
-	if (Item.pszName != NULL) CoTaskMemFree(Item.pszName);
+	// Ownership of the last pszName was transferred to the PIDL it was put into.
+	// It will be already freed when that PIDL is done with, so it should
+	// NOT be freed here.
+	//if (Item.pszName != NULL) CoTaskMemFree(Item.pszName);
 	Item.pszName = static_cast<LPWSTR>(
 		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
 	);
 	sName.copy(Item.pszName, sName.length());
 
 	// Copy this item into a PIDL
+	// Ownership of Item.pszName transferred to pidl here
 	PITEMID_CHILD pidl = Item.ToPidl();
 	if (pidl == NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
