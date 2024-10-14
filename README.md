@@ -55,7 +55,7 @@ picker dialogs), so it might cause stability issues. _Caveat emptor._
   of Windows possible.
 
 ## Attributions
-See `LICENSE`.
+See [`LICENSE`](LICENSE).
 
 This is based off [OpenWindows by Calvin Buckley](https://github.com/NattyNarwhal/OpenWindows),
 which is based off a [DOpus-style favorites manager by Pascal Hurni](https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample),
