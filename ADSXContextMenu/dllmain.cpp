@@ -14,7 +14,7 @@ constexpr WCHAR g_pszPrefix[] = L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\";
 
 
 HINSTANCE g_hInst = NULL;
-static const CStringW g_strContextMenuCaption
+static const CStringW g_strContextMenuCaption(
 	MAKEINTRESOURCE(IDS_ADS_EXPLORER_CONTEXT_MENU_ENTRY)
 );
 
