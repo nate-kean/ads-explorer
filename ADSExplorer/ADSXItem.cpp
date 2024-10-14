@@ -21,24 +21,24 @@ const CADSXItem *CADSXItem::Get(PCUITEMID_CHILD pidl) {
 
 
 /**
- * Allocates a PIDL (PITEMID_CHILD) whose mkid contains a copy of this item.
+ * Allocate a PIDL (PITEMID_CHILD) and shallow copy into its mkid this item.
  * @post: The caller owns the return value and must free it with CoTaskMemFree.
  */
 PITEMID_CHILD CADSXItem::ToPidl() const {
-	// The item copy is manually allocated, as opposed to using C++'s `new`,
+	// The PIDL is manually allocated, as opposed to using `new`,
 	// because COM requires memory to be allocated with CoTaskMemAlloc.
-	UINT cbSizeItem = sizeof(SHITEMID) - sizeof(BYTE) + sizeof(CADSXItem);
-	UINT cbSizeItemList = cbSizeItem + sizeof(SHITEMID);
+	const UINT cbItem = FIELD_OFFSET(SHITEMID, abID[sizeof(CADSXItem)]);
+	const UINT cbItemList = cbItem + sizeof(SHITEMID);
 
 	// Allocate memory for this SHITEMID plus the final null SHITEMID.
-	auto pidlNew = static_cast<PITEMID_CHILD>(CoTaskMemAlloc(cbSizeItemList));
+	auto pidlNew = static_cast<PITEMID_CHILD>(CoTaskMemAlloc(cbItemList));
 	if (pidlNew == NULL) return NULL;
 
 	// Put the data object in the PIDL
 	new (pidlNew->mkid.abID) CADSXItem();
-	// shallow copy (and that's enough since CADSXItem is only primitives)
+	// shallow copy (and that's enough since CADSXItem holds no raw pointers)
 	(CADSXItem &) pidlNew->mkid.abID = *this;
-	pidlNew->mkid.cb = cbSizeItem;
+	pidlNew->mkid.cb = cbItem;
 
 	// A sentinel PIDL at the end of the list as the ITEMIDLIST spec ordains
 	PUITEMID_CHILD pidlEnd = static_cast<PUITEMID_CHILD>(ILNext(pidlNew));
