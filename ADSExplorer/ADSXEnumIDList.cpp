@@ -87,26 +87,24 @@ static bool NoOp(const WIN32_FIND_STREAM_DATA &, PITEMID_CHILD **, ULONG *) {
 
 
 CADSXEnumIDList::CADSXEnumIDList()
-	: m_hFinder(NULL)
-	, m_nTotalFetched(0)
-	, m_bPathBeingShared(false) {
+	: m_pszPath(NULL)
+	, m_hFinder(NULL)
+	, m_nTotalFetched(0) {
 	LOG(P_EIDL << L"CADSXEnumIDList()");
 }
 
 CADSXEnumIDList::~CADSXEnumIDList() {
 	LOG(P_EIDL << L"~CADSXEnumIDList()");
-	if (m_hFinder != NULL) {
-		FindClose(m_hFinder);
-	}
-	if (!m_bPathBeingShared) {
-		CoTaskMemFree(m_pszPath);
-	}
+	if (m_hFinder != NULL) FindClose(m_hFinder);
+	if (m_pszPath != NULL) SysFreeString(m_pszPath);
 }
 
-void CADSXEnumIDList::Init(_In_ IUnknown *pUnkOwner, _In_ LPWSTR pszPath) {
+HRESULT CADSXEnumIDList::Init(_In_ IUnknown *punkOwner, _In_ LPCWSTR pszPath) {
 	LOG(P_EIDL << L"Init()");
-	m_pUnkOwner = pUnkOwner;
-	m_pszPath = pszPath;
+	m_punkOwner = punkOwner;
+	m_pszPath = SysAllocString(pszPath);
+	if (m_pszPath == NULL) return WrapReturn(E_OUTOFMEMORY);
+	return WrapReturn(S_OK);
 }
 
 
@@ -242,8 +240,7 @@ HRESULT CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	CComObject<CADSXEnumIDList> *pEnumNew;
 	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnumNew);
 	if (FAILED(hr)) return hr;
-	pEnumNew->Init(m_pUnkOwner, m_pszPath);
-	m_bPathBeingShared = true;
+	pEnumNew->Init(m_punkOwner, m_pszPath);
 
 	// Unfortunately I don't see any more an efficient way to do this with
 	// the Find Stream API :(
