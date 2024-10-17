@@ -14,12 +14,24 @@ struct CADSXItem {
 
 	static CADSXItem *Get(PUITEMID_CHILD pidl);
 	static const CADSXItem *Get(PCUITEMID_CHILD pidl);
-
-	/**
- 	* Allocate a new one-item-long PIDL containing this item in the abID.
- 	* @post: Ownership of the return value is passed to the caller.
- 	* @post: The return value must be freed with CoTaskMemFree.
- 	* @post: Ownership of *this is transferred to the return value.
- 	*/
-	PITEMID_CHILD ToPidl() &&;
 };
+
+
+#include <pshpack1.h>
+	typedef struct _ADSXITEMID {
+		USHORT cb = FIELD_OFFSET(_ADSXITEMID, abIDNull);
+		CADSXItem abID;
+		USHORT cbNull = 0;
+		BYTE abIDNull = NULL;
+	} ADSXITEMID;
+	typedef struct _ADSXITEMID_CHILD: ITEMID_CHILD {
+		ADSXITEMID mkid;
+	} ADSXITEMID_CHILD;
+#include <poppack.h>
+
+typedef /* [wire_marshal] */ ADSXITEMID_CHILD *PADSXITEMID_CHILD;
+typedef /* [wire_marshal] */ const ADSXITEMID_CHILD *PCADSXITEMID_CHILD;
+typedef /* [wire_marshal] */ ADSXITEMID_CHILD __unaligned *PUADSXITEMID_CHILD;
+typedef /* [wire_marshal] */ const ADSXITEMID_CHILD __unaligned *PCUADSXITEMID_CHILD;
+
+PADSXITEMID_CHILD NewADSXPidl();

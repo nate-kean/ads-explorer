@@ -16,6 +16,7 @@
  * Convert a WIN32_FIND_STREAM_DATA to a PIDL and add it to the output array.
  * pushin p
  * @post: ppelt array cursor is advanced by one element
+ * @post: Elements should be freed with CoTaskMemFree
  * @post: nActual is incremented
  */
 static bool PushPidl(
@@ -27,10 +28,7 @@ static bool PushPidl(
 	_Inout_ PITEMID_CHILD                **ppelt,
 	_Inout_ ULONG                        *nActual
 ) {
-	// Reusable item
-	static CADSXItem Item = { .pszName = NULL };
-
-	std::wstring sName = std::wstring(fsd.cStreamName);
+	std::wstring sName(fsd.cStreamName);
 	// All ADSes follow this name pattern AFAIK, but if they don't,
 	// 1: we shouldn't modify its name
 	// 2: I want to know about it
@@ -38,7 +36,7 @@ static bool PushPidl(
 	if (sName.starts_with(L":") && sName.ends_with(L":$DATA")) {
 		sName = sName.substr(
 			_countof(L":") - 1,
-			sName.length() - _countof(L":$DATA")
+			(sName.length() - 1) - (_countof(L":$DATA") - 1)
 		);
 	}
 
@@ -51,23 +49,17 @@ static bool PushPidl(
 	);
 
 	// Fill in the item
-	Item.llFilesize = fsd.StreamSize.QuadPart;
-	// Ownership of the last pszName was transferred to the PIDL it was put into.
-	// It will be already freed when that PIDL is done with, so it should
-	// NOT be freed here.
-	//if (Item.pszName != NULL) CoTaskMemFree(Item.pszName);
-	Item.pszName = static_cast<LPWSTR>(
-		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
-	);
-	sName.copy(Item.pszName, sName.length());
-
-	// Copy this item into a PIDL
-	// Ownership of Item.pszName transferred to pidl here
-	PITEMID_CHILD pidl = Item.ToPidl();
+	PADSXITEMID_CHILD pidl = NewADSXPidl();
 	if (pidl == NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;
 	}
+	auto Item = CADSXItem::Get(pidl);
+	Item->llFilesize = fsd.StreamSize.QuadPart;
+	Item->pszName = static_cast<PWSTR>(
+		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
+	);
+	sName.copy(Item->pszName, sName.length());
 
 	// Put that PIDL into the output array
 	**ppelt = pidl;
