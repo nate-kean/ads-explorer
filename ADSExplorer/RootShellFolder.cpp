@@ -33,7 +33,7 @@
  *
  * @pre: *strret is initialized
  */
-bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret) {
+bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 	LOG(L" ** " << pszSource);
 	const SIZE_T cwStringLen = wcslen(pszSource) + 1;
 	strret->uType = STRRET_WSTR;
@@ -327,7 +327,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 
 	// Get the path this instance of ADSX is bound to in string form.
 	STRRET pName;
-	LPWSTR pszName;
+	PWSTR pszName;
 	CComPtr<IShellFolder> psf;
 	PCUITEMID_CHILD pidlFSPathLast;
 	if (m_bPathIsFile) {
@@ -599,7 +599,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	_In_        HWND             hwnd,
 	_In_opt_    IBindCtx         *pbc,
-	_In_        LPWSTR           pszDisplayName,
+	_In_        PWSTR           pszDisplayName,
 	_Out_opt_   ULONG            *pchEaten,
 	_Outptr_    PIDLIST_RELATIVE *ppidl,
 	_Inout_opt_ SFGAOF           *pfAttributes
@@ -634,7 +634,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 	_In_     HWND,
 	_In_     PCUITEMID_CHILD,
-	_In_     LPCWSTR,
+	_In_     PCWSTR,
 	_In_     SHGDNF,
 	_Outptr_ PITEMID_CHILD *
 ) {
@@ -679,7 +679,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		pDetails->cxChar = 32;
 		return WrapReturn(
 			SetReturnString(
-				static_cast<LPCWSTR>(ColumnName),
+				static_cast<PCWSTR>(ColumnName),
 				&pDetails->str
 			) ? S_OK : E_OUTOFMEMORY
 		);

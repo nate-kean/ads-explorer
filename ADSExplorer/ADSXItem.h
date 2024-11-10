@@ -5,7 +5,7 @@
 struct CADSXItem {
 	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG llFilesize;
-	LPWSTR pszName;  // Allocated with CoTaskMemAlloc
+	PWSTR pszName;  // Allocated with CoTaskMemAlloc
 
 	// Check if a PIDL contains a CADSXItem.
 	// CADSXItems are always the last part of the PIDL (i.e. the child).

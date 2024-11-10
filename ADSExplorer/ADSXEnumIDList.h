@@ -31,7 +31,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	 * parameters
 	 * @post: pszPath is cloned and ownership remains with caller
 	 */
-	HRESULT Init(_In_ IUnknown *pUnkOwner, _In_ LPCWSTR pszPath);
+	HRESULT Init(_In_ IUnknown *pUnkOwner, _In_ PCWSTR pszPath);
 
 	// IEnumIDList
 	STDMETHOD(Next)(_In_ ULONG, _Outptr_ PITEMID_CHILD*, _Out_ ULONG*);
@@ -58,7 +58,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	// This exists to prevent the owner object from being freed before this one.
 	CComPtr<IUnknown> m_punkOwner;
 
-	LPWSTR m_pszPath;  // path on which to find streams
+	PWSTR m_pszPath;  // path on which to find streams
 	HANDLE m_hFinder;
 	ULONG m_nTotalFetched;  // just to bring a clone up to speed
 };

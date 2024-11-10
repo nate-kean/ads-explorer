@@ -16,7 +16,7 @@
 
 // Set the return string 'Source' in the STRRET struct.
 // Returns false if memory allocation fails.
-bool SetReturnString(_In_ LPCWSTR pszSource, _Out_ STRRET *strret);
+bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret);
 
 
 //==============================================================================
@@ -73,8 +73,8 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	STDMETHOD(GetUIObjectOf)(_In_ HWND, _In_ UINT, _In_ PCUITEMID_CHILD_ARRAY, _In_ REFIID, _Inout_ UINT*, _COM_Outptr_ void**);
 	STDMETHOD(BindToStorage)(_In_ PCUIDLIST_RELATIVE, _In_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(GetDisplayNameOf)(_In_ PCUITEMID_CHILD, _In_ SHGDNF, _Out_ STRRET*);
-	STDMETHOD(ParseDisplayName)(_In_ HWND, _In_opt_ IBindCtx*, _In_ LPWSTR, _Out_opt_ ULONG*, _Outptr_ PIDLIST_RELATIVE*, _Inout_opt_ ULONG*);
-	STDMETHOD(SetNameOf)(_In_ HWND, _In_ PCUITEMID_CHILD, _In_ LPCWSTR, _In_ SHGDNF, _Outptr_ PITEMID_CHILD*);
+	STDMETHOD(ParseDisplayName)(_In_ HWND, _In_opt_ IBindCtx*, _In_ PWSTR, _Out_opt_ ULONG*, _Outptr_ PIDLIST_RELATIVE*, _Inout_opt_ ULONG*);
+	STDMETHOD(SetNameOf)(_In_ HWND, _In_ PCUITEMID_CHILD, _In_ PCWSTR, _In_ SHGDNF, _Outptr_ PITEMID_CHILD*);
 
 	//--------------------------------------------------------------------------
 	// IShellDetails
