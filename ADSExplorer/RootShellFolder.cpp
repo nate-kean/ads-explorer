@@ -66,13 +66,16 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 }
 
 
+#pragma region IPersist
 STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 	if (pclsid == NULL) return WrapReturn(E_POINTER);
 	*pclsid = CLSID_ADSExplorerRootShellFolder;
 	return WrapReturn(S_OK);
 }
+#pragma endregion
 
 
+#pragma region IPersistFolder
 /**
  * Initialize() is passed the PIDL of the folder where our extension is.
  * Copies, does not take ownership of, the PIDL.
@@ -121,9 +124,11 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// return WrapReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
 }
 
+#pragma endregion
+
 
 //-------------------------------------------------------------------------------
-// IShellFolder
+#pragma region IShellFolder
 
 // TODO(garlic-os): Explain this function
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
@@ -642,9 +647,10 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
+#pragma endregion
 
 //-------------------------------------------------------------------------------
-// IShellDetails
+#pragma region IShellDetails
 
 STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 	LOG(P_RSF << L"ColumnClick(uColumn=" << uColumn << L")");
@@ -728,9 +734,11 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	return WrapReturn(E_INVALIDARG);
 }
 
+#pragma endregion
+
 
 //------------------------------------------------------------------------------
-// IShellFolder2
+#pragma region IShellFolder2
 
 STDMETHODIMP
 CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
@@ -852,3 +860,5 @@ STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 	#endif
 	return WrapReturnFailOK(E_NOTIMPL);
 }
+
+#pragma endregion
