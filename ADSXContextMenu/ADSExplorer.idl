@@ -1,0 +1,33 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(E4C5A47C-D60F-4E81-A418-06C382F65D30),
+	
+	helpstring("IADSXContextMenuRootShellFolder Interface"),
+	pointer_default(unique)
+]
+interface IADSXContextMenuRootShellFolder : IUnknown
+{
+};
+
+[
+	uuid(47082A41-E74E-44C5-BC79-641F5B285827),
+	version(1.0),
+	helpstring("ADSXContextMenu 1.0 Type Library")
+]
+library ADSXContextMenuLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(5C698105-DA58-4727-9888-3C8B61EDBBE),
+		helpstring("ADSXContextMenuRootShellFolder Class")
+	]
+	coclass ADSXContextMenuRootShellFolder
+	{
+		[default] interface IADSXContextMenuRootShellFolder;
+	};
+};

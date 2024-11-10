@@ -1,0 +1,42 @@
+HKCR
+{
+    NoRemove CLSID
+    {
+        ForceRemove {5C698105-DA58-4727-9888-3C8B61EDBBE} = s 'ADS Explorer'
+        {
+            InprocServer32 = s '%MODULE%'
+            {
+                val ThreadingModel = s 'Apartment'
+            }
+            DefaultIcon = s '%MODULE%,0'
+        }
+    }
+}
+HKLM
+{
+    NoRemove Software
+    {
+        NoRemove Microsoft
+        {
+            NoRemove Windows
+            {
+                NoRemove CurrentVersion
+                {
+                    NoRemove Explorer
+                    {
+                        NoRemove MyComputer
+                        {
+                            NoRemove NameSpace
+                            {
+                                ForceRemove {5C698105-DA58-4727-9888-3C8B61EDBBE}
+                                {
+                                    val 'Removal Message' = s '@%MODULE%,-300'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

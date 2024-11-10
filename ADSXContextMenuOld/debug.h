@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "StdAfx.h"
+#include "pch.h"
 
 #include <ostream>
 
@@ -49,7 +49,7 @@ class CDebugStream
 	#define DEBUG_STREAM CDebugStream::get_instance()
 #endif
 
-// #define _DEBUG
+#define _DEBUG
 #ifdef _DEBUG
 	// https://stackoverflow.com/a/3371577
 	// Usage: LOG(L"Hello" << ' ' << L"World!" << 1);

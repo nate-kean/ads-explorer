@@ -2,19 +2,13 @@
 // Microsoft Visual C++ generated include file.
 // Used by ADSXContextMenu.rc
 //
-#define IDS_PROJNAME                    100
-#define IDR_ROOTSHELLFOLDER             102
-#define IDI_ICON1                       103
-#define IDI_ADSX_ROOT                   103
-#define IDS_COLUMN_NAME                 200
-#define IDS_COLUMN_FILESIZE             201
-#define IDS_REMOVAL_MSG                 300
+#define IDS_CONTEXT_MENU_ENTRY 101
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        104
+#define _APS_NEXT_RESOURCE_VALUE        102
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           101
