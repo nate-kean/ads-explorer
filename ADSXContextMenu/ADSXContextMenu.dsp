@@ -107,7 +107,7 @@ SOURCE=.\ADSXContextMenu.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.cpp
+SOURCE=.\ContextMenu.cpp
 # End Source File
 # Begin Source File
 
@@ -131,7 +131,7 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.h
+SOURCE=.\ContextMenu.h
 # End Source File
 # Begin Source File
 
@@ -164,7 +164,7 @@ SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.rgs
+SOURCE=.\ContextMenu.rgs
 # End Source File
 # End Group
 # End Target

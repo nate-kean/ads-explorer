@@ -213,16 +213,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ADSXEnumIDList.h" />
-    <ClInclude Include="ADSXItem.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="defer.h" />
-    <ClInclude Include="iids.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="RootShellFolder.h" />
-    <ClInclude Include="RootShellView.h" />
-    <ClInclude Include="ShellFolderView.h" />
-    <ClInclude Include="DataObject.h" />
+    <ClInclude Include="ContextMenu.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -247,11 +241,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ADSXEnumIDList.cpp" />
-    <ClCompile Include="ADSXItem.cpp" />
     <ClCompile Include="debug.cpp" />
-    <ClCompile Include="RootShellFolder.cpp" />
-    <ClCompile Include="DataObject.cpp" />
+    <ClCompile Include="ContextMenu.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">Create</PrecompiledHeader>
@@ -269,9 +260,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="buildandreinstall.ps1" />
-    <None Include="icon1.ico" />
     <None Include="ADSXContextMenu.def" />
-    <None Include="RootShellFolder.rgs" />
+    <None Include="ContextMenu.rgs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

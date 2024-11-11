@@ -13,12 +13,12 @@
 #include "ADSXContextMenu.h"
 #endif
 #include "ADSXContextMenu_i.c"
-#include "RootShellFolder.h"
+#include "ContextMenu.h"
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ADSXContextMenuRootShellFolder, CADSXRootShellFolder)
+	OBJECT_ENTRY(CLSID_ADSXContextMenuContextMenu, CADSXContextMenu)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(

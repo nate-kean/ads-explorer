@@ -20,32 +20,23 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret);
 
 
 //==============================================================================
+// CADSXContextMenu
 
-enum {
-	DETAILS_COLUMN_NAME,
-	DETAILS_COLUMN_FILESIZE,
-
-	DETAILS_COLUMN_MAX
-};
-
-//==============================================================================
-// CADSXRootShellFolder
-
-class ATL_NO_VTABLE CADSXRootShellFolder
+class ATL_NO_VTABLE CADSXContextMenu
 	: public CComObjectRootEx<CComSingleThreadModel>,
-	  public CComCoClass<CADSXRootShellFolder, &CLSID_ADSXContextMenuRootShellFolder>,
+	  public CComCoClass<CADSXContextMenu, &CLSID_ADSXContextMenuContextMenu>,
 	  public IShellFolder2,
 	  public IPersistFolder2,
 	  public IShellDetails {
    public:
-	CADSXRootShellFolder();
-	virtual ~CADSXRootShellFolder();
+	CADSXContextMenu();
+	virtual ~CADSXContextMenu();
 
-	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)
+	DECLARE_REGISTRY_RESOURCEID(IDR_CONTEXTMENU)
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(CADSXRootShellFolder)
+	BEGIN_COM_MAP(CADSXContextMenu)
 		COM_INTERFACE_ENTRY(IShellFolder)
 		COM_INTERFACE_ENTRY(IShellFolder2)
 		COM_INTERFACE_ENTRY(IPersistFolder)
@@ -95,17 +86,5 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
-	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
-
-	// Our inner model of where we are in the filesystem as Windows drills from
-	// the root of the namespace to whatever path we're getting the ADSX view
-	// of.
-	// Ends up needed in both PIDL and IShellFolder form throughout the
-	// implementation.
-	PIDLIST_ABSOLUTE m_pidlFSPath;
-	CComPtr<IShellFolder> m_psfFSPath;
-	IShellDetails *m_psdFSPath;
-
-	bool m_bEndOfPath;  // affects GetDetailsOf's behavior
-	bool m_bPathIsFile;  // affect's EnumObjects's behavior
+	
 };

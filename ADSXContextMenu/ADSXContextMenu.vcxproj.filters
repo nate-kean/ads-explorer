@@ -21,31 +21,10 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DataObject.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RootShellView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShellFolderView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RootShellFolder.h">
+    <ClInclude Include="ContextMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="defer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ADSXEnumIDList.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ADSXItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="iids.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="debug.h">
@@ -59,19 +38,10 @@
     <ClCompile Include="ADSXContextMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DataObject.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RootShellFolder.cpp">
+    <ClCompile Include="ContextMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="debug.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ADSXItem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ADSXEnumIDList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,10 +51,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="RootShellFolder.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="icon1.ico">
+    <None Include="ContextMenu.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="buildandreinstall.ps1">

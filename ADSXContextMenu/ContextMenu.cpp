@@ -16,14 +16,14 @@
 #include <atlstr.h>
 #include <sstream>
 
-#include "RootShellFolder.h"
+#include "ContextMenu.h"
 #include "RootShellView.h"
 
 //==============================================================================
 // Helpers
 
-// Debug log prefix for CADSXRootShellFolder
-#define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
+// Debug log prefix for CADSXContextMenu
+#define P_RSF L"CADSXContextMenu(0x" << std::hex << this << L")::"
 
 /**
  * STRRET maker
@@ -44,8 +44,8 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 
 
 //==============================================================================
-// CADSXRootShellFolder
-CADSXRootShellFolder::CADSXRootShellFolder()
+// CADSXContextMenu
+CADSXContextMenu::CADSXContextMenu()
 	: m_pidlRoot(NULL)
 	, m_pidlFSPath(NULL)
 	, m_psdFSPath(NULL)
@@ -55,7 +55,7 @@ CADSXRootShellFolder::CADSXRootShellFolder()
 }
 
 
-CADSXRootShellFolder::~CADSXRootShellFolder() {
+CADSXContextMenu::~CADSXContextMenu() {
 	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
@@ -64,9 +64,9 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 
 
 #pragma region IPersist
-STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
+STDMETHODIMP CADSXContextMenu::GetClassID(_Out_ CLSID *pclsid) {
 	if (pclsid == NULL) return WrapReturn(E_POINTER);
-	*pclsid = CLSID_ADSXContextMenuRootShellFolder;
+	*pclsid = CLSID_ADSXContextMenuContextMenu;
 	return WrapReturn(S_OK);
 }
 #pragma endregion
@@ -79,9 +79,9 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
  * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
  *       (I _assume_ those are the only two values Explorer ever passes to us.)
  * @pre: 0 < PIDL length < 3.
- * @post: this CADSXRootShellFolder instance is ready to be used.
+ * @post: this CADSXContextMenu instance is ready to be used.
  */
-STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
+STDMETHODIMP CADSXContextMenu::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
 
 	// Don't initialize more than once.
@@ -112,7 +112,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 
 
 STDMETHODIMP
-CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
+CADSXContextMenu::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
 	// if (ppidl == NULL) return WrapReturn(E_POINTER);
@@ -128,7 +128,7 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 #pragma region IShellFolder
 
 // TODO(garlic-os): Explain this function
-STDMETHODIMP CADSXRootShellFolder::BindToObject(
+STDMETHODIMP CADSXContextMenu::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx           *pbc,
 	_In_         REFIID             riid,
@@ -194,7 +194,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
  * lParam can be the 0-based Index of the details column
  * @pre pidl1 and pidl2 hold CADSXItems.
  */
-STDMETHODIMP CADSXRootShellFolder::CompareIDs(
+STDMETHODIMP CADSXContextMenu::CompareIDs(
 	_In_ LPARAM             lParam,
 	_In_ PCUIDLIST_RELATIVE pidl1,
 	_In_ PCUIDLIST_RELATIVE pidl2
@@ -248,7 +248,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 /**
  * Return a COM object that implements IShellView.
  */
-STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
+STDMETHODIMP CADSXContextMenu::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
 	_COM_Outptr_ void   **ppViewObject
@@ -303,7 +303,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
  * @pre: i.e., m_pidlFSPath is [Desktop\{FS path}]
  * @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
  */
-STDMETHODIMP CADSXRootShellFolder::EnumObjects(
+STDMETHODIMP CADSXContextMenu::EnumObjects(
 	_In_         HWND        hwndOwner,
 	_In_         SHCONTF     dwFlags,
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
@@ -361,7 +361,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
  *   0 if the flag is not set on input or if any of the given items do not have
  *   that attribute.
  */
-STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
+STDMETHODIMP CADSXContextMenu::GetAttributesOf(
 	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
 	_Inout_ SFGAOF                *pfAttribs
@@ -412,7 +412,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 
 
 // Provide any of several sub-objects like IExtractIcon and IDataObject.
-STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
+STDMETHODIMP CADSXContextMenu::GetUIObjectOf(
 	_In_         HWND                  hwndOwner,
 	_In_         UINT                  cidl,
 	_In_         PCUITEMID_CHILD_ARRAY aPidls,
@@ -495,7 +495,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::BindToStorage(
+STDMETHODIMP CADSXContextMenu::BindToStorage(
 	_In_         PCUIDLIST_RELATIVE,
 	_In_         IBindCtx *,
 	_In_         REFIID,
@@ -512,7 +512,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
  *
  * @pre: *pName struct is initialized
  */
-STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
+STDMETHODIMP CADSXContextMenu::GetDisplayNameOf(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  SHGDNF          uFlags,
 	_Out_ STRRET          *pName
@@ -598,7 +598,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
+STDMETHODIMP CADSXContextMenu::ParseDisplayName(
 	_In_        HWND             hwnd,
 	_In_opt_    IBindCtx         *pbc,
 	_In_        PWSTR           pszDisplayName,
@@ -633,7 +633,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 
 
 // TODO(garlic-os): should this be implemented?
-STDMETHODIMP CADSXRootShellFolder::SetNameOf(
+STDMETHODIMP CADSXContextMenu::SetNameOf(
 	_In_     HWND,
 	_In_     PCUITEMID_CHILD,
 	_In_     PCWSTR,
@@ -649,7 +649,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 //-------------------------------------------------------------------------------
 #pragma region IShellDetails
 
-STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
+STDMETHODIMP CADSXContextMenu::ColumnClick(_In_ UINT uColumn) {
 	LOG(P_RSF << L"ColumnClick(uColumn=" << uColumn << L")");
 	// Tell the caller to sort the column itself
 	return WrapReturn(S_FALSE);
@@ -658,7 +658,7 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
 // (uColumn >= DETAILS_COLUMN_MAX)
-STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
+STDMETHODIMP CADSXContextMenu::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidl,
 	_In_     UINT uColumn,
 	_Out_    SHELLDETAILS *pDetails
@@ -738,14 +738,14 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 #pragma region IShellFolder2
 
 STDMETHODIMP
-CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
+CADSXContextMenu::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
 	if (ppEnum != NULL) *ppEnum = NULL;
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
+STDMETHODIMP CADSXContextMenu::GetDefaultColumn(
 	_In_  DWORD dwReserved,
 	_Out_ ULONG *pSort,
 	_Out_ ULONG *pDisplay
@@ -761,7 +761,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
+STDMETHODIMP CADSXContextMenu::GetDefaultColumnState(
 	_In_  UINT uColumn,
 	_Out_ SHCOLSTATEF *pcsFlags
 ) {
@@ -788,13 +788,13 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
+STDMETHODIMP CADSXContextMenu::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 	LOG(P_RSF << L"GetDefaultSearchGUID()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
+STDMETHODIMP CADSXContextMenu::GetDetailsEx(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  const SHCOLUMNID *pscid,
 	_Out_ VARIANT *pv
@@ -831,7 +831,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 
 
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
-STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
+STDMETHODIMP CADSXContextMenu::MapColumnToSCID(
 	_In_ UINT uColumn,
 	_Out_ SHCOLUMNID *pscid
 ) {

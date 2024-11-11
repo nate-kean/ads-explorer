@@ -5,10 +5,10 @@ import "ocidl.idl";
 	object,
 	uuid(E4C5A47C-D60F-4E81-A418-06C382F65D30),
 	
-	helpstring("IADSXContextMenuRootShellFolder Interface"),
+	helpstring("IADSXContextMenuContextMenu Interface"),
 	pointer_default(unique)
 ]
-interface IADSXContextMenuRootShellFolder : IUnknown
+interface IADSXContextMenuContextMenu : IUnknown
 {
 };
 
@@ -24,10 +24,10 @@ library ADSXContextMenuLib
 
 	[
 		uuid(5C698105-DA58-4727-9888-3C8B61EDBBE),
-		helpstring("ADSXContextMenuRootShellFolder Class")
+		helpstring("ADSXContextMenuContextMenu Class")
 	]
-	coclass ADSXContextMenuRootShellFolder
+	coclass ADSXContextMenuContextMenu
 	{
-		[default] interface IADSXContextMenuRootShellFolder;
+		[default] interface IADSXContextMenuContextMenu;
 	};
 };
