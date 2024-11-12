@@ -3,7 +3,7 @@
     "tasks": [
         {
             "label": "Build and reinstall",
-            "command": "./ADSExplorer/buildandreinstall.ps1",
+            "command": "./Scripts/buildandreinstall.ps1",
             "type": "shell",
             "options": {
                 "shell": {
@@ -31,7 +31,7 @@
         {
             "label": "Clean",
             "type": "shell",
-            "command": "./ADSExplorer/clean.ps1",
+            "command": "./Scripts/clean.ps1",
             "options": {
                 "cwd": "${workspaceFolder}"
             },

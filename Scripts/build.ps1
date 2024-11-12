@@ -1,8 +1,8 @@
 # @pre: pwd is ${workspaceFolder}
 
 . "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" `
-    ADSXContextMenu.sln `
-    /noLogo /t:ADSXContextMenu /p:Configuration=Debug /p:Platform=x64 `
+    ADSExplorer.sln `
+    /noLogo /t:ADSExplorer /p:Configuration=Debug /p:Platform=x64 `
     | Tee-Object -Variable Output
 $Output = $Output.Replace("`r", "") -join "`n"
 if ($Output.Contains("Build FAILED.")) {
