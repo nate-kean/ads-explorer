@@ -1,41 +1,12 @@
 HKCR
 {
-    NoRemove CLSID
+    NoRemove *
     {
-        ForceRemove {5C698105-DA58-4727-9888-3C8B61EDBBE} = s 'ADS Explorer'
+        NoRemove ShellEx
         {
-            InprocServer32 = s '%MODULE%'
+            NoRemove ContextMenuHandlers
             {
-                val ThreadingModel = s 'Apartment'
-            }
-            DefaultIcon = s '%MODULE%,0'
-        }
-    }
-}
-HKLM
-{
-    NoRemove Software
-    {
-        NoRemove Microsoft
-        {
-            NoRemove Windows
-            {
-                NoRemove CurrentVersion
-                {
-                    NoRemove Explorer
-                    {
-                        NoRemove MyComputer
-                        {
-                            NoRemove NameSpace
-                            {
-                                ForceRemove {5C698105-DA58-4727-9888-3C8B61EDBBE}
-                                {
-                                    val 'Removal Message' = s '@%MODULE%,-300'
-                                }
-                            }
-                        }
-                    }
-                }
+                ForceRemove DLLRegSvr = s '{D8AECA1A-7E1D-44C2-ABB0-F0558AB00092}'
             }
         }
     }
