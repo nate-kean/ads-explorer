@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CAE83582-5525-4194-9ACC-AC542B1C4D6E}</ProjectGuid>
+    <ProjectGuid>{C310FA14-2467-492D-8790-A4CD0BCE7B13}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ADSXContextMenu</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

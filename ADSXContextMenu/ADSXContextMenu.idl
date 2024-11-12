@@ -23,7 +23,7 @@ library ADSXContextMenuLib
 	importlib("stdole2.tlb");
 
 	[
-		uuid(5C698105-DA58-4727-9888-3C8B61EDBBE),
+		uuid(D8AECA1A-7E1D-44C2-ABB0-F0558AB00092),
 		helpstring("ADSXContextMenuContextMenu Class")
 	]
 	coclass ADSXContextMenuContextMenu
