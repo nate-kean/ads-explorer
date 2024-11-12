@@ -59,11 +59,6 @@ class CDebugStream
 
 	_Post_equal_to_(hr) HRESULT WrapReturn(_In_ HRESULT hr);
 	_Post_equal_to_(hr) HRESULT WrapReturnFailOK(_In_ HRESULT hr);
-	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl);
-	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl);
-	std::wstring PidlArrayToString(UINT cidl, PCUITEMID_CHILD_ARRAY aPidls);
-	std::wstring IIDToString(const std::wstring &sIID);
-	std::wstring IIDToString(const IID &iid);
 	std::wstring SFGAOFToString(const SFGAOF *pfAttribs);
 	std::wstring SHCONTFToString(const SHCONTF *pfAttribs);
 	std::wstring SHGDNFToString(const SHGDNF *pfAttribs);
