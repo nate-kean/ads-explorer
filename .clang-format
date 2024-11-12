@@ -11,5 +11,5 @@ InsertBraces: true
 ---
 Language: Cpp
 DerivePointerAlignment: false
-PointerAlignment: Right
+PointerAlignment: Left
 SpaceAfterCStyleCast: true
