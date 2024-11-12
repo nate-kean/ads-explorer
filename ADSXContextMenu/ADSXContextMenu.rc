@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Inglés (Estados Unidos) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -50,7 +50,7 @@ END
 // REGISTRY
 //
 
-IDR_CONTEXTMENU     REGISTRY                "ContextMenu.rgs"
+IDR_CONTEXTMENU         REGISTRY                "ContextMenu.rgs"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Nate Kean"
-            VALUE "FileDescription", "Namespace for opened Explorer windows"
+            VALUE "FileDescription", "Context menu entry for ADS Explorer"
             VALUE "FileVersion", "1.0.0"
             VALUE "InternalName", "ADSXContextMenu.dll"
             VALUE "LegalCopyright", "Copyright (C) Nate Kean 2024"
@@ -94,36 +94,20 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_ADSX_ROOT           ICON                    "icon1.ico"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
 STRINGTABLE
 BEGIN
-    IDS_PROJNAME            "ADS Explorer"
+    IDS_PROJNAME            "ADS Explorer Context Menu"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_COLUMN_NAME         "Name"
-    IDS_COLUMN_FILESIZE     "Size"
+    IDS_REMOVAL_MSG         "To remove this context menu entry, unregister the DLL."
 END
 
-STRINGTABLE
-BEGIN
-    IDS_REMOVAL_MSG         "To remove this view, unregister the DLL."
-END
-
-#endif    // English (United States) resources
+#endif    // Inglés (Estados Unidos) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
