@@ -3,11 +3,7 @@
 // Used by ADSXContextMenu.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_CONTEXTMENU             102
-#define IDI_ICON1                       103
-#define IDI_ADSX_ROOT                   103
-#define IDS_COLUMN_NAME                 200
-#define IDS_COLUMN_FILESIZE             201
+#define IDR_CONTEXTMENU                 102
 #define IDS_REMOVAL_MSG                 300
 
 // Next default values for new objects
