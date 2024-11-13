@@ -78,7 +78,7 @@ IFACEMETHODIMP
 CADSXContextMenu::GetCanonicalName(_Out_ GUID* pguidCommandName) {
 	LOG(P_XCM << L"GetCanonicalName()");
 	if (pguidCommandName == NULL) return E_POINTER;
-	*pguidCommandName = CLSID_ADSXContextMenuContextMenu;
+	*pguidCommandName = CLSID_ADSXContextMenu;
 	return S_OK;
 }
 

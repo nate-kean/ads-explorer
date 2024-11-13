@@ -17,7 +17,7 @@
 
 class ATL_NO_VTABLE CADSXContextMenu
 	: public CComObjectRootEx<CComSingleThreadModel>,
-	  public CComCoClass<CADSXContextMenu, &CLSID_ADSXContextMenuContextMenu>,
+	  public CComCoClass<CADSXContextMenu, &CLSID_ADSXContextMenu>,
 	  public IExplorerCommand,
 	  public IObjectWithSite {
    public:

@@ -18,7 +18,7 @@
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ADSXContextMenuContextMenu, CADSXContextMenu)
+	OBJECT_ENTRY(CLSID_ADSXContextMenu, CADSXContextMenu)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(
