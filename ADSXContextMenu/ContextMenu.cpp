@@ -164,8 +164,8 @@ IFACEMETHODIMP CADSXContextMenu::SetSite(_In_opt_ IUnknown *punkSite) noexcept {
 	m_punkSite = punkSite;
 	return S_OK;
 }
-_Check_return_  IFACEMETHODIMP CADSXContextMenu::GetSite(
-	_In_         REFIID riid,
+_Check_return_ IFACEMETHODIMP CADSXContextMenu::GetSite(
+	_In_                          REFIID riid,
 	_COM_Outptr_result_maybenull_ void** ppunkSite
 ) noexcept {
 	if (ppunkSite == NULL) return E_POINTER;
