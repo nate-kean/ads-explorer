@@ -33,7 +33,14 @@
             "type": "shell",
             "command": "./Scripts/clean.ps1",
             "options": {
-                "cwd": "${workspaceFolder}"
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-NoProfile",
+                        "-File"
+                    ]
+                },
+                "cwd": "${workspaceFolder}",
             },
             "problemMatcher": [
                 "$msCompile",
