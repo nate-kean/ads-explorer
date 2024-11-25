@@ -56,12 +56,11 @@ STDAPI DllGetClassObject(
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer() {
-	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
+	return _Module.RegisterServer(FALSE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
-	return _Module.UnregisterServer(TRUE);
+	return _Module.UnregisterServer(FALSE);
 }
