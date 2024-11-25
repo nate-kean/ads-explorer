@@ -1,5 +1,15 @@
 HKCR
 {
+    NoRemove CLSID
+    {
+        ForceRemove {D8AECA1A-7E1D-44C2-ABB0-F0558AB00092} = s 'ADSXContextMenu'
+        {
+            InProcServer32 = s '%MODULE%'
+            {
+                val ThreadingModel = s 'Apartment'
+            }
+        }
+    }
     NoRemove *
     {
         NoRemove ShellEx
