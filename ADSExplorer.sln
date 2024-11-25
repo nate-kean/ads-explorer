@@ -6,8 +6,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADSExplorer", "ADSExplorer\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test", "Test\Test.vcxproj", "{D4668EB0-44B6-4A36-A673-984012137B1A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ADSXContextMenuEntry", "ADSXContextMenuEntry\ADSXContextMenuEntry.vcxproj", "{C310FA14-2467-492D-8790-A4CD0BCE7B13}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
