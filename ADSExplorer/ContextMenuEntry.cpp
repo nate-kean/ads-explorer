@@ -13,17 +13,17 @@
 #include "debug.h"
 
 // Debug log prefix for CADSXContextMenuEntry
-#define P_XCM L"CADSXContextMenuEntry(0x" << std::hex << this << L")::"
+#define P_CME L"CADSXContextMenuEntry(0x" << std::hex << this << L")::"
 
 
 //==========================================================================
 // CADSXContextMenuEntry
 CADSXContextMenuEntry::CADSXContextMenuEntry() : m_pszADSPath((NULL)) {
-	LOG(P_XCM << L"CONSTRUCTOR");
+	LOG(P_CME << L"CONSTRUCTOR");
 }
 
 CADSXContextMenuEntry::~CADSXContextMenuEntry() {
-	LOG(P_XCM << L"DESTRUCTOR");
+	LOG(P_CME << L"DESTRUCTOR");
 	if (m_pszADSPath != NULL) CoTaskMemFree(m_pszADSPath);
 }
 
@@ -37,7 +37,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::Initialize(
 ) {
 	UNREFERENCED_PARAMETER(pidlFolder);
 	UNREFERENCED_PARAMETER(hkeyProgID);
-	LOG(P_XCM << L"Initialize()");
+	LOG(P_CME << L"Initialize()");
 
 	HRESULT hr;
 	FORMATETC fmt = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
@@ -90,7 +90,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::GetCommandString(
 	_Out_writes_(cchMax) LPSTR    pszName,
 	_In_                 UINT     cchMax
 ) {
-	LOG(P_XCM << L"GetCommandString()");
+	LOG(P_CME << L"GetCommandString()");
 
 	if (uFlags & GCS_VERBW) {
 		LOG(L" ** GCS_VERBW");
@@ -124,23 +124,23 @@ IFACEMETHODIMP CADSXContextMenuEntry::GetCommandString(
 
 
 IFACEMETHODIMP CADSXContextMenuEntry::InvokeCommand(
-	_In_ CMINVOKECOMMANDINFO* pici
+	_In_ CMINVOKECOMMANDINFO* pcmici
 ) {
-	LOG(P_XCM << L"InvokeCommand()");
+	LOG(P_CME << L"InvokeCommand()");
 
 	// If lpVerb really points to a string, ignore this function call.
 	// if (HIWORD(pici->lpVerb) != 0) return WrapReturn(E_INVALIDARG);
-	if (!IS_INTRESOURCE((pici->lpVerb))) return WrapReturn(E_INVALIDARG);
+	if (!IS_INTRESOURCE((pcmici->lpVerb))) return WrapReturnFailOK(E_INVALIDARG);
 
 	// Get the command index from the low word of lpcmi->lpVerb.
-	UINT uCmd = LOWORD(pici->lpVerb);
+	UINT uCmd = LOWORD(pcmici->lpVerb);
 
 	// If the command index is 0, then it's the command associated with our
 	// context menu.
-	if (uCmd != 0) return WrapReturn(E_INVALIDARG);
+	if (uCmd != 0) return WrapReturnFailOK(E_INVALIDARG);
 
 	ShellExecuteW(
-		pici->hwnd,
+		pcmici->hwnd,
 		L"explore",
 		m_pszADSPath,
 		NULL,
@@ -159,7 +159,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::QueryContextMenu(
 	_In_ UINT  uidCmdLast,
 	_In_ UINT  uFlags
 ) {
-	LOG(P_XCM << L"QueryContextMenuEntry()");
+	LOG(P_CME << L"QueryContextMenu()");
 
 	// If the flags include CMF_DEFAULTONLY then we shouldn't do anything.
 	if (uFlags & CMF_DEFAULTONLY) {
