@@ -13,6 +13,17 @@ interface IADSExplorerRootShellFolder : IUnknown
 };
 
 [
+	object,
+	uuid(E4C5A47C-D60F-4E81-A418-06C382F65D30),
+	
+	helpstring("IADSXContextMenuEntry Interface"),
+	pointer_default(unique)
+]
+interface IADSXContextMenuEntry : IUnknown
+{
+};
+
+[
 	uuid(72B8106C-7E36-4E68-B125-53C535BC4A9F),
 	version(1.0),
 	helpstring("ADSExplorer 1.0 Type Library")
@@ -29,5 +40,14 @@ library ADSEXPLORERLib
 	coclass ADSExplorerRootShellFolder
 	{
 		[default] interface IADSExplorerRootShellFolder;
+	};
+	
+	[
+		uuid(D8AECA1A-7E1D-44C2-ABB0-F0558AB00092),
+		helpstring("ADSXContextMenuEntry Class")
+	]
+	coclass ADSXContextMenuEntry
+	{
+		[default] interface IADSXContextMenuEntry;
 	};
 };

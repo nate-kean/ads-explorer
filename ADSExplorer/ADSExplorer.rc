@@ -51,6 +51,7 @@ END
 //
 
 IDR_ROOTSHELLFOLDER     REGISTRY                "RootShellFolder.rgs"
+IDR_CONTEXTMENUENTRY    REGISTRY                "ContextMenuEntry.rgs"
 
 
 /////////////////////////////////////////////////////////////////////////////

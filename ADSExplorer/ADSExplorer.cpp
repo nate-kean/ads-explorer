@@ -6,19 +6,17 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "StdAfx.h"  // Precompiled header; include first
 
-#if _MSC_VER > 1200
 #include "ADSExplorer_h.h"
-#else
-// the IDL compiler on VC++6 puts it here instead. weird!
-#include "ADSExplorer.h"
-#endif
 #include "ADSExplorer_i.c"
 #include "RootShellFolder.h"
+#include "ContextMenuEntry.h"
+
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
 	OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, CADSXRootShellFolder)
+	OBJECT_ENTRY(CLSID_ADSXContextMenuEntry, CADSXContextMenuEntry)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(

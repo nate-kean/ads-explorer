@@ -4,8 +4,9 @@
 //
 #define IDS_PROJNAME                    100
 #define IDR_ROOTSHELLFOLDER             102
-#define IDI_ICON1                       103
-#define IDI_ADSX_ROOT                   103
+#define IDR_CONTEXTMENUENTRY            103
+#define IDI_ICON1                       104
+#define IDI_ADSX_ROOT                   104
 #define IDS_COLUMN_NAME                 200
 #define IDS_COLUMN_FILESIZE             201
 #define IDS_REMOVAL_MSG                 300

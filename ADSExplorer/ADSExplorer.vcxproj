@@ -219,6 +219,7 @@
     <ClInclude Include="defer.h" />
     <ClInclude Include="iids.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ContextMenuEntry.h" />
     <ClInclude Include="RootShellFolder.h" />
     <ClInclude Include="RootShellView.h" />
     <ClInclude Include="ShellFolderView.h" />
@@ -250,6 +251,7 @@
     <ClCompile Include="ADSXEnumIDList.cpp" />
     <ClCompile Include="ADSXItem.cpp" />
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="ContextMenuEntry.cpp" />
     <ClCompile Include="RootShellFolder.cpp" />
     <ClCompile Include="DataObject.cpp" />
     <ClCompile Include="StdAfx.cpp">
@@ -272,6 +274,7 @@
     <None Include="icon1.ico" />
     <None Include="ADSExplorer.def" />
     <None Include="RootShellFolder.rgs" />
+    <None Include="ContextMenuEntry.rgs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -111,6 +111,10 @@ SOURCE=.\RootShellFolder.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ContextMenuEntry.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\DataObject.cpp
 # End Source File
 # Begin Source File
@@ -132,6 +136,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\RootShellFolder.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ContextMenuEntry.h
 # End Source File
 # Begin Source File
 
@@ -165,6 +173,12 @@ SOURCE=.\icon1.ico
 # Begin Source File
 
 SOURCE=.\RootShellFolder.rgs
+# End Source File
+# End Group
+# End Target
+# End Project
+
+SOURCE=.\ContextMenuEntry.rgs
 # End Source File
 # End Group
 # End Target
