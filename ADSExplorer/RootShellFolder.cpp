@@ -6,12 +6,7 @@
 
 #include "StdAfx.h"  // Precompiled header; include first
 
-#if _MSC_VER > 1200
-	#include "ADSExplorer_h.h"
-#else
-	// the IDL compiler on VC++6 puts it here instead. weird!
-	#include "ADSExplorer.h"
-#endif
+#include "ADSExplorer_h.h"
 
 #include <atlstr.h>
 #include <sstream>
@@ -50,9 +45,9 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 // CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
-	, m_pidlFSPath(NULL)
-	, m_psdFSPath(NULL)
 	, m_bEndOfPath(false) 
+	, m_FSPath.pidl(NULL)
+	, m_FSPath.psd(NULL)
 	, m_bPathIsFile(false) {
 	// LOG(P_RSF << L"CONSTRUCTOR");
 }
@@ -61,8 +56,8 @@ CADSXRootShellFolder::CADSXRootShellFolder()
 CADSXRootShellFolder::~CADSXRootShellFolder() {
 	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
-	if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
-	if (m_psdFSPath != NULL) m_psdFSPath->Release();
+	if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
+	if (m_FSPath.psd != NULL) m_FSPath.psd->Release();
 }
 
 
@@ -107,7 +102,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
 
 	// Initialize to the root of the namespace, [Desktop]
-	HRESULT hr = SHGetDesktopFolder(&m_psfFSPath);
+	HRESULT hr = SHGetDesktopFolder(&m_FSPath.psf);
 	if (FAILED(hr)) return hr;
 
 	return hr;
@@ -155,11 +150,11 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	m_bEndOfPath = ILIsChild(pidl);
 
 	// Browse this path internally.
-	hr = m_psfFSPath->BindToObject(pidl, pbc, riid, ppShellFolder);
+	hr = m_FSPath.psf->BindToObject(pidl, pbc, riid, ppShellFolder);
 	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
 	if (SUCCEEDED(hr)) {
 		// Browsed into a folder
-		m_psfFSPath = static_cast<IShellFolder*>(*ppShellFolder);
+		m_FSPath.psf = static_cast<IShellFolder*>(*ppShellFolder);
 	} else if (hr == E_FAIL) {
 		// Tried to browse into a file, which is fine for us.
 		// When EnumObjects is called, we'll be enumerating the file's ADSes.
@@ -172,16 +167,16 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	// These are the two cases I've seen: either a child directly relative to
 	// our path, or an absolute path.
 	if (ILIsChild(pidl)) {
-		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(
-			ILAppendID(m_pidlFSPath, &pidl->mkid, TRUE)
+		m_FSPath.pidl = static_cast<PIDLIST_ABSOLUTE>(
+			ILAppendID(m_FSPath.pidl, &pidl->mkid, TRUE)
 		);
 	} else {
-		if (m_pidlFSPath != NULL) CoTaskMemFree(m_pidlFSPath);
-		m_pidlFSPath = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
+		if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
+		m_FSPath.pidl = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
 	}
-	if (m_pidlFSPath == NULL) return WrapReturn(E_OUTOFMEMORY);
+	if (m_FSPath.pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	LOG(L" ** New m_pidlFSPath: " << PidlToString(m_pidlFSPath));
+	LOG(L" ** New m_FSPath.pidl: " << PidlToString(m_FSPath.pidl));
 
 	// Return self as the ShellFolder.
 	// TODO(garlic-os): Windows may not like receiving the same object back and

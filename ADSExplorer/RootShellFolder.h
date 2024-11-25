@@ -51,7 +51,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 		COM_INTERFACE_ENTRY(IPersistFolder)
 		COM_INTERFACE_ENTRY(IPersistFolder2)
 		COM_INTERFACE_ENTRY(IPersist)
-		COM_INTERFACE_ENTRY_IID(IID_IShellDetails, IShellDetails)
+		COM_INTERFACE_ENTRY(IShellDetails)
 	END_COM_MAP()
 
 	//--------------------------------------------------------------------------
@@ -102,10 +102,11 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	// of.
 	// Ends up needed in both PIDL and IShellFolder form throughout the
 	// implementation.
-	PIDLIST_ABSOLUTE m_pidlFSPath;
-	CComPtr<IShellFolder> m_psfFSPath;
-	IShellDetails *m_psdFSPath;
+	struct {
+		PIDLIST_ABSOLUTE pidl;
+		CComPtr<IShellFolder> psf;
+		IShellDetails *psd;
+	} m_FSPath;
 
-	bool m_bEndOfPath;  // affects GetDetailsOf's behavior
 	bool m_bPathIsFile;  // affect's EnumObjects's behavior
 };

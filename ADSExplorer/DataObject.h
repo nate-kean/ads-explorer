@@ -22,8 +22,8 @@ class ATL_NO_VTABLE CDataObject
 	  public IEnumFORMATETC {
    public:
 	BEGIN_COM_MAP(CDataObject)
-	COM_INTERFACE_ENTRY_IID(IID_IDataObject, IDataObject)
-	COM_INTERFACE_ENTRY_IID(IID_IEnumFORMATETC, IEnumFORMATETC)
+		COM_INTERFACE_ENTRY(IDataObject)
+		COM_INTERFACE_ENTRY(IEnumFORMATETC)
 	END_COM_MAP()
 
 	//--------------------------------------------------------------------------

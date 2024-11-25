@@ -30,7 +30,7 @@ class CShellFolderViewImpl : public CMessageMap,
 							 public IShellFolderViewCB {
    public:
 	BEGIN_COM_MAP(CShellFolderViewImpl)
-		COM_INTERFACE_ENTRY_IID(IID_IShellFolderViewCB, IShellFolderViewCB)
+		COM_INTERFACE_ENTRY(IShellFolderViewCB)
 	END_COM_MAP()
 	// ppISV - will receive the interface pointer to the view (that one should be
 	// returned from IShellFolder::CreateViewObject)
