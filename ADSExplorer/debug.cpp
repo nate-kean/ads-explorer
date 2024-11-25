@@ -8,6 +8,7 @@
 
 // #define _DEBUG
 #ifdef _DEBUG
+	#include <wpc.h>  // E_FILE_NOT_FOUND
 	#include "ADSXItem.h"
 	#include "../Common/defer.h"
 	#include "iids.h"
@@ -214,6 +215,7 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		switch (hr) {
 			case S_OK: return L"S_OK";
 			case S_FALSE: return L"S_FALSE";
+			case E_FILE_NOT_FOUND: return L"E_FILE_NOT_FOUND";
 			case E_NOTIMPL: return L"E_NOTIMPL";
 			case E_NOINTERFACE: return L"E_NOINTERFACE";
 			case E_POINTER: return L"E_POINTER";
