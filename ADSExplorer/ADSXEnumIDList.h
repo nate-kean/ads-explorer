@@ -29,7 +29,7 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	 * Initialization logic in a separate method because COM object constructors
 	 * are called in a weird way that makes it so that AFAIK they can't have
 	 * parameters
-	 * @post: pszPath is cloned and ownership remains with caller
+	 * @post: pszPath is copied and ownership remains with caller
 	 */
 	HRESULT Init(_In_ IUnknown *pUnkOwner, _In_ PCWSTR pszPath);
 
