@@ -1,4 +1,4 @@
-LIBRARY      "ADSXContextMenu.DLL"
+LIBRARY      "ADSXContextMenuEntry.DLL"
 
 EXPORTS
 	DllCanUnloadNow     PRIVATE

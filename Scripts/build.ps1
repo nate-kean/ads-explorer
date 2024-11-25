@@ -24,7 +24,7 @@ if (
 
 . "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" `
     ADSExplorer.sln `
-    /noLogo /t:ADSXContextMenu /p:Configuration=Debug /p:Platform=x64 `
+    /noLogo /t:ADSXContextMenuEntry /p:Configuration=Debug /p:Platform=x64 `
     | Tee-Object -Variable Output
 $Output = $Output.Replace("`r", "") -join "`n"
 if ($Output.Contains("Build FAILED.")) {

@@ -1,9 +1,9 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by ADSXContextMenu.rc
+// Used by ADSXContextMenuEntry.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_CONTEXTMENU                 102
+#define IDR_CONTEXTMENUENTRY                 102
 #define IDS_REMOVAL_MSG                 300
 
 // Next default values for new objects

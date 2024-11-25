@@ -5,29 +5,29 @@ import "ocidl.idl";
 	object,
 	uuid(E4C5A47C-D60F-4E81-A418-06C382F65D30),
 	
-	helpstring("IADSXContextMenu Interface"),
+	helpstring("IADSXContextMenuEntry Interface"),
 	pointer_default(unique)
 ]
-interface IADSXContextMenu : IUnknown
+interface IADSXContextMenuEntry : IUnknown
 {
 };
 
 [
 	uuid(47082A41-E74E-44C5-BC79-641F5B285827),
 	version(1.0),
-	helpstring("ADSXContextMenu 1.0 Type Library")
+	helpstring("ADSXContextMenuEntry 1.0 Type Library")
 ]
-library ADSXContextMenuLib
+library ADSXContextMenuEntryLib
 {
 	importlib("stdole32.tlb");
 	importlib("stdole2.tlb");
 
 	[
 		uuid(D8AECA1A-7E1D-44C2-ABB0-F0558AB00092),
-		helpstring("ADSXContextMenu Class")
+		helpstring("ADSXContextMenuEntry Class")
 	]
-	coclass ADSXContextMenu
+	coclass ADSXContextMenuEntry
 	{
-		[default] interface IADSXContextMenu;
+		[default] interface IADSXContextMenuEntry;
 	};
 };

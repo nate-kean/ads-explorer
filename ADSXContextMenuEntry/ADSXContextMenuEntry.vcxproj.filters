@@ -21,7 +21,7 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ContextMenu.h">
+    <ClInclude Include="ContextMenuEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -35,10 +35,10 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ADSXContextMenu.cpp">
+    <ClCompile Include="ADSXContextMenuEntry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ContextMenu.cpp">
+    <ClCompile Include="ContextMenuEntry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="debug.cpp">
@@ -46,23 +46,23 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="ADSXContextMenu.rc">
+    <ResourceCompile Include="ADSXContextMenuEntry.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ContextMenu.rgs">
+    <None Include="ContextMenuEntry.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="buildandreinstall.ps1">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="ADSXContextMenu.def">
+    <None Include="ADSXContextMenuEntry.def">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="ADSXContextMenu.idl">
+    <Midl Include="ADSXContextMenuEntry.idl">
       <Filter>Resource Files</Filter>
     </Midl>
   </ItemGroup>

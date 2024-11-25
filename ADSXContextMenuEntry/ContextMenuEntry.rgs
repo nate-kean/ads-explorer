@@ -2,7 +2,7 @@ HKCR
 {
     NoRemove CLSID
     {
-        ForceRemove {D8AECA1A-7E1D-44C2-ABB0-F0558AB00092} = s 'ADSXContextMenu'
+        ForceRemove {D8AECA1A-7E1D-44C2-ABB0-F0558AB00092} = s 'ADSXContextMenuEntry'
         {
             InProcServer32 = s '%MODULE%'
             {
@@ -14,7 +14,7 @@ HKCR
     {
         NoRemove ShellEx
         {
-            NoRemove ContextMenuHandlers
+            NoRemove ContextMenuEntryHandlers
             {
                 ForceRemove ADSExplorer = s '{D8AECA1A-7E1D-44C2-ABB0-F0558AB00092}'
             }

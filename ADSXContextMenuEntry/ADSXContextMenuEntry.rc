@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Inglés (Estados Unidos) resources
+// Inglï¿½s (Estados Unidos) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -50,7 +50,7 @@ END
 // REGISTRY
 //
 
-IDR_CONTEXTMENU         REGISTRY                "ContextMenu.rgs"
+IDR_CONTEXTMENUENTRY         REGISTRY                "ContextMenuEntry.rgs"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -78,9 +78,9 @@ BEGIN
             VALUE "CompanyName", "Nate Kean"
             VALUE "FileDescription", "Context menu entry for ADS Explorer"
             VALUE "FileVersion", "1.0.0"
-            VALUE "InternalName", "ADSXContextMenu.dll"
+            VALUE "InternalName", "ADSXContextMenuEntry.dll"
             VALUE "LegalCopyright", "Copyright (C) Nate Kean 2024"
-            VALUE "OriginalFilename", "ADSXContextMenu.dll"
+            VALUE "OriginalFilename", "ADSXContextMenuEntry.dll"
             VALUE "ProductName", "ADS Explorer"
             VALUE "ProductVersion", "1.0.0"
         END
@@ -107,7 +107,7 @@ BEGIN
     IDS_REMOVAL_MSG         "To remove this context menu entry, unregister the DLL."
 END
 
-#endif    // Inglés (Estados Unidos) resources
+#endif    // Inglï¿½s (Estados Unidos) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

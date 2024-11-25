@@ -6,19 +6,14 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "StdAfx.h"  // Precompiled header; include first
 
-#if _MSC_VER > 1200
-#include "ADSXContextMenu_h.h"
-#else
-// the IDL compiler on VC++6 puts it here instead. weird!
-#include "ADSXContextMenu.h"
-#endif
-#include "ADSXContextMenu_i.c"
-#include "ContextMenu.h"
+#include "ADSXContextMenuEntry_h.h"
+#include "ADSXContextMenuEntry_i.c"
+#include "ContextMenuEntry.h"
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ADSXContextMenu, CADSXContextMenu)
+	OBJECT_ENTRY(CLSID_ADSXContextMenuEntry, CADSXContextMenuEntry)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(
@@ -27,7 +22,7 @@ BOOL APIENTRY DllMain(
 	_In_ LPVOID    lpReserved
 ) {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-		_Module.Init(ObjectMap, hInstance, &LIBID_ADSXContextMenuLib);
+		_Module.Init(ObjectMap, hInstance, &LIBID_ADSXContextMenuEntryLib);
 		DisableThreadLibraryCalls(hInstance);
 	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		_Module.Term();

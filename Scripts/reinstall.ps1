@@ -10,25 +10,25 @@ sudo {
 		if ($LastExitCode -ne 0) {
 			Write-Warning "Failed to unregister ADSExplorer.dll (status $LastExitCode)"
 		}
-		regsvr32 /s /u ADSXContextMenu.dll | Out-Null
+		regsvr32 /s /u ADSXContextMenuEntry.dll | Out-Null
 		if ($LastExitCode -ne 0) {
-			Write-Warning "Failed to unregister ADSXContextMenu.dll (status $LastExitCode)"
+			Write-Warning "Failed to unregister ADSXContextMenuEntry.dll (status $LastExitCode)"
 		}
 
 		Start-Process explorer.exe
 
 		Copy-Item ..\x64\Debug\* .
 		Copy-Item ..\ADSExplorer\x64\Debug\ADSExplorer.tlb .
-		Copy-Item ..\ADSXContextMenu\x64\Debug\ADSXContextMenu.tlb .
+		Copy-Item ..\ADSXContextMenuEntry\x64\Debug\ADSXContextMenuEntry.tlb .
 
 		regsvr32 /s ADSExplorer.dll | Out-Null
 		if ($LastExitCode -ne 0) {
 			Write-Error "Failed to register ADSExplorer.dll (status $LastExitCode)"
 			exit $LastExitCode
 		}
-		regsvr32 /s ADSXContextMenu.dll | Out-Null
+		regsvr32 /s ADSXContextMenuEntry.dll | Out-Null
 		if ($LastExitCode -ne 0) {
-			Write-Error "Failed to register ADSXContextMenu.dll (status $LastExitCode)"
+			Write-Error "Failed to register ADSXContextMenuEntry.dll (status $LastExitCode)"
 			exit $LastExitCode
 		}
 	Pop-Location

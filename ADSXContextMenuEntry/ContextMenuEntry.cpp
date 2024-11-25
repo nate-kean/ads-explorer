@@ -1,41 +1,36 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
- * Copyright (c) 2020 Calvin Buckley
  * Copyright (c) 2024 Nate Kean
  */
 
+#pragma once
+
 #include "StdAfx.h"  // Precompiled header; include first
+#include "resource.h"  // Resource IDs from the RC file
+
+#include "ContextMenuEntry.h"
+
 #include "debug.h"
 
-#if _MSC_VER > 1200
-	#include "ADSXContextMenu_h.h"
-#else
-	// the IDL compiler on VC++6 puts it here instead. weird!
-	#include "ADSXContextMenu.h"
-#endif
-
-#include <atlstr.h>
-
-#include "ContextMenu.h"
-
-// Debug log prefix for CADSXContextMenu
-#define P_XCM L"CADSXContextMenu(0x" << std::hex << this << L")::"
+// Debug log prefix for CADSXContextMenuEntry
+#define P_XCM L"CADSXContextMenuEntry(0x" << std::hex << this << L")::"
 
 
-//==============================================================================
-// CADSXContextMenu
-CADSXContextMenu::CADSXContextMenu(void) : m_pszADSPath((NULL)) {
+//==========================================================================
+// CADSXContextMenuEntry
+CADSXContextMenuEntry::CADSXContextMenuEntry() : m_pszADSPath((NULL)) {
 	LOG(P_XCM << L"CONSTRUCTOR");
 }
 
-
-CADSXContextMenu::~CADSXContextMenu(void) {
+CADSXContextMenuEntry::~CADSXContextMenuEntry() {
 	LOG(P_XCM << L"DESTRUCTOR");
 	if (m_pszADSPath != NULL) CoTaskMemFree(m_pszADSPath);
 }
 
 
-IFACEMETHODIMP CADSXContextMenu::Initialize(
+//==========================================================================
+// IShellExtInit
+IFACEMETHODIMP CADSXContextMenuEntry::Initialize(
 	_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
 	_In_     IDataObject*      pdo,
 	_In_     HKEY              hkeyProgID
@@ -47,7 +42,7 @@ IFACEMETHODIMP CADSXContextMenu::Initialize(
 	HRESULT hr;
 	FORMATETC fmt = { CF_HDROP, NULL, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
 	STGMEDIUM stg = { TYMED_HGLOBAL };
- 
+
 	// Look for CF_HDROP data in the data object. If there
 	// is no such data, return an error back to Explorer.
 	hr = pdo->GetData(&fmt, &stg);
@@ -86,7 +81,9 @@ IFACEMETHODIMP CADSXContextMenu::Initialize(
 }
 
 
-IFACEMETHODIMP CADSXContextMenu::GetCommandString(
+//==========================================================================
+// IContextMenu
+IFACEMETHODIMP CADSXContextMenuEntry::GetCommandString(
 	_In_                 UINT_PTR idCmd,
 	_In_                 UINT     uFlags,
 	_In_                 UINT*    puReserved,
@@ -126,7 +123,7 @@ IFACEMETHODIMP CADSXContextMenu::GetCommandString(
 }
 
 
-IFACEMETHODIMP CADSXContextMenu::InvokeCommand(
+IFACEMETHODIMP CADSXContextMenuEntry::InvokeCommand(
 	_In_ CMINVOKECOMMANDINFO* pici
 ) {
 	LOG(P_XCM << L"InvokeCommand()");
@@ -155,14 +152,14 @@ IFACEMETHODIMP CADSXContextMenu::InvokeCommand(
 }
 
 
-IFACEMETHODIMP CADSXContextMenu::QueryContextMenu(
+IFACEMETHODIMP CADSXContextMenuEntry::QueryContextMenu(
 	_In_ HMENU hmenu,
 	_In_ UINT  i,
 	_In_ UINT  uidCmdFirst,
 	_In_ UINT  uidCmdLast,
 	_In_ UINT  uFlags
 ) {
-	LOG(P_XCM << L"QueryContextMenu()");
+	LOG(P_XCM << L"QueryContextMenuEntry()");
 
 	// If the flags include CMF_DEFAULTONLY then we shouldn't do anything.
 	if (uFlags & CMF_DEFAULTONLY) {
