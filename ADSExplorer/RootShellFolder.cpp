@@ -205,7 +205,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 
 	// Delegate PIDLs that aren't ours to the real ShellFolder
 	if (!CADSXItem::IsOwn(pidl1) && !CADSXItem::IsOwn(pidl2)) {
-		return m_psfFSPath->CompareIDs(lParam, pidl1, pidl2);
+		return m_FSPath.psf->CompareIDs(lParam, pidl1, pidl2);
 	}
 
 	// Both PIDLs must either be ours or not ours
@@ -298,7 +298,7 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
  * the current folder.
  * @pre: Windows has browsed to a path of the format
  *       [Desktop\ADS Explorer\{FS path}]
- * @pre: i.e., m_pidlFSPath is [Desktop\{FS path}]
+ * @pre: i.e., m_FSPath.pidl is [Desktop\{FS path}]
  * @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
  */
 STDMETHODIMP CADSXRootShellFolder::EnumObjects(
@@ -308,14 +308,14 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 ) {
 	LOG(P_RSF
 		<< L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])"
-		<< L", Path=[" << PidlToString(m_pidlFSPath) << L"]");
+		<< L", Path=[" << PidlToString(m_FSPath.pidl) << L"]");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
 	*ppEnumIDList = NULL;
 
 	// Don't try to enumerate if nothing has been browsed yet
-	if (m_pidlFSPath == NULL) return WrapReturn(S_FALSE);
+	if (m_FSPath.pidl == NULL) return WrapReturn(S_FALSE);
 
 	// Create an enumerator over this file system object's
 	// alternate data streams.
@@ -331,10 +331,10 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 	CComPtr<IShellFolder> psf;
 	PCUITEMID_CHILD pidlFSPathLast;
 	if (m_bPathIsFile) {
-		psf = m_psfFSPath;
-		pidlFSPathLast = ILFindLastID(m_pidlFSPath);
+		psf = m_FSPath.psf;
+		pidlFSPathLast = ILFindLastID(m_FSPath.pidl);
 	} else {
-		hr = SHBindToParent(m_pidlFSPath, IID_PPV_ARGS(&psf), &pidlFSPathLast);
+		hr = SHBindToParent(m_FSPath.pidl, IID_PPV_ARGS(&psf), &pidlFSPathLast);
 		if (FAILED(hr)) return WrapReturn(hr);
 	}
 	hr = psf->GetDisplayNameOf(pidlFSPathLast, SHGDN_FORPARSING, &pName);
@@ -385,7 +385,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		// Files and folders
 		// FS objects along the way to and including the requested file/folder
 		LOG(L" ** FS Object");
-		// HRESULT hr = m_psfFSPath->GetAttributesOf(cidl, aPidls, pfAttribs);
+		// HRESULT hr = m_FSPath.psf->GetAttributesOf(cidl, aPidls, pfAttribs);
 		// if (FAILED(hr)) return WrapReturn(hr);
 		// *pfAttribs &= SFGAO_BROWSABLE;
 		*pfAttribs &= SFGAO_HASSUBFOLDER |
@@ -554,7 +554,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		LOG(L" ** FS Object");
 		// NOTE(garlic-os): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
-		return WrapReturnFailOK(m_psfFSPath->GetDisplayNameOf(pidl, uFlags, pName));
+		return WrapReturnFailOK(m_FSPath.psf->GetDisplayNameOf(pidl, uFlags, pName));
 	}
 
 	LOG(L" ** ADS");
@@ -564,7 +564,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
 			PCIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
 				m_pidlRoot,
-				ILNext(m_pidlFSPath)  // remove [Desktop]
+				ILNext(m_FSPath.pidl)  // remove [Desktop]
 			);
 			PWSTR pszPath = NULL;
 			HRESULT hr = SHGetNameFromIDList(
@@ -614,7 +614,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 	}
 
 	HRESULT hr;
-	hr = m_psfFSPath->ParseDisplayName(
+	hr = m_FSPath.psf->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
@@ -689,12 +689,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 	if (!CADSXItem::IsOwn(pidl)) {
 		// Lazy load this because this doesn't happen for every shellfolder
 		// instance (e.g., during browsing's "drill down" phase)
-		if (m_psdFSPath == NULL) {
-			hr = m_psfFSPath->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psdFSPath));
+		if (m_FSPath.psd == NULL) {
+			hr = m_FSPath.psf->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_FSPath.psd));
 			if (FAILED(hr)) return WrapReturnFailOK(hr);
 		}
 		return WrapReturnFailOK(
-			m_psdFSPath->GetDetailsOf(pidl, uColumn, pDetails)
+			m_FSPath.psd->GetDetailsOf(pidl, uColumn, pDetails)
 		);
 	}
 
