@@ -33,6 +33,8 @@
 
 #include <atlbase.h>  // Defines CComModule and required by atlwin.h
 #include <atlwin.h>  // CMessageMap, ProcessWindowMessage, MESSAGE_HANDLER
+#include <ShlObj_core.h>  // SFGAOF, SHCONTF, SHGDNF
+#include <shellapi.h>  // HDROP
 
 #include <string>  // TODO: Remove C++ STL
 
