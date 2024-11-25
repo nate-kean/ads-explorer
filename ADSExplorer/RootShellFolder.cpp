@@ -45,7 +45,6 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 // CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
-	, m_bEndOfPath(false) 
 	, m_FSPath.pidl(NULL)
 	, m_FSPath.psd(NULL)
 	, m_bPathIsFile(false) {
@@ -146,8 +145,6 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	);
 
 	HRESULT hr;
-
-	m_bEndOfPath = ILIsChild(pidl);
 
 	// Browse this path internally.
 	hr = m_FSPath.psf->BindToObject(pidl, pbc, riid, ppShellFolder);
