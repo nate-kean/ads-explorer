@@ -16,11 +16,10 @@ class ATL_NO_VTABLE CADSXContextMenu
 	: public CComObjectRootEx<CComSingleThreadModel>,
 	  public CComCoClass<CADSXContextMenu, &CLSID_ADSXContextMenu>,
 	  public IShellExtInit,
-	  public IExplorerCommand,
-	  public IObjectWithSite {
+	  public IContextMenu {
    public:
-	// CADSXContextMenu(void);
-	// virtual ~CADSXContextMenu(void);
+	CADSXContextMenu(void);
+	virtual ~CADSXContextMenu(void);
 
 	DECLARE_REGISTRY_RESOURCEID(IDR_CONTEXTMENU)
 
@@ -28,63 +27,42 @@ class ATL_NO_VTABLE CADSXContextMenu
 
 	BEGIN_COM_MAP(CADSXContextMenu)
 		COM_INTERFACE_ENTRY(IShellExtInit)
-		COM_INTERFACE_ENTRY(IExplorerCommand)
-		COM_INTERFACE_ENTRY(IObjectWithSite)
+		COM_INTERFACE_ENTRY(IContextMenu)
 	END_COM_MAP()
 
 	//--------------------------------------------------------------------------
 	// IShellExtInit
 	IFACEMETHOD(Initialize)(
 		_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
-	 	_In_     IDataObject*      pdo,
-	 	_In_     HKEY              hkeyProgID
+		_In_     IDataObject*      pdo,
+		_In_     HKEY              hkeyProgID
 	);
 
 	//--------------------------------------------------------------------------
-	// IExplorerCommand
-	IFACEMETHOD(GetTitle)(
-		_In_opt_                      IShellItemArray* psiaSelection,
-		_Outptr_result_nullonfailure_ PWSTR*           ppszName
-	);
-	IFACEMETHOD(GetIcon)(
-		_In_opt_                      IShellItemArray* psiaSelection,
-		_Outptr_result_nullonfailure_ PWSTR*           ppszIcon
-	);
-	IFACEMETHOD(GetToolTip)(
-		_In_opt_                      IShellItemArray* psiaSelection,
-		_Outptr_result_nullonfailure_ PWSTR*           ppszInfotip
-	);
-	IFACEMETHOD(GetCanonicalName)(
-		_Out_ GUID* pguidCommandName
-	);
-	IFACEMETHOD(GetState)(
-		_In_opt_ IShellItemArray* psiaSelection,
-		_In_     BOOL             bOkToBeSlow,
-		_Out_    EXPCMDSTATE*     pfCmdState
-	);
-	IFACEMETHOD(Invoke)(
-		_In_opt_ IShellItemArray* psiaSelection,
-		_In_opt_ IBindCtx*        pbc
-	) noexcept;
-	IFACEMETHOD(GetFlags)(
-		_Out_ EXPCMDFLAGS* pFlags
-	);
-	IFACEMETHOD(EnumSubCommands)(
-		_COM_Outptr_ IEnumExplorerCommand** ppEnum
+	// IContextMenu
+	IFACEMETHOD(GetCommandString)(
+		_In_                 UINT_PTR idCmd,
+		_In_                 UINT     uFlags,
+		_In_                 UINT*    puReserved,
+		_Out_writes_(cchMax) LPSTR    pszName,
+		_In_                 UINT     cchMax
 	);
 
-	//--------------------------------------------------------------------------
-	// IObjectWithSite
-	IFACEMETHOD(SetSite)(
-		_In_opt_ IUnknown* punkSite
+	IFACEMETHOD(InvokeCommand)(
+		_In_ CMINVOKECOMMANDINFO* pici
 	);
-	_Check_return_ IFACEMETHOD(GetSite)(
-		_In_                          REFIID riid,
-		_COM_Outptr_result_maybenull_ void** ppunkSite
-	) noexcept;
 
-	//--------------------------------------------------------------------------
+	IFACEMETHOD(QueryContextMenu)(
+		_In_ HMENU hmenu,
+		_In_ UINT  uMenuIndex,
+		_In_ UINT  uidCmdFirst,
+		_In_ UINT  uidCmdLast,
+		_In_ UINT  uFlags
+	);
 
    protected:
-	CComPtr<IUnknown> m_punkSite;
+	constexpr static WCHAR szPrefix[] = 
+		L"::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\"
+		L"::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\\";
+	PWSTR m_pszADSPath;
 };
