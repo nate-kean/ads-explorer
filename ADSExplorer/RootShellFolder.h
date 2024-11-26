@@ -60,12 +60,13 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// IPersistFolder(2)
+	// Entry point for when an ADSX folder is created directly.
 	STDMETHOD(Initialize)(_In_ PCIDLIST_ABSOLUTE);
 	STDMETHOD(GetCurFolder)(_Outptr_ PIDLIST_ABSOLUTE*);
 
 	//--------------------------------------------------------------------------
 	// IShellFolder
-	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_opt_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
+	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_opt_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**) const;
 	STDMETHOD(CompareIDs)(_In_ LPARAM, _In_ PCUIDLIST_RELATIVE, _In_ PCUIDLIST_RELATIVE);
 	STDMETHOD(CreateViewObject)(_In_ HWND, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(EnumObjects)(_In_ HWND, _In_ SHCONTF, _COM_Outptr_ IEnumIDList**);
@@ -95,6 +96,16 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
+	// Entry point for when an ADSX folder is created by a call to BindToObject.
+	HRESULT BindToObjectInitialize(
+		_In_      IShellFolder*      psfParent,
+		_In_      PCIDLIST_ABSOLUTE  pidlRoot,
+		_In_      PCIDLIST_ABSOLUTE  pidlParent,
+		_In_      PCUIDLIST_RELATIVE pidlNext,
+		_In_opt_  IBindCtx*          pbc,
+		_In_      REFIID             riid
+	);
+
 	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
 
 	// Our inner model of where we are in the filesystem as Windows drills from

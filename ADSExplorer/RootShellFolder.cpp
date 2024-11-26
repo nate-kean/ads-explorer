@@ -43,8 +43,7 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 #pragma region CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
-	, m_FSPath.pidl(NULL)
-	, m_FSPath.psd(NULL)
+	, m_FSPath({ .pidl = NULL, .psd = NULL })
 	, m_bPathIsFile(false) {
 	// LOG(P_RSF << L"CONSTRUCTOR");
 }
@@ -121,14 +120,59 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 
 
 #pragma region IShellFolder
+HRESULT CADSXRootShellFolder::BindToObjectInitialize(
+	_In_      IShellFolder*      psfParent,
+	_In_      PCIDLIST_ABSOLUTE  pidlRoot,
+	_In_      PCIDLIST_ABSOLUTE  pidlParent,
+	_In_      PCUIDLIST_RELATIVE pidlNext,
+	_In_opt_  IBindCtx*          pbc,
+	_In_      REFIID             riid
+) {
+	HRESULT hr;
+
+	// Carry on the legacy
+	m_pidlRoot = ILCloneFull(pidlRoot);
+	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
+
+	// Browse this path internally.
+	hr = psfParent->BindToObject(
+		pidlNext,
+		pbc,
+		riid,
+		reinterpret_cast<void**>(&m_FSPath.psf)
+	);
+	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
+	if (hr == E_FAIL) {
+		// Tried to browse into a file, which is fine for us.
+		// If EnumObjects is called for this instance of the ADSX Shell Folder,
+		// we'll be enumerating the file's ADSes.
+		m_bPathIsFile = true;
+	} else if (FAILED(hr)) {
+		return WrapReturnFailOK(hr);
+	}
+
+	// Set the new instance's internal PIDL.
+	// These are the two cases I've seen: either a child PIDL directly relative
+	// to our current path, or an absolute path/PIDL.
+	// Either way, what the next instance's PIDL is supposed to be is
+	// straightforward.
+	m_FSPath.pidl = ILIsChild(pidlNext) ?
+		ILCombine(pidlParent, pidlNext) :
+		ILCloneFull(reinterpret_cast<PCIDLIST_ABSOLUTE>(pidlNext));
+	if (m_FSPath.pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
+
+	LOG(L" ** New instance's PIDL: " << PidlToString(m_FSPath.pidl));
+	return WrapReturn(S_OK);
+}
+
 
 // TODO(garlic-os): Explain this function
 STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
-	_In_opt_     IBindCtx           *pbc,
+	_In_opt_     IBindCtx*          pbc,
 	_In_         REFIID             riid,
-	_COM_Outptr_ void               **ppShellFolder
-) {
+	_COM_Outptr_ void**             ppShellFolder
+) const {
 	if (ppShellFolder == NULL) return E_POINTER;
 	*ppShellFolder = NULL;
 
@@ -144,40 +188,24 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 
 	HRESULT hr;
 
-	// Browse this path internally.
-	hr = m_FSPath.psf->BindToObject(pidl, pbc, riid, ppShellFolder);
-	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
-	if (SUCCEEDED(hr)) {
-		// Browsed into a folder
-		m_FSPath.psf = static_cast<IShellFolder*>(*ppShellFolder);
-	} else if (hr == E_FAIL) {
-		// Tried to browse into a file, which is fine for us.
-		// When EnumObjects is called, we'll be enumerating the file's ADSes.
-		m_bPathIsFile = true;
-	} else {
-		return WrapReturnFailOK(hr);
-	}
-
-	// Update our internal PIDL.
-	// These are the two cases I've seen: either a child directly relative to
-	// our path, or an absolute path.
-	if (ILIsChild(pidl)) {
-		m_FSPath.pidl = static_cast<PIDLIST_ABSOLUTE>(
-			ILAppendID(m_FSPath.pidl, &pidl->mkid, TRUE)
-		);
-	} else {
-		if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
-		m_FSPath.pidl = ILCloneFull(reinterpret_cast<PCIDLIST_ABSOLUTE>(pidl));
-	}
-	if (m_FSPath.pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
-
-	LOG(L" ** New m_FSPath.pidl: " << PidlToString(m_FSPath.pidl));
-
-	// Return self as the ShellFolder.
-	// TODO(garlic-os): Windows may not like receiving the same object back and
-	// may expect a copy
-	this->AddRef();
-	*ppShellFolder = this;
+	// Return a new instance of self as the Shell Folder.
+	CComObject<CADSXRootShellFolder> *pShellFolder;
+	hr = CComObject<CADSXRootShellFolder>::CreateInstance(&pShellFolder);
+	if (FAILED(hr)) return WrapReturn(hr);
+	pShellFolder->AddRef();
+	defer({ pShellFolder->Release(); });
+	hr = pShellFolder->BindToObjectInitialize(
+		m_FSPath.psf,
+		m_pidlRoot,
+		m_FSPath.pidl,
+		pidl,
+		pbc,
+		riid
+	);
+	if (FAILED(hr)) return hr;  // Was already Wrap'd
+	hr = pShellFolder->QueryInterface(riid, ppShellFolder);
+	if (FAILED(hr)) return WrapReturn(hr);
+	
 	return WrapReturn(S_OK);
 }
 
