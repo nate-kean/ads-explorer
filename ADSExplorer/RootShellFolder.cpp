@@ -17,9 +17,7 @@
 #include "RootShellFolder.h"
 #include "RootShellView.h"
 
-//==============================================================================
-// Helpers
-
+#pragma region Helpers
 // Debug log prefix for CADSXRootShellFolder
 #define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
 
@@ -39,10 +37,10 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 	wcsncpy_s(strret->pOleStr, cwStringLen, pszSource, cwStringLen);
 	return true;
 }
+#pragma endregion
 
 
-//==============================================================================
-// CADSXRootShellFolder
+#pragma region CADSXRootShellFolder
 CADSXRootShellFolder::CADSXRootShellFolder()
 	: m_pidlRoot(NULL)
 	, m_FSPath.pidl(NULL)
@@ -58,6 +56,7 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 	if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
 	if (m_FSPath.psd != NULL) m_FSPath.psd->Release();
 }
+#pragma endregion
 
 
 #pragma region IPersist
@@ -121,7 +120,6 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 #pragma endregion
 
 
-//-------------------------------------------------------------------------------
 #pragma region IShellFolder
 
 // TODO(garlic-os): Explain this function
@@ -169,7 +167,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 		);
 	} else {
 		if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
-		m_FSPath.pidl = static_cast<PIDLIST_ABSOLUTE>(ILClone(pidl));
+		m_FSPath.pidl = ILCloneFull(reinterpret_cast<PCIDLIST_ABSOLUTE>(pidl));
 	}
 	if (m_FSPath.pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
 
@@ -431,7 +429,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// We must be in the FileDialog; it wants aPidls wrapped in an IDataObject
 	// (just to call IDataObject::GetData() and nothing else).
 	// https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample#HowItsDone_UseCasesFileDialog_ClickIcon
-	// TODO(garlic-os): It was a design descision for Hurni's NSE to support
+	// TODO(garlic-os): It was a design decision for Hurni's NSE to support
 	// only one item at a time. I should consider supporting multiple.
 	if (riid == IID_IDataObject) {
 		// Only one item at a time
@@ -448,6 +446,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		// AddRef it while we are working with it to keep it from an early
 		// destruction.
 		pDataObject->AddRef();
+
 		// Tie its lifetime with this object (the IShellFolder object)
 		// and embed the PIDL in the data
 		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
@@ -594,12 +593,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 
 
 STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
-	_In_        HWND             hwnd,
-	_In_opt_    IBindCtx         *pbc,
-	_In_        PWSTR           pszDisplayName,
-	_Out_opt_   ULONG            *pchEaten,
-	_Outptr_    PIDLIST_RELATIVE *ppidl,
-	_Inout_opt_ SFGAOF           *pfAttributes
+	_In_        HWND              hwnd,
+	_In_opt_    IBindCtx*         pbc,
+	_In_        PWSTR             pszDisplayName,
+	_Out_opt_   ULONG*            pchEaten,
+	_Outptr_    PIDLIST_RELATIVE* ppidl,
+	_Inout_opt_ SFGAOF*           pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
 		L"name=\"" << pszDisplayName << L"\", "
@@ -619,7 +618,8 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 		ppidl,
 		pfAttributes
 	);
-	if (FAILED(hr)) return WrapReturn(hr);
+	// if (FAILED(hr)) return WrapReturn(hr);
+	if (FAILED(hr)) return WrapReturnFailOK(hr);
 	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
 	LOG(" ** Attributes: " << SFGAOFToString(pfAttributes));
 
@@ -641,7 +641,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 
 #pragma endregion
 
-//-------------------------------------------------------------------------------
+
 #pragma region IShellDetails
 
 STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
@@ -729,7 +729,6 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 #pragma endregion
 
 
-//------------------------------------------------------------------------------
 #pragma region IShellFolder2
 
 STDMETHODIMP
