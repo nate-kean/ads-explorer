@@ -419,6 +419,18 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	);
 	UNREFERENCED_PARAMETER(hwndOwner);
 
+	// If it's not one of the boys then just act natural
+	if (!CADSXItem::IsOwn(aPidls[0])) {
+		LOG(L" ** Proxying to inner ShellFolder");
+		return m_FSPath.psf->GetUIObjectOf(
+			hwndOwner, cidl, aPidls, riid, rgfReserved, ppUIObject);
+	}
+
+	// Only one item at a time
+	// TODO(garlic-os): It was a design decision for Hurni's NSE to support
+	// only one item at a time. I should consider supporting multiple.
+	if (cidl != 1) return WrapReturn(E_INVALIDARG);
+
 	HRESULT hr;
 
 	if (ppUIObject == NULL) return WrapReturn(E_POINTER);
@@ -429,14 +441,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	// We must be in the FileDialog; it wants aPidls wrapped in an IDataObject
 	// (just to call IDataObject::GetData() and nothing else).
 	// https://www.codeproject.com/Articles/7973/An-almost-complete-Namespace-Extension-Sample#HowItsDone_UseCasesFileDialog_ClickIcon
-	// TODO(garlic-os): It was a design decision for Hurni's NSE to support
-	// only one item at a time. I should consider supporting multiple.
 	if (riid == IID_IDataObject) {
-		// Only one item at a time
-		if (cidl != 1) return WrapReturn(E_INVALIDARG);
-
-		// Is this really one of our item?
-		if (!CADSXItem::IsOwn(aPidls[0])) return WrapReturn(E_INVALIDARG);
 
 		// Create a COM object that exposes IDataObject
 		CComObject<CDataObject> *pDataObject;
@@ -452,8 +457,6 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppUIObject);
-		// We do no more need our ref (note that the object will not die because
-		// the QueryInterface above, AddRef'd it)
 		pDataObject->Release();
 		return WrapReturn(hr);
 	}
