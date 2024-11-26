@@ -2,25 +2,31 @@
 
 #include "StdAfx.h"  // Precompiled header; include first
 
-struct CADSXItem {
+namespace ADSX {
+
+struct _ADSXITEMID_CHILD;
+using PADSXITEMID_CHILD = _ADSXITEMID_CHILD *;
+
+struct CItem {
 	UINT32 SIGNATURE = 'ADSX';
 	LONGLONG llFilesize;
 	PWSTR pszName;  // Allocated with CoTaskMemAlloc
 
-	// Check if a PIDL contains a CADSXItem.
-	// CADSXItems are always the last part of the PIDL (i.e. the child).
+	// Check if a PIDL contains a ADSX::CItem.
+	// ADSX::CItems are always the last part of the PIDL (i.e. the child).
 	// FUTURE: pseudofolders may open this up to be any relative PIDL.
 	static bool IsOwn(PCUIDLIST_RELATIVE pidl);
 
-	static CADSXItem *Get(PUITEMID_CHILD pidl);
-	static const CADSXItem *Get(PCUITEMID_CHILD pidl);
+	static CItem *Get(PUITEMID_CHILD pidl);
+	static const CItem *Get(PCUITEMID_CHILD pidl);
+	static PADSXITEMID_CHILD NewPidl();
 };
 
 
 #include <pshpack1.h>
 	typedef struct _ADSXITEMID {
 		USHORT cb = FIELD_OFFSET(_ADSXITEMID, abIDNull);
-		CADSXItem abID;
+		CItem abID;
 		USHORT cbNull = 0;
 		BYTE abIDNull = NULL;
 	} ADSXITEMID;
@@ -34,4 +40,5 @@ typedef /* [wire_marshal] */ const ADSXITEMID_CHILD *PCADSXITEMID_CHILD;
 typedef /* [wire_marshal] */ ADSXITEMID_CHILD __unaligned *PUADSXITEMID_CHILD;
 typedef /* [wire_marshal] */ const ADSXITEMID_CHILD __unaligned *PCUADSXITEMID_CHILD;
 
-PADSXITEMID_CHILD NewADSXPidl();
+
+}  // namespace ADSX

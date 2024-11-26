@@ -24,13 +24,13 @@
     <ClInclude Include="DataObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RootShellView.h">
+    <ClInclude Include="ShellView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShellFolderView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RootShellFolder.h">
+    <ClInclude Include="ShellFolder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ContextMenuEntry.h">
@@ -42,7 +42,7 @@
     <ClInclude Include="defer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ADSXEnumIDList.h">
+    <ClInclude Include="EnumIDList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ADSXItem.h">
@@ -65,7 +65,7 @@
     <ClCompile Include="DataObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RootShellFolder.cpp">
+    <ClCompile Include="ShellFolder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ContextMenuEntry.cpp">
@@ -77,7 +77,7 @@
     <ClCompile Include="ADSXItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ADSXEnumIDList.cpp">
+    <ClCompile Include="EnumIDList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,7 +87,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="RootShellFolder.rgs">
+    <None Include="ShellFolder.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="ContextMenuEntry.rgs">

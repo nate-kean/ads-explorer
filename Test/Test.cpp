@@ -3,7 +3,7 @@
 #include <shtypes.h>
 #include <comutil.h>
 
-#include "ADSXEnumIDList.h"
+#include "EnumIDList.h"
 #include "../Common/defer.h"
 
 #include <stdexcept>
@@ -17,9 +17,9 @@ static const _bstr_t bstrWorkingDir =
 	"ADS Explorer\\Test\\Files\\";
 
 
-static CComObject<CADSXEnumIDList> *make_enumerator(const BSTR &sPath) {
-	CComObject<CADSXEnumIDList> *pEnum;
-	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
+static CComObject<CEnumIDList> *make_enumerator(const BSTR &sPath) {
+	CComObject<CEnumIDList> *pEnum;
+	HRESULT hr = CComObject<CEnumIDList>::CreateInstance(&pEnum);
 	if (FAILED(hr)) {
 		throw std::runtime_error("Failed to create enumerator instance");
 	}
@@ -36,7 +36,7 @@ static void DoTest(
 	HRESULT hrExpected
 ) {
 	bstrFSObjName = bstrWorkingDir + bstrFSObjName;
-	CComObject<CADSXEnumIDList> *pEnum = make_enumerator(bstrFSObjName.Detach());
+	CComObject<CEnumIDList> *pEnum = make_enumerator(bstrFSObjName.Detach());
 	defer({ pEnum->Release(); });
 
 	auto pidls = new PITEMID_CHILD[cRequested];
@@ -51,7 +51,7 @@ static void DoTest(
 
 
 namespace Test {
-	TEST_CLASS(TestCADSXEnumIDList) {
+	TEST_CLASS(TestCEnumIDList) {
 	  public:
 		TEST_METHOD(Test0Streams0Requested) {
 			DoTest("0streams", 0, 0, S_OK);

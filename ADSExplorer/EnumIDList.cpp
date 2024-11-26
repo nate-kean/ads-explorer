@@ -4,12 +4,14 @@
 
 #include "StdAfx.h"  // Precompiled header; include first
 
-#include "ADSXEnumIDList.h"
+#include "EnumIDList.h"
 
 #include "ADSXItem.h"
 
-// Debug log prefix for CADSXEnumIDList
-#define P_EIDL L"CADSXEnumIDList(0x" << std::hex << this << L")::"
+// Debug log prefix for CEnumIDList
+#define P_EIDL L"ADSX::CEnumIDList(0x" << std::hex << this << L")::"
+
+namespace ADSX {
 
 
 /**
@@ -49,12 +51,12 @@ static bool PushPidl(
 	);
 
 	// Fill in the item
-	PADSXITEMID_CHILD pidl = NewADSXPidl();
+	PADSXITEMID_CHILD pidl = ADSX::CItem::NewPidl();
 	if (pidl == NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;
 	}
-	auto Item = CADSXItem::Get(pidl);
+	auto Item = CItem::Get(pidl);
 	Item->llFilesize = fsd.StreamSize.QuadPart;
 	Item->pszName = static_cast<PWSTR>(
 		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
@@ -78,20 +80,20 @@ static bool NoOp(const WIN32_FIND_STREAM_DATA &, PITEMID_CHILD **, ULONG *) {
 }
 
 
-CADSXEnumIDList::CADSXEnumIDList()
+CEnumIDList::CEnumIDList()
 	: m_pszPath(NULL)
 	, m_hFinder(NULL)
 	, m_nTotalFetched(0) {
-	LOG(P_EIDL << L"CADSXEnumIDList()");
+	LOG(P_EIDL << L"CEnumIDList()");
 }
 
-CADSXEnumIDList::~CADSXEnumIDList() {
-	LOG(P_EIDL << L"~CADSXEnumIDList()");
+CEnumIDList::~CEnumIDList() {
+	LOG(P_EIDL << L"~CEnumIDList()");
 	if (m_hFinder != NULL) FindClose(m_hFinder);
 	if (m_pszPath != NULL) SysFreeString(m_pszPath);
 }
 
-HRESULT CADSXEnumIDList::Init(_In_ IUnknown *punkOwner, _In_ LPCWSTR pszPath) {
+HRESULT CEnumIDList::Init(_In_ IUnknown *punkOwner, _In_ LPCWSTR pszPath) {
 	LOG(P_EIDL << L"Init()");
 	m_punkOwner = punkOwner;
 	m_pszPath = SysAllocString(pszPath);
@@ -104,7 +106,7 @@ HRESULT CADSXEnumIDList::Init(_In_ IUnknown *punkOwner, _In_ LPCWSTR pszPath) {
  * Find one or more items with NextInternal and push them to the
  * output array rgelt with PushPidl.
  */
-STDMETHODIMP CADSXEnumIDList::Next(
+STDMETHODIMP CEnumIDList::Next(
 	_In_ ULONG celt,
 	_Outptr_ PITEMID_CHILD *rgelt,
 	_Out_ ULONG *pceltFetched
@@ -114,7 +116,7 @@ STDMETHODIMP CADSXEnumIDList::Next(
 }
 
 
-HRESULT CADSXEnumIDList::NextInternal(
+HRESULT CEnumIDList::NextInternal(
 	_In_     FnConsume     fnConsume,     // callback on item found
 	_In_     ULONG         celt,          // number of pidls requested
 	_Outptr_ PITEMID_CHILD *rgelt,        // array of pidls
@@ -204,7 +206,7 @@ HRESULT CADSXEnumIDList::NextInternal(
 }
 
 
-STDMETHODIMP CADSXEnumIDList::Reset() {
+STDMETHODIMP CEnumIDList::Reset() {
 	LOG(P_EIDL << L"Reset()");
 	if (m_hFinder != NULL) {
 		m_nTotalFetched = 0;
@@ -216,7 +218,7 @@ STDMETHODIMP CADSXEnumIDList::Reset() {
 }
 
 
-STDMETHODIMP CADSXEnumIDList::Skip(_In_ ULONG celt) {
+STDMETHODIMP CEnumIDList::Skip(_In_ ULONG celt) {
 	LOG(P_EIDL << L"Skip(celt=" << celt << L")");
 	ULONG pceltFetchedFake = 0;
 	PITEMID_CHILD *rgeltFake = NULL;
@@ -224,13 +226,13 @@ STDMETHODIMP CADSXEnumIDList::Skip(_In_ ULONG celt) {
 }
 
 
-STDMETHODIMP CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
+STDMETHODIMP CEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	LOG(P_EIDL << L"Clone()");
 	if (ppEnum == NULL) return WrapReturn(E_POINTER);
 	*ppEnum = NULL;
 
-	CComObject<CADSXEnumIDList> *pEnumNew;
-	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnumNew);
+	CComObject<CEnumIDList> *pEnumNew;
+	HRESULT hr = CComObject<CEnumIDList>::CreateInstance(&pEnumNew);
 	if (FAILED(hr)) return hr;
 	pEnumNew->Init(m_punkOwner, m_pszPath);
 
@@ -242,3 +244,5 @@ STDMETHODIMP CADSXEnumIDList::Clone(_COM_Outptr_ IEnumIDList **ppEnum) {
 	if (FAILED(hr)) return hr;
 	return WrapReturn(S_OK);
 }
+
+}  // namespace ADSX

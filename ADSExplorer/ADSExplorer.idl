@@ -5,10 +5,10 @@ import "ocidl.idl";
 	object,
 	uuid(F0281CB6-CF26-4053-9936-96D7EE602E5E),
 	
-	helpstring("IADSExplorerRootShellFolder Interface"),
+	helpstring("IADSExplorerShellFolder Interface"),
 	pointer_default(unique)
 ]
-interface IADSExplorerRootShellFolder : IUnknown
+interface IADSExplorerShellFolder : IUnknown
 {
 };
 
@@ -35,11 +35,11 @@ library ADSEXPLORERLib
 
 	[
 		uuid(ED383D11-6797-4103-85EF-CBDB8DEB50E2),
-		helpstring("ADSExplorerRootShellFolder Class")
+		helpstring("ADSExplorerShellFolder Class")
 	]
-	coclass ADSExplorerRootShellFolder
+	coclass ADSExplorerShellFolder
 	{
-		[default] interface IADSExplorerRootShellFolder;
+		[default] interface IADSExplorerShellFolder;
 	};
 	
 	[

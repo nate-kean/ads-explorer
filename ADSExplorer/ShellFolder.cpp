@@ -7,19 +7,20 @@
 #include "StdAfx.h"  // Precompiled header; include first
 
 #include "ADSExplorer_h.h"
+#include "ShellFolder.h"
 
 #include <atlstr.h>
 #include <sstream>
 
-#include "ADSXEnumIDList.h"
+#include "EnumIDList.h"
 #include "ADSXItem.h"
 #include "DataObject.h"
-#include "RootShellFolder.h"
-#include "RootShellView.h"
+#include "ShellView.h"
 
-#pragma region Helpers
-// Debug log prefix for CADSXRootShellFolder
-#define P_RSF L"CADSXRootShellFolder(0x" << std::hex << this << L")::"
+// Debug log prefix for ADSX::CShellFolder
+#define P_RSF L"ADSX::CShellFolder(0x" << std::hex << this << L")::"
+
+namespace ADSX {
 
 /**
  * STRRET maker
@@ -37,11 +38,10 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 	wcsncpy_s(strret->pOleStr, cwStringLen, pszSource, cwStringLen);
 	return true;
 }
-#pragma endregion
 
 
-#pragma region CADSXRootShellFolder
-CADSXRootShellFolder::CADSXRootShellFolder()
+#pragma region ADSX::CShellFolder
+CShellFolder::CShellFolder()
 	: m_pidlRoot(NULL)
 	, m_FSPath({ .pidl = NULL, .psd = NULL })
 	, m_bPathIsFile(false) {
@@ -49,7 +49,7 @@ CADSXRootShellFolder::CADSXRootShellFolder()
 }
 
 
-CADSXRootShellFolder::~CADSXRootShellFolder() {
+CShellFolder::~CShellFolder() {
 	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
@@ -59,9 +59,9 @@ CADSXRootShellFolder::~CADSXRootShellFolder() {
 
 
 #pragma region IPersist
-STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
+STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 	if (pclsid == NULL) return WrapReturn(E_POINTER);
-	*pclsid = CLSID_ADSExplorerRootShellFolder;
+	*pclsid = CLSID_ADSExplorerShellFolder;
 	return WrapReturn(S_OK);
 }
 #pragma endregion
@@ -74,9 +74,9 @@ STDMETHODIMP CADSXRootShellFolder::GetClassID(_Out_ CLSID *pclsid) {
  * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
  *       (I _assume_ those are the only two values Explorer ever passes to us.)
  * @pre: 0 < PIDL length < 3.
- * @post: this CADSXRootShellFolder instance is ready to be used.
+ * @post: this ADSX​::CShellFolder instance is ready to be used.
  */
-STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
+STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
 
 	// Don't initialize more than once.
@@ -107,7 +107,7 @@ STDMETHODIMP CADSXRootShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 
 
 STDMETHODIMP
-CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
+CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 	// LOG(P_RSF << L"GetCurFolder()");
 	if (ppidl == NULL) return E_POINTER;
 	// if (ppidl == NULL) return WrapReturn(E_POINTER);
@@ -120,7 +120,7 @@ CADSXRootShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
 
 
 #pragma region IShellFolder
-HRESULT CADSXRootShellFolder::BindToObjectInitialize(
+HRESULT CShellFolder::BindToObjectInitialize(
 	_In_      IShellFolder*      psfParent,
 	_In_      PCIDLIST_ABSOLUTE  pidlRoot,
 	_In_      PCIDLIST_ABSOLUTE  pidlParent,
@@ -167,12 +167,12 @@ HRESULT CADSXRootShellFolder::BindToObjectInitialize(
 
 
 // TODO(garlic-os): Explain this function
-STDMETHODIMP CADSXRootShellFolder::BindToObject(
+STDMETHODIMP CShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx*          pbc,
 	_In_         REFIID             riid,
 	_COM_Outptr_ void**             ppShellFolder
-) const {
+) {
 	if (ppShellFolder == NULL) return E_POINTER;
 	*ppShellFolder = NULL;
 
@@ -189,8 +189,8 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 	HRESULT hr;
 
 	// Return a new instance of self as the Shell Folder.
-	CComObject<CADSXRootShellFolder> *pShellFolder;
-	hr = CComObject<CADSXRootShellFolder>::CreateInstance(&pShellFolder);
+	CComObject<CShellFolder> *pShellFolder;
+	hr = CComObject<CShellFolder>::CreateInstance(&pShellFolder);
 	if (FAILED(hr)) return WrapReturn(hr);
 	pShellFolder->AddRef();
 	defer({ pShellFolder->Release(); });
@@ -213,9 +213,9 @@ STDMETHODIMP CADSXRootShellFolder::BindToObject(
 /**
  * Return the sort order of two PIDLs.
  * lParam can be the 0-based Index of the details column
- * @pre pidl1 and pidl2 hold CADSXItems.
+ * @pre pidl1 and pidl2 hold ADSX::CItems.
  */
-STDMETHODIMP CADSXRootShellFolder::CompareIDs(
+STDMETHODIMP CShellFolder::CompareIDs(
 	_In_ LPARAM             lParam,
 	_In_ PCUIDLIST_RELATIVE pidl1,
 	_In_ PCUIDLIST_RELATIVE pidl2
@@ -227,13 +227,13 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	);
 
 	// Delegate PIDLs that aren't ours to the real ShellFolder
-	if (!CADSXItem::IsOwn(pidl1) && !CADSXItem::IsOwn(pidl2)) {
+	if (!ADSX::CItem::IsOwn(pidl1) && !ADSX::CItem::IsOwn(pidl2)) {
 		return m_FSPath.psf->CompareIDs(lParam, pidl1, pidl2);
 	}
 
 	// Both PIDLs must either be ours or not ours
-	ATLASSERT(CADSXItem::IsOwn(pidl1) && CADSXItem::IsOwn(pidl2));
-	if (!CADSXItem::IsOwn(pidl1) || !CADSXItem::IsOwn(pidl2)) {
+	ATLASSERT(ADSX::CItem::IsOwn(pidl1) && ADSX::CItem::IsOwn(pidl2));
+	if (!ADSX::CItem::IsOwn(pidl1) || !ADSX::CItem::IsOwn(pidl2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
 
@@ -242,16 +242,16 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
-	auto Item1 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
-	auto Item2 = CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
+	auto Item1 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
+	auto Item2 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
-		case DETAILS_COLUMN_NAME:
+		case DetailsColumn::Name:
 			Result = wcscmp(Item1->pszName, Item2->pszName);
 			break;
-		case DETAILS_COLUMN_FILESIZE:
+		case DetailsColumn::Filesize:
 			Result = static_cast<USHORT>(Item1->llFilesize - Item2->llFilesize);
 			if (Result < 0) Result = -1;
 			else if (Result > 0) Result = 1;
@@ -269,7 +269,7 @@ STDMETHODIMP CADSXRootShellFolder::CompareIDs(
 /**
  * Return a COM object that implements IShellView.
  */
-STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
+STDMETHODIMP CShellFolder::CreateViewObject(
 	_In_         HWND   hwndOwner,
 	_In_         REFIID riid,
 	_COM_Outptr_ void   **ppViewObject
@@ -287,14 +287,13 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 	if (riid == IID_IShellView) {
 		LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 		// Create a view object
-		CComObject<CADSXRootShellView> *pViewObject;
-		hr = CComObject<CADSXRootShellView>::CreateInstance(&pViewObject);
+		CComObject<CADSXShellView> *pViewObject;
+		hr = CComObject<CADSXShellView>::CreateInstance(&pViewObject);
 		if (FAILED(hr)) return WrapReturn(hr);
-
-		// AddRef the object while we are using it
 		pViewObject->AddRef();
+		defer({ pViewObject->Release(); });
 
-		// Tie the view object lifetime with the current IShellFolder.
+		// Tie the view object's lifetime with the current IShellFolder.
 		pViewObject->Init(this->GetUnknown());
 
 		// Create the view
@@ -303,10 +302,6 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
 			hwndOwner,
 			static_cast<IShellFolder *>(this)
 		);
-
-		// We are finished with our own use of the view object (AddRef()'d
-		// above by us, AddRef()'ed by Create)
-		pViewObject->Release();
 
 		return WrapReturn(hr);
 	}
@@ -322,9 +317,9 @@ STDMETHODIMP CADSXRootShellFolder::CreateViewObject(
  * @pre: Windows has browsed to a path of the format
  *       [Desktop\ADS Explorer\{FS path}]
  * @pre: i.e., m_FSPath.pidl is [Desktop\{FS path}]
- * @post: ppEnumIDList holds a CADSXEnumIDList** on {FS path}
+ * @post: ppEnumIDList holds a CEnumIDList** on {FS path}
  */
-STDMETHODIMP CADSXRootShellFolder::EnumObjects(
+STDMETHODIMP CShellFolder::EnumObjects(
 	_In_         HWND        hwndOwner,
 	_In_         SHCONTF     dwFlags,
 	_COM_Outptr_ IEnumIDList **ppEnumIDList
@@ -342,8 +337,8 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
 
 	// Create an enumerator over this file system object's
 	// alternate data streams.
-	CComObject<CADSXEnumIDList> *pEnum;
-	HRESULT hr = CComObject<CADSXEnumIDList>::CreateInstance(&pEnum);
+	CComObject<CEnumIDList> *pEnum;
+	HRESULT hr = CComObject<CEnumIDList>::CreateInstance(&pEnum);
 	if (FAILED(hr)) return WrapReturn(hr);
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
@@ -382,7 +377,7 @@ STDMETHODIMP CADSXRootShellFolder::EnumObjects(
  *   0 if the flag is not set on input or if any of the given items do not have
  *   that attribute.
  */
-STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
+STDMETHODIMP CShellFolder::GetAttributesOf(
 	_In_    UINT                  cidl,
 	_In_    PCUITEMID_CHILD_ARRAY aPidls,
 	_Inout_ SFGAOF                *pfAttribs
@@ -404,7 +399,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		              SFGAO_FILESYSTEM |
 		              SFGAO_FILESYSANCESTOR |
 		              SFGAO_NONENUMERATED;
-	} else if (!CADSXItem::IsOwn(aPidls[0])) {
+	} else if (!ADSX::CItem::IsOwn(aPidls[0])) {
 		// Files and folders
 		// FS objects along the way to and including the requested file/folder
 		LOG(L" ** FS Object");
@@ -417,7 +412,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 		              SFGAO_FILESYSANCESTOR;
 	} else {
 		// ADSes
-		// The CADSXItems wrapped in PIDLs that were returned from EnumObjects
+		// The ADSX::CItems wrapped in PIDLs that were returned from EnumObjects
 		// for this file/folder.
 		LOG(L" ** ADS");
 		*pfAttribs &= SFGAO_FILESYSTEM |
@@ -433,7 +428,7 @@ STDMETHODIMP CADSXRootShellFolder::GetAttributesOf(
 
 
 // Provide any of several sub-objects like IExtractIcon and IDataObject.
-STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
+STDMETHODIMP CShellFolder::GetUIObjectOf(
 	_In_         HWND                  hwndOwner,
 	_In_         UINT                  cidl,
 	_In_         PCUITEMID_CHILD_ARRAY aPidls,
@@ -448,7 +443,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	// If it's not one of the boys then just act natural
-	if (!CADSXItem::IsOwn(aPidls[0])) {
+	if (!ADSX::CItem::IsOwn(aPidls[0])) {
 		LOG(L" ** Proxying to inner ShellFolder");
 		return m_FSPath.psf->GetUIObjectOf(
 			hwndOwner, cidl, aPidls, riid, rgfReserved, ppUIObject);
@@ -520,7 +515,7 @@ STDMETHODIMP CADSXRootShellFolder::GetUIObjectOf(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::BindToStorage(
+STDMETHODIMP CShellFolder::BindToStorage(
 	_In_         PCUIDLIST_RELATIVE,
 	_In_         IBindCtx *,
 	_In_         REFIID,
@@ -537,7 +532,7 @@ STDMETHODIMP CADSXRootShellFolder::BindToStorage(
  *
  * @pre: *pName struct is initialized
  */
-STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
+STDMETHODIMP CShellFolder::GetDisplayNameOf(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  SHGDNF          uFlags,
 	_Out_ STRRET          *pName
@@ -577,7 +572,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 		}
 	}
 
-	if (!CADSXItem::IsOwn(pidl)) {
+	if (!ADSX::CItem::IsOwn(pidl)) {
 		LOG(L" ** FS Object");
 		// NOTE(garlic-os): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
@@ -585,7 +580,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 	}
 
 	LOG(L" ** ADS");
-	auto Item = CADSXItem::Get(pidl);
+	auto Item = ADSX::CItem::Get(pidl);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
@@ -623,7 +618,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDisplayNameOf(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
+STDMETHODIMP CShellFolder::ParseDisplayName(
 	_In_        HWND              hwnd,
 	_In_opt_    IBindCtx*         pbc,
 	_In_        PWSTR             pszDisplayName,
@@ -659,7 +654,7 @@ STDMETHODIMP CADSXRootShellFolder::ParseDisplayName(
 
 
 // TODO(garlic-os): should this be implemented?
-STDMETHODIMP CADSXRootShellFolder::SetNameOf(
+STDMETHODIMP CShellFolder::SetNameOf(
 	_In_     HWND,
 	_In_     PCUITEMID_CHILD,
 	_In_     PCWSTR,
@@ -675,7 +670,7 @@ STDMETHODIMP CADSXRootShellFolder::SetNameOf(
 
 #pragma region IShellDetails
 
-STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
+STDMETHODIMP CShellFolder::ColumnClick(_In_ UINT uColumn) {
 	LOG(P_RSF << L"ColumnClick(uColumn=" << uColumn << L")");
 	// Tell the caller to sort the column itself
 	return WrapReturn(S_FALSE);
@@ -683,8 +678,8 @@ STDMETHODIMP CADSXRootShellFolder::ColumnClick(_In_ UINT uColumn) {
 
 
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
-// (uColumn >= DETAILS_COLUMN_MAX)
-STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
+// (uColumn >= DetailsColumn::MAX)
+STDMETHODIMP CShellFolder::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidl,
 	_In_     UINT uColumn,
 	_Out_    SHELLDETAILS *pDetails
@@ -701,7 +696,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		// Load the uColumn based string from the resource
 		// TODO(garlic-os): do we haaave to use CString here?
 		// this entire kind of string is not used anywhere else in the program
-		if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
+		if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
 		const CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
@@ -714,7 +709,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		);
 	}
 
-	if (!CADSXItem::IsOwn(pidl)) {
+	if (!ADSX::CItem::IsOwn(pidl)) {
 		// Lazy load this because this doesn't happen for every shellfolder
 		// instance (e.g., during browsing's "drill down" phase)
 		if (m_FSPath.psd == NULL) {
@@ -726,12 +721,12 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 		);
 	}
 
-	if (uColumn >= DETAILS_COLUMN_MAX) return WrapReturnFailOK(E_FAIL);
+	if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 
 	// Okay, this time it's for a real item
-	auto Item = CADSXItem::Get(pidl);
+	auto Item = ADSX::CItem::Get(pidl);
 	switch (uColumn) {
-		case DETAILS_COLUMN_NAME:
+		case DetailsColumn::Name:
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(wcslen(Item->pszName) <= INT_MAX);
 			pDetails->cxChar = static_cast<int>(wcslen(Item->pszName));
@@ -742,7 +737,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 				) ? S_OK : E_OUTOFMEMORY
 			);
 
-		case DETAILS_COLUMN_FILESIZE:
+		case DetailsColumn::Filesize:
 			pDetails->fmt = LVCFMT_RIGHT;
 			constexpr UINT8 uLongLongStrLenMax =
 				_countof("-9,223,372,036,854,775,808");
@@ -763,14 +758,14 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsOf(
 #pragma region IShellFolder2
 
 STDMETHODIMP
-CADSXRootShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
+CShellFolder::EnumSearches(_COM_Outptr_ IEnumExtraSearch **ppEnum) {
 	LOG(P_RSF << L"EnumSearches()");
 	if (ppEnum != NULL) *ppEnum = NULL;
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
+STDMETHODIMP CShellFolder::GetDefaultColumn(
 	_In_  DWORD dwReserved,
 	_Out_ ULONG *pSort,
 	_Out_ ULONG *pDisplay
@@ -779,14 +774,14 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumn(
 
 	if (pSort == NULL || pDisplay == NULL) return WrapReturn(E_POINTER);
 
-	*pSort = DETAILS_COLUMN_NAME;
-	*pDisplay = DETAILS_COLUMN_NAME;
+	*pSort = DetailsColumn::Name;
+	*pDisplay = DetailsColumn::Name;
 
 	return WrapReturn(S_OK);
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
+STDMETHODIMP CShellFolder::GetDefaultColumnState(
 	_In_  UINT uColumn,
 	_Out_ SHCOLSTATEF *pcsFlags
 ) {
@@ -799,10 +794,10 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 	// not sort the column. (not setting it means that our CompareIDs() will be
 	// called)
 	switch (uColumn) {
-		case DETAILS_COLUMN_NAME:
+		case DetailsColumn::Name:
 			*pcsFlags = SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT;
 			break;
-		case DETAILS_COLUMN_FILESIZE:
+		case DetailsColumn::Filesize:
 			*pcsFlags = SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT;
 			break;
 		default:
@@ -813,13 +808,13 @@ STDMETHODIMP CADSXRootShellFolder::GetDefaultColumnState(
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
+STDMETHODIMP CShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 	LOG(P_RSF << L"GetDefaultSearchGUID()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
 
-STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
+STDMETHODIMP CShellFolder::GetDetailsEx(
 	_In_  PCUITEMID_CHILD pidl,
 	_In_  const SHCOLUMNID *pscid,
 	_Out_ VARIANT *pv
@@ -856,7 +851,7 @@ STDMETHODIMP CADSXRootShellFolder::GetDetailsEx(
 
 
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
-STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
+STDMETHODIMP CShellFolder::MapColumnToSCID(
 	_In_ UINT uColumn,
 	_Out_ SHCOLUMNID *pscid
 ) {
@@ -866,10 +861,10 @@ STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 		// This will map the columns to some built-in properties on Vista.
 		// It's needed for the tile subtitles to display properly.
 		switch (uColumn) {
-			case DETAILS_COLUMN_NAME:
+			case DetailsColumn::Name:
 				*pscid = PKEY_ItemNameDisplay;
 				return WrapReturn(S_OK);
-			case DETAILS_COLUMN_FILESIZE:
+			case DetailsColumn::Filesize:
 				// TODO(garlic-os): is this right? where are PKEYs'
 				// documentation?
 				*pscid = PKEY_TotalFileSize;
@@ -884,3 +879,5 @@ STDMETHODIMP CADSXRootShellFolder::MapColumnToSCID(
 }
 
 #pragma endregion
+
+} // namespace ADSX

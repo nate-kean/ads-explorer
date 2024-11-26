@@ -8,15 +8,15 @@
 
 #include "ADSExplorer_h.h"
 #include "ADSExplorer_i.c"
-#include "RootShellFolder.h"
+#include "ShellFolder.h"
 #include "ContextMenuEntry.h"
 
 
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ADSExplorerRootShellFolder, CADSXRootShellFolder)
-	OBJECT_ENTRY(CLSID_ADSXContextMenuEntry, CADSXContextMenuEntry)
+	OBJECT_ENTRY(CLSID_ADSExplorerShellFolder, ADSX::CShellFolder)
+	OBJECT_ENTRY(CLSID_ADSXContextMenuEntry, ADSX::CContextMenuEntry)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(

@@ -12,40 +12,36 @@
 #include "resource.h"  // main symbols
 
 
-//==============================================================================
+namespace ADSX {
 
 // Set the return string 'Source' in the STRRET struct.
 // Returns false if memory allocation fails.
 bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret);
 
 
-//==============================================================================
+enum DetailsColumn {
+	Name,
+	Filesize,
 
-enum {
-	DETAILS_COLUMN_NAME,
-	DETAILS_COLUMN_FILESIZE,
-
-	DETAILS_COLUMN_MAX
+	MAX
 };
 
-//==============================================================================
-// CADSXRootShellFolder
 
-class ATL_NO_VTABLE CADSXRootShellFolder
+class ATL_NO_VTABLE CShellFolder
 	: public CComObjectRootEx<CComSingleThreadModel>,
-	  public CComCoClass<CADSXRootShellFolder, &CLSID_ADSExplorerRootShellFolder>,
+	  public CComCoClass<CShellFolder, &CLSID_ADSExplorerShellFolder>,
 	  public IShellFolder2,
 	  public IPersistFolder2,
 	  public IShellDetails {
    public:
-	CADSXRootShellFolder();
-	virtual ~CADSXRootShellFolder();
+	CShellFolder();
+	virtual ~CShellFolder();
 
-	DECLARE_REGISTRY_RESOURCEID(IDR_ROOTSHELLFOLDER)
+	DECLARE_REGISTRY_RESOURCEID(IDR_ADSXSHELLFOLDER)
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(CADSXRootShellFolder)
+	BEGIN_COM_MAP(CShellFolder)
 		COM_INTERFACE_ENTRY(IShellFolder)
 		COM_INTERFACE_ENTRY(IShellFolder2)
 		COM_INTERFACE_ENTRY(IPersistFolder)
@@ -66,7 +62,7 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	//--------------------------------------------------------------------------
 	// IShellFolder
-	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_opt_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**) const;
+	STDMETHOD(BindToObject)(_In_ PCUIDLIST_RELATIVE, _In_opt_ IBindCtx*, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(CompareIDs)(_In_ LPARAM, _In_ PCUIDLIST_RELATIVE, _In_ PCUIDLIST_RELATIVE);
 	STDMETHOD(CreateViewObject)(_In_ HWND, _In_ REFIID, _COM_Outptr_ void**);
 	STDMETHOD(EnumObjects)(_In_ HWND, _In_ SHCONTF, _COM_Outptr_ IEnumIDList**);
@@ -121,3 +117,5 @@ class ATL_NO_VTABLE CADSXRootShellFolder
 
 	bool m_bPathIsFile;  // affect's EnumObjects's behavior
 };
+
+}  // namespace ADSX

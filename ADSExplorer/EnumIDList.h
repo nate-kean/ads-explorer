@@ -2,7 +2,7 @@
  * 2024 Nate Kean
  *
  * A Windows Enumerator object that produces LPITEMIDLISTs that contain
- * CADSXItem structures.
+ * ADSX::CItem structures.
  */
 
 #pragma once
@@ -11,18 +11,20 @@
 
 #include <functional>
 
+namespace ADSX {
 
-class ATL_NO_VTABLE CADSXEnumIDList
+
+class ATL_NO_VTABLE CEnumIDList
 	: public IEnumIDList,
 	  public CComObjectRootEx<CComSingleThreadModel> {
 
   public:
-	BEGIN_COM_MAP(CADSXEnumIDList)
+	BEGIN_COM_MAP(CEnumIDList)
 		COM_INTERFACE_ENTRY(IEnumIDList)
 	END_COM_MAP()
 
-	CADSXEnumIDList();
-	virtual ~CADSXEnumIDList();
+	CEnumIDList();
+	virtual ~CEnumIDList();
 	
 	/**
 	 * Initialization logic in a separate method because COM object constructors
@@ -61,3 +63,5 @@ class ATL_NO_VTABLE CADSXEnumIDList
 	HANDLE m_hFinder;
 	ULONG m_nTotalFetched;  // just to bring a clone up to speed
 };
+
+}  // namespace ADSX

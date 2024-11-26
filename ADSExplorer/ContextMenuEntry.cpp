@@ -12,17 +12,19 @@
 
 #include "debug.h"
 
-// Debug log prefix for CADSXContextMenuEntry
-#define P_CME L"CADSXContextMenuEntry(0x" << std::hex << this << L")::"
+// Debug log prefix for ADSX::CContextMenuEntry
+#define P_CME L"ADSX::CContextMenuEntry(0x" << std::hex << this << L")::"
+
+namespace ADSX {
 
 
 //==========================================================================
-// CADSXContextMenuEntry
-CADSXContextMenuEntry::CADSXContextMenuEntry() : m_pszADSPath((NULL)) {
+// ADSX::CContextMenuEntry
+CContextMenuEntry::CContextMenuEntry() : m_pszADSPath((NULL)) {
 	LOG(P_CME << L"CONSTRUCTOR");
 }
 
-CADSXContextMenuEntry::~CADSXContextMenuEntry() {
+CContextMenuEntry::~CContextMenuEntry() {
 	LOG(P_CME << L"DESTRUCTOR");
 	if (m_pszADSPath != NULL) CoTaskMemFree(m_pszADSPath);
 }
@@ -30,7 +32,7 @@ CADSXContextMenuEntry::~CADSXContextMenuEntry() {
 
 //==========================================================================
 // IShellExtInit
-IFACEMETHODIMP CADSXContextMenuEntry::Initialize(
+IFACEMETHODIMP CContextMenuEntry::Initialize(
 	_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
 	_In_     IDataObject*      pdo,
 	_In_     HKEY              hkeyProgID
@@ -83,7 +85,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::Initialize(
 
 //==========================================================================
 // IContextMenu
-IFACEMETHODIMP CADSXContextMenuEntry::GetCommandString(
+IFACEMETHODIMP CContextMenuEntry::GetCommandString(
 	_In_                 UINT_PTR idCmd,
 	_In_                 UINT     uFlags,
 	_In_                 UINT*    puReserved,
@@ -123,7 +125,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::GetCommandString(
 }
 
 
-IFACEMETHODIMP CADSXContextMenuEntry::InvokeCommand(
+IFACEMETHODIMP CContextMenuEntry::InvokeCommand(
 	_In_ CMINVOKECOMMANDINFO* pcmici
 ) {
 	LOG(P_CME << L"InvokeCommand()");
@@ -152,7 +154,7 @@ IFACEMETHODIMP CADSXContextMenuEntry::InvokeCommand(
 }
 
 
-IFACEMETHODIMP CADSXContextMenuEntry::QueryContextMenu(
+IFACEMETHODIMP CContextMenuEntry::QueryContextMenu(
 	_In_ HMENU hmenu,
 	_In_ UINT  i,
 	_In_ UINT  uidCmdFirst,
@@ -179,3 +181,5 @@ IFACEMETHODIMP CADSXContextMenuEntry::QueryContextMenu(
 	);
 	return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1));
 }
+
+}  // namespace ADSX

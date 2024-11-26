@@ -11,13 +11,10 @@
 // Debug log prefix for CDataObject
 #define P_DO L"CDataObject(0x" << std::hex << this << L")::"
 
-
-//========================================================================================
-// CDataObject
+namespace ADSX {
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
-static HGLOBAL
-CreateShellIDList(
+static HGLOBAL CreateShellIDList(
 	PIDLIST_ABSOLUTE pidlParent,
 	PCUITEMID_CHILD pidl
 ) {
@@ -71,14 +68,19 @@ CDataObject::~CDataObject() {
 	if (m_pidlParent != NULL) CoTaskMemFree(m_pidlParent);
 }
 
-void CDataObject::Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITEMID_CHILD pidl) {
+void CDataObject::Init(
+	IUnknown *pUnkOwner,
+	PCIDLIST_ABSOLUTE pidlParent,
+	PCUITEMID_CHILD pidl
+) {
 	m_UnkOwnerPtr = pUnkOwner;
 	m_pidlParent = ILCloneFull(pidlParent);
 	m_pidl = ILCloneChild(pidl);
 	m_cfShellIDList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// IDataObject
 
 STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
 	LOG(P_DO << L"GetData()");
@@ -134,7 +136,8 @@ STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-//-------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+// IEnumFORMATETC
 
 STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
 	LOG(P_DO << L"Next()");
@@ -155,3 +158,5 @@ STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
 	LOG(P_DO << L"Clone()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
+
+}  // namespace ADSX

@@ -75,9 +75,9 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 			if (!first) {
 				oss << L"--";
 			}
-			if (CADSXItem::IsOwn(pidl)) {
+			if (ADSX::CItem::IsOwn(pidl)) {
 				oss <<
-					CADSXItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->pszName;
+					ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->pszName;
 			} else {
 				WCHAR tmp[16];
 				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);

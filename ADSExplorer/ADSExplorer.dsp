@@ -107,7 +107,7 @@ SOURCE=.\ADSExplorer.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.cpp
+SOURCE=.\ShellFolder.cpp
 # End Source File
 # Begin Source File
 
@@ -135,7 +135,7 @@ SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.h
+SOURCE=.\ShellFolder.h
 # End Source File
 # Begin Source File
 
@@ -143,7 +143,7 @@ SOURCE=.\ContextMenuEntry.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellView.h
+SOURCE=.\ShellView.h
 # End Source File
 # Begin Source File
 
@@ -172,7 +172,7 @@ SOURCE=.\icon1.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\RootShellFolder.rgs
+SOURCE=.\ShellFolder.rgs
 # End Source File
 # End Group
 # End Target

@@ -7,7 +7,7 @@
 
 const std::map<const std::wstring, PCWSTR> iids{
     {L"{20D04FE0-3AEA-1069-A2D8-08002B30309D}", L"CLSID_MyComputer"},
-    {L"{ED383D11-6797-4103-85EF-CBDB8DEB50E2}", L"CLSID_ADSExplorerRootShellFolder"},
+    {L"{ED383D11-6797-4103-85EF-CBDB8DEB50E2}", L"CLSID_ADSExplorerShellFolder"},
     {L"{000214E4-0000-0000-C000-000000000046}", L"IContextMenu"},
     {L"{00000122-0000-0000-C000-000000000046}", L"IDropTarget"},
     {L"{000214EB-0000-0000-C000-000000000046}", L"IExtractIconA"},

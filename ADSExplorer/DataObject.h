@@ -6,6 +6,8 @@
 
 #include "StdAfx.h"  // Precompiled header; include first
 
+namespace ADSX {
+
 //==============================================================================
 // Light implementation of IDataObject.
 //
@@ -62,3 +64,5 @@ class ATL_NO_VTABLE CDataObject
 	PUITEMID_CHILD m_pidl;
 	PIDLIST_ABSOLUTE m_pidlParent;
 };
+
+}  // namespace ADSX

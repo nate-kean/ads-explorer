@@ -3,7 +3,7 @@
 // Used by ADSExplorer.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_ROOTSHELLFOLDER             102
+#define IDR_ADSXSHELLFOLDER             102
 #define IDR_CONTEXTMENUENTRY            103
 #define IDI_ICON1                       104
 #define IDI_ADSX_ROOT                   104
