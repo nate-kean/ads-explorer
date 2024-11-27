@@ -5,6 +5,7 @@
 #pragma once
 
 #include "StdAfx.h"  // Precompiled header; include first
+#include "debug.h"
 
 #include <iomanip>
 
@@ -46,6 +47,7 @@ class CShellFolderViewImpl : public CMessageMap,
 		_In_opt_ IShellView *psvOuter,
 		_Outptr_ IShellView **ppShellView
 	) {
+		// LOG(P_RSV << L"Create()");
 		m_hwndOwner = hwndOwner;
 		m_psf = pShellFolder;
 
@@ -55,8 +57,8 @@ class CShellFolderViewImpl : public CMessageMap,
 		sfv.psvOuter = psvOuter;
 		sfv.psfvcb = static_cast<IShellFolderViewCB *>(this);
 
-		// return SHCreateShellFolderView(&sfv, ppISV);
-		return WrapReturn(SHCreateShellFolderView(&sfv, ppShellView));
+		return SHCreateShellFolderView(&sfv, ppShellView);
+		// return WrapReturn(SHCreateShellFolderView(&sfv, ppShellView));
 	}
 
 	// Used to send messages back to the shell view
@@ -65,9 +67,10 @@ class CShellFolderViewImpl : public CMessageMap,
 		return SHShellFolderView_Message(m_hwndOwner, uMsg, lParam);
 	}
 
-	STDMETHODIMP MessageSFVCB(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	STDMETHODIMP MessageSFVCB(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+		// LOG(P_RSV << L"MessageSFVCB(uMsg=" << uMsg << L")");
 		LRESULT lResult = NULL;
-		BOOL bResult = ProcessWindowMessage(
+		BOOL bResult = this->ProcessWindowMessage(
 			NULL,
 			uMsg,
 			wParam,
@@ -76,6 +79,7 @@ class CShellFolderViewImpl : public CMessageMap,
 			0
 		);
 		return bResult ? static_cast<HRESULT>(lResult) : E_NOTIMPL;
+		// return WrapReturnFailOK(bResult ? static_cast<HRESULT>(lResult) : E_NOTIMPL);
 	}
 
    protected:
@@ -115,7 +119,7 @@ class CADSXShellView : public CShellFolderViewImpl {
 	// Offer to set the default view mode
 	LRESULT
 	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
-		// LOG(P_RSV << L"OnDefViewMode()");
+		LOG(P_RSV << L"OnDefViewMode()");
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
 			DWORD ver, maj, min;
@@ -126,8 +130,8 @@ class CADSXShellView : public CShellFolderViewImpl {
 				*(FOLDERVIEWMODE *) lParam = FVM_CONTENT;
 			}
 		#endif
-		// return WrapReturn(S_OK);
-		return S_OK;
+		// return S_OK;
+		return WrapReturn(S_OK);
 	}
 
 	// When a user clicks on a column header in details mode
@@ -138,8 +142,9 @@ class CADSXShellView : public CShellFolderViewImpl {
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
 		// SDK.
 		SendFolderViewMessage(SFVM_REARRANGE, wParam);
-		// return WrapReturn(S_OK);
+
 		return S_OK;
+		// return WrapReturn(S_OK);
 	}
 
 	// This message is used with shell version 4.7x, shell 5 and above prefer to
@@ -151,27 +156,29 @@ class CADSXShellView : public CShellFolderViewImpl {
 
 		// LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
-		// if (pDetailsInfo == NULL) return WrapReturn(E_POINTER);
 		if (pDetailsInfo == NULL) return E_POINTER;
+		// if (pDetailsInfo == NULL) return WrapReturn(E_POINTER);
 
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;
 
 		IShellDetails *pShellDetails;
 		hr = m_psf->QueryInterface(IID_PPV_ARGS(&pShellDetails));
-		if (FAILED(hr)) return hr;
+		// if (FAILED(hr)) return hr;
+		if (FAILED(hr)) return WrapReturn(hr);
 
 		hr = pShellDetails->GetDetailsOf(pDetailsInfo->pidl, iColumn, &ShellDetails);
 		pShellDetails->Release();
 		if (FAILED(hr)) return hr;
+		// if (FAILED(hr)) return WrapReturn(hr);
 
 		pDetailsInfo->cxChar = ShellDetails.cxChar;
 		pDetailsInfo->fmt = ShellDetails.fmt;
 		pDetailsInfo->str = ShellDetails.str;
 		pDetailsInfo->iImage = 0;
 
-		// return WrapReturn(S_OK);
-		return S_OK;
+		// return S_OK;
+		return WrapReturn(S_OK);
 	}
 
    protected:

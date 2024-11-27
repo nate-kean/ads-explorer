@@ -44,7 +44,7 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 CShellFolder::CShellFolder()
 	: m_pidlRoot(NULL)
 	, m_pidl(NULL) {
-	LOG(P_RSF << L"CONSTRUCTOR");
+	// LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 
@@ -58,9 +58,11 @@ CShellFolder::~CShellFolder() {
 
 #pragma region IPersist
 STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
-	if (pclsid == NULL) return WrapReturn(E_POINTER);
+	if (pclsid == NULL) return E_POINTER;
+	// if (pclsid == NULL) return WrapReturn(E_POINTER);
 	*pclsid = CLSID_ADSExplorerShellFolder;
-	return WrapReturn(S_OK);
+	return S_OK;
+	// return WrapReturn(S_OK);
 }
 #pragma endregion
 
@@ -81,6 +83,7 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// This is necessary because for reasons beyond me Windows tries to.
 	if (m_pidlRoot != NULL) {
 		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
+		// return WrapReturn(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
 	}
 
 	// Validate input PIDL
@@ -90,17 +93,21 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	) {
 		// PIDL length is 0 or more than 2
 		return E_INVALIDARG;
+		// return WrapReturn(E_INVALIDARG);
 	}
 
 	// Keep this around for use elsewhere
 	m_pidlRoot = ILCloneFull(pidlRoot);
 	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
+	// if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	// Initialize to the root of the namespace, [Desktop]
 	HRESULT hr = SHGetDesktopFolder(&m_psf);
 	if (FAILED(hr)) return hr;
+	// if (FAILED(hr)) return WrapReturn(hr);
 
 	return hr;
+	// return WrapReturn(hr);
 }
 
 
@@ -687,8 +694,6 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 	// Shell is asking for the column headers
 	if (pidl == NULL) {
 		// Load the uColumn based string from the resource
-		// TODO(garlic-os): do we haaave to use CString here?
-		// this entire kind of string is not used anywhere else in the program
 		if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
 		const CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
