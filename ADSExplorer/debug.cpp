@@ -216,6 +216,7 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 			case S_OK: return L"S_OK";
 			case S_FALSE: return L"S_FALSE";
 			case E_FILE_NOT_FOUND: return L"E_FILE_NOT_FOUND";
+			case ERROR_FILE_NOT_FOUND: return L"ERROR_FILE_NOT_FOUND";
 			case E_NOTIMPL: return L"E_NOTIMPL";
 			case E_NOINTERFACE: return L"E_NOINTERFACE";
 			case E_POINTER: return L"E_POINTER";
