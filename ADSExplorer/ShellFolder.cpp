@@ -144,7 +144,6 @@ HRESULT CShellFolder::BindToObjectInitialize(
 		// Tried to browse into a file, which is fine for us.
 		// If EnumObjects is called for this instance of the ADSX Shell Folder,
 		// we'll be enumerating the file's ADSes.
-		m_bPathIsFile = true;
 	} else if (FAILED(hr)) {
 		return WrapReturnFailOK(hr);
 	}
@@ -330,7 +329,7 @@ STDMETHODIMP CShellFolder::EnumObjects(
 
 	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
 	*ppEnumIDList = NULL;
-
+	
 	// Don't try to enumerate if nothing has been browsed yet
 	if (m_pidl == NULL) return WrapReturn(S_FALSE);
 
