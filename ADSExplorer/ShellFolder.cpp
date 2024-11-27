@@ -334,33 +334,27 @@ STDMETHODIMP CShellFolder::EnumObjects(
 	// Don't try to enumerate if nothing has been browsed yet
 	if (m_pidl == NULL) return WrapReturn(S_FALSE);
 
+	HRESULT hr;
+
+	// Get the path this folder is bound to in string form.
+	PWSTR pszPath = NULL;
+	hr = SHGetNameFromIDList(
+		m_pidl,
+		SIGDN_DESKTOPABSOLUTEPARSING,
+		&pszPath
+	);
+	if (FAILED(hr)) return WrapReturn(hr);
+	defer({ CoTaskMemFree(pszPath); });
+
 	// Create an enumerator over this file system object's
 	// alternate data streams.
-	CComObject<CEnumIDList> *pEnum;
-	HRESULT hr = CComObject<CEnumIDList>::CreateInstance(&pEnum);
+	CComObject<ADSX::CEnumIDList> *pEnum;
+	hr = CComObject<ADSX::CEnumIDList>::CreateInstance(&pEnum);
 	if (FAILED(hr)) return WrapReturn(hr);
 	pEnum->AddRef();
 	defer({ pEnum->Release(); });
-
-	// Get the path this instance of ADSX is bound to in string form.
-	STRRET pName;
-	PWSTR pszName;
-	CComPtr<IShellFolder> psf;
-	PCUITEMID_CHILD pidlFSPathLast;
-	if (m_bPathIsFile) {
-		psf = m_FSPath.psf;
-		pidlFSPathLast = ILFindLastID(m_FSPath.pidl);
-	} else {
-		hr = SHBindToParent(m_FSPath.pidl, IID_PPV_ARGS(&psf), &pidlFSPathLast);
-		if (FAILED(hr)) return WrapReturn(hr);
-	}
-	hr = psf->GetDisplayNameOf(pidlFSPathLast, SHGDN_FORPARSING, &pName);
+	hr = pEnum->Init(this->GetUnknown(), pszPath);
 	if (FAILED(hr)) return WrapReturn(hr);
-	hr = StrRetToStrW(&pName, pidlFSPathLast, &pszName);
-	if (FAILED(hr)) return WrapReturn(hr);
-	defer({ CoTaskMemFree(pszName); });
-
-	pEnum->Init(this->GetUnknown(), pszName);
 
 	// Return an IEnumIDList interface to the caller.
 	hr = pEnum->QueryInterface(IID_PPV_ARGS(ppEnumIDList));
