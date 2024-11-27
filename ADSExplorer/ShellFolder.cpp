@@ -341,6 +341,25 @@ STDMETHODIMP CShellFolder::EnumObjects(
 	// Don't try to enumerate if nothing has been browsed yet
 	if (m_pidl == NULL) return WrapReturn(S_FALSE);
 
+	switch (dwFlags) {
+		case SHCONTF_FOLDERS | SHCONTF_NONFOLDERS |
+		     SHCONTF_INCLUDEHIDDEN | SHCONTF_FASTITEMS:
+			// Shell passes these flags when it's doing its preliminary
+			// enumeration of the contents of the parent of the requested path.
+			// In this case the call belongs to our inner ShellFolder.
+			return m_psf->EnumObjects(hwndOwner, dwFlags, ppEnumIDList);
+		case SHCONTF_FOLDERS | SHCONTF_INCLUDEHIDDEN |
+		     SHCONTF_FASTITEMS | SHCONTF_ENABLE_ASYNC:
+			// Shell passes these flags when it's really enumerating the path
+			// the user requested.
+			break;
+		default:
+			// We don't expect any other set of flags while the folder is
+			// holding a non-null PIDL
+			LOG(L" ** Unexpected flags [" << SHCONTFToString(&dwFlags) << L"]");
+			ATLASSERT(FALSE);
+	}
+
 	HRESULT hr;
 
 	// Get the path this folder is bound to in string form.
