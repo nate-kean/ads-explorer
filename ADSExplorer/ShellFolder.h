@@ -109,13 +109,9 @@ class ATL_NO_VTABLE CShellFolder
 	// of.
 	// Ends up needed in both PIDL and IShellFolder form throughout the
 	// implementation.
-	struct {
-		PIDLIST_ABSOLUTE pidl;
-		CComPtr<IShellFolder> psf;
-		IShellDetails *psd;
-	} m_FSPath;
-
-	bool m_bPathIsFile;  // affect's EnumObjects's behavior
+	PIDLIST_ABSOLUTE m_pidl;
+	CComPtr<IShellFolder> m_psf;
+	CComPtr<IShellDetails> m_psd;
 };
 
 }  // namespace ADSX

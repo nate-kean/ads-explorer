@@ -43,17 +43,15 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 #pragma region ADSX::CShellFolder
 CShellFolder::CShellFolder()
 	: m_pidlRoot(NULL)
-	, m_FSPath({ .pidl = NULL, .psd = NULL })
-	, m_bPathIsFile(false) {
-	// LOG(P_RSF << L"CONSTRUCTOR");
+	, m_pidl(NULL) {
+	LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 
 CShellFolder::~CShellFolder() {
 	// LOG(P_RSF << L"DESTRUCTOR");
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
-	if (m_FSPath.pidl != NULL) CoTaskMemFree(m_FSPath.pidl);
-	if (m_FSPath.psd != NULL) m_FSPath.psd->Release();
+	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
 }
 #pragma endregion
 
@@ -139,7 +137,7 @@ HRESULT CShellFolder::BindToObjectInitialize(
 		pidlNext,
 		pbc,
 		riid,
-		reinterpret_cast<void**>(&m_FSPath.psf)
+		reinterpret_cast<void**>(&m_psf)
 	);
 	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
 	if (hr == E_FAIL) {
@@ -156,12 +154,12 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	// to our current path, or an absolute path/PIDL.
 	// Either way, what the next instance's PIDL is supposed to be is
 	// straightforward.
-	m_FSPath.pidl = ILIsChild(pidlNext) ?
+	m_pidl = ILIsChild(pidlNext) ?
 		ILCombine(pidlParent, pidlNext) :
 		ILCloneFull(reinterpret_cast<PCIDLIST_ABSOLUTE>(pidlNext));
-	if (m_FSPath.pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
+	if (m_pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	LOG(L" ** New instance's PIDL: " << PidlToString(m_FSPath.pidl));
+	LOG(L" ** New instance's PIDL: " << PidlToString(m_pidl));
 	return WrapReturn(S_OK);
 }
 
@@ -195,9 +193,9 @@ STDMETHODIMP CShellFolder::BindToObject(
 	pShellFolder->AddRef();
 	defer({ pShellFolder->Release(); });
 	hr = pShellFolder->BindToObjectInitialize(
-		m_FSPath.psf,
+		m_psf,
 		m_pidlRoot,
-		m_FSPath.pidl,
+		m_pidl,
 		pidl,
 		pbc,
 		riid
@@ -228,7 +226,7 @@ STDMETHODIMP CShellFolder::CompareIDs(
 
 	// Delegate PIDLs that aren't ours to the real ShellFolder
 	if (!ADSX::CItem::IsOwn(pidl1) && !ADSX::CItem::IsOwn(pidl2)) {
-		return m_FSPath.psf->CompareIDs(lParam, pidl1, pidl2);
+		return m_psf->CompareIDs(lParam, pidl1, pidl2);
 	}
 
 	// Both PIDLs must either be ours or not ours
@@ -316,7 +314,7 @@ STDMETHODIMP CShellFolder::CreateViewObject(
  * the current folder.
  * @pre: Windows has browsed to a path of the format
  *       [Desktop\ADS Explorer\{FS path}]
- * @pre: i.e., m_FSPath.pidl is [Desktop\{FS path}]
+ * @pre: i.e., m_pidl is [Desktop\{FS path}]
  * @post: ppEnumIDList holds a CEnumIDList** on {FS path}
  */
 STDMETHODIMP CShellFolder::EnumObjects(
@@ -326,14 +324,14 @@ STDMETHODIMP CShellFolder::EnumObjects(
 ) {
 	LOG(P_RSF
 		<< L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])"
-		<< L", Path=[" << PidlToString(m_FSPath.pidl) << L"]");
+		<< L", Path=[" << PidlToString(m_pidl) << L"]");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
 	*ppEnumIDList = NULL;
 
 	// Don't try to enumerate if nothing has been browsed yet
-	if (m_FSPath.pidl == NULL) return WrapReturn(S_FALSE);
+	if (m_pidl == NULL) return WrapReturn(S_FALSE);
 
 	// Create an enumerator over this file system object's
 	// alternate data streams.
@@ -403,7 +401,7 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 		// Files and folders
 		// FS objects along the way to and including the requested file/folder
 		LOG(L" ** FS Object");
-		// HRESULT hr = m_FSPath.psf->GetAttributesOf(cidl, aPidls, pfAttribs);
+		// HRESULT hr = m_psf->GetAttributesOf(cidl, aPidls, pfAttribs);
 		// if (FAILED(hr)) return WrapReturn(hr);
 		// *pfAttribs &= SFGAO_BROWSABLE;
 		*pfAttribs &= SFGAO_HASSUBFOLDER |
@@ -445,7 +443,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 	// If it's not one of the boys then just act natural
 	if (!ADSX::CItem::IsOwn(aPidls[0])) {
 		LOG(L" ** Proxying to inner ShellFolder");
-		return m_FSPath.psf->GetUIObjectOf(
+		return m_psf->GetUIObjectOf(
 			hwndOwner, cidl, aPidls, riid, rgfReserved, ppUIObject);
 	}
 
@@ -576,7 +574,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		LOG(L" ** FS Object");
 		// NOTE(garlic-os): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
-		return WrapReturnFailOK(m_FSPath.psf->GetDisplayNameOf(pidl, uFlags, pName));
+		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
 	}
 
 	LOG(L" ** ADS");
@@ -586,7 +584,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
 			PCIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
 				m_pidlRoot,
-				ILNext(m_FSPath.pidl)  // remove [Desktop]
+				ILNext(m_pidl)  // remove [Desktop]
 			);
 			PWSTR pszPath = NULL;
 			HRESULT hr = SHGetNameFromIDList(
@@ -636,7 +634,7 @@ STDMETHODIMP CShellFolder::ParseDisplayName(
 	}
 
 	HRESULT hr;
-	hr = m_FSPath.psf->ParseDisplayName(
+	hr = m_psf->ParseDisplayName(
 		hwnd,
 		pbc,
 		pszDisplayName,
@@ -712,13 +710,11 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 	if (!ADSX::CItem::IsOwn(pidl)) {
 		// Lazy load this because this doesn't happen for every shellfolder
 		// instance (e.g., during browsing's "drill down" phase)
-		if (m_FSPath.psd == NULL) {
-			hr = m_FSPath.psf->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_FSPath.psd));
+		if (m_psd == NULL) {
+			hr = m_psf->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psd));
 			if (FAILED(hr)) return WrapReturnFailOK(hr);
 		}
-		return WrapReturnFailOK(
-			m_FSPath.psd->GetDetailsOf(pidl, uColumn, pDetails)
-		);
+		return WrapReturnFailOK(m_psd->GetDetailsOf(pidl, uColumn, pDetails));
 	}
 
 	if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
