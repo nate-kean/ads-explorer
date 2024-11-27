@@ -296,9 +296,10 @@ STDMETHODIMP CShellFolder::CreateViewObject(
 
 		// Create the view
 		hr = pViewObject->Create(
-			reinterpret_cast<IShellView **>(ppViewObject),
 			hwndOwner,
-			static_cast<IShellFolder *>(this)
+			this,
+			NULL,
+			reinterpret_cast<IShellView **>(ppViewObject)
 		);
 
 		return WrapReturn(hr);

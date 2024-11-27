@@ -41,13 +41,13 @@ class CShellFolderViewImpl : public CMessageMap,
 	// hwndOwner - The window handle of the parent to the new shell view
 	// pISF - The IShellFolder related to the view
 	HRESULT Create(
-		IShellView **ppISV,
-		HWND hwndOwner,
-		IShellFolder *pISF,
-		IShellView *psvOuter = NULL
+		_In_ HWND hwndOwner,
+		_In_ IShellFolder *pShellFolder,
+		_In_opt_ IShellView *psvOuter,
+		_Outptr_ IShellView **ppShellView
 	) {
 		m_hwndOwner = hwndOwner;
-		m_psf = pISF;
+		m_psf = pShellFolder;
 
 		SFV_CREATE sfv;
 		sfv.cbSize = sizeof(SFV_CREATE);
@@ -55,7 +55,8 @@ class CShellFolderViewImpl : public CMessageMap,
 		sfv.psvOuter = psvOuter;
 		sfv.psfvcb = static_cast<IShellFolderViewCB *>(this);
 
-		return SHCreateShellFolderView(&sfv, ppISV);
+		// return SHCreateShellFolderView(&sfv, ppISV);
+		return WrapReturn(SHCreateShellFolderView(&sfv, ppShellView));
 	}
 
 	// Used to send messages back to the shell view
