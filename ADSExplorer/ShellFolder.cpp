@@ -144,6 +144,7 @@ HRESULT CShellFolder::BindToObjectInitialize(
 		// Tried to browse into a file, which is fine for us.
 		// If EnumObjects is called for this instance of the ADSX Shell Folder,
 		// we'll be enumerating the file's ADSes.
+		m_psf = psfParent;
 	} else if (FAILED(hr)) {
 		return WrapReturnFailOK(hr);
 	}
