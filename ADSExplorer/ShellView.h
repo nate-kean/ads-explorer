@@ -61,6 +61,7 @@ class CShellFolderViewImpl : public CMessageMap,
 
 	// Used to send messages back to the shell view
 	LRESULT SendFolderViewMessage(UINT uMsg, LPARAM lParam) {
+		// LOG(P_RSV << L"SendFolderViewMessage(uMsg=" << uMsg << L")");
 		return SHShellFolderView_Message(m_hwndOwner, uMsg, lParam);
 	}
 

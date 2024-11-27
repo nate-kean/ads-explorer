@@ -97,7 +97,7 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
 
 	// Initialize to the root of the namespace, [Desktop]
-	HRESULT hr = SHGetDesktopFolder(&m_FSPath.psf);
+	HRESULT hr = SHGetDesktopFolder(&m_psf);
 	if (FAILED(hr)) return hr;
 
 	return hr;
