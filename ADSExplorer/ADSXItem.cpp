@@ -2,7 +2,7 @@
 
 #include "ADSXItem.h"
 
-using namespace ADSX;
+namespace ADSX {
 
 
 bool CItem::IsOwn(PCUIDLIST_RELATIVE pidl) {
@@ -29,3 +29,5 @@ PADSXITEMID_CHILD CItem::NewPidl() {
 	new (CItem::Get(pidl)) CItem();
 	return pidl;
 }
+
+}  // namespace ADSX
