@@ -15,7 +15,7 @@ class CDebugStream
 	: private std::wstreambuf
 	, public std::wostream {
   public:
-	// --- Singleton ---
+	// >>> Singleton >>>
 	// https://stackoverflow.com/a/1008289/16247437
 	static CDebugStream& get_instance() {
 		static CDebugStream instance;
@@ -23,7 +23,7 @@ class CDebugStream
 	}
 	CDebugStream(CDebugStream const&) = delete;
 	void operator=(CDebugStream const&) = delete;
-	// --- /Singleton ---
+	// <<< Singleton <<<
 
   protected:
 	using Base = std::wstreambuf;
@@ -35,10 +35,10 @@ class CDebugStream
 	std::ios_base::fmtflags m_initial_flags;
 
   private:
-	// --- Singleton ---
+	// >>> Singleton >>>
 	CDebugStream();
 	virtual ~CDebugStream();
-	// --- /Singleton ---
+	// <<< Singleton <<<
 };
 
 // #define DBG_LOG_TO_FILE

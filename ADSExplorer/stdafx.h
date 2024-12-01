@@ -43,7 +43,7 @@
 #include <atlwin.h>  // CMessageMap, ProcessWindowMessage, MESSAGE_HANDLER
 #include <shellapi.h> // HDROP, DragQueryFile, ShellExecute
 
-#include <string>  // TODO: Remove C++ STL
+#include <string>  // TODO(garlic-os): Remove C++ STL
 
 #include "debug.h"
 #include "../Common/defer.h"
