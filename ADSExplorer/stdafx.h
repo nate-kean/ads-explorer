@@ -46,7 +46,7 @@
 #include <string>  // TODO(garlic-os): Remove C++ STL
 
 #include "debug.h"
-#include "../Common/defer.h"
+#include "defer.h"
 
 extern CComModule _Module;
 

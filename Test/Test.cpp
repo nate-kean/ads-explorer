@@ -4,7 +4,7 @@
 #include <comutil.h>
 
 #include "EnumIDList.h"
-#include "../Common/defer.h"
+#include "defer.h"
 
 #include <stdexcept>
 

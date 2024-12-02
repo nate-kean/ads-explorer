@@ -10,7 +10,7 @@
 #ifdef _DEBUG
 	#include <wpc.h>  // E_FILE_NOT_FOUND
 	#include "ADSXItem.h"
-	#include "../Common/defer.h"
+	#include "defer.h"
 	#include "iids.h"
 	#include <iomanip>
 	#include <sstream>
