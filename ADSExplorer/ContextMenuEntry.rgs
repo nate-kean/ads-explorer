@@ -21,3 +21,28 @@ HKCR
         }
     }
 }
+HKLM
+{
+    NoRemove Software
+    {
+        NoRemove Microsoft
+        {
+            NoRemove Windows
+            {
+                NoRemove CurrentVersion
+                {
+                    NoRemove Explorer
+                    {
+                        NoRemove Shell Extensions
+                        {
+                            NoRemove Approved
+                            {
+                                ForceRemove {D8AECA1A-7E1D-44C2-ABB0-F0558AB00092} = s 'ADS Explorer Context Menu'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

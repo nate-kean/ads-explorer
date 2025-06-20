@@ -55,11 +55,20 @@ STDAPI DllGetClassObject(
 // DllRegisterServer - Adds entries to the system registry
 STDAPI DllRegisterServer() {
 	// registers object, typelib and all interfaces in typelib
-	return _Module.RegisterServer(TRUE);
+	HRESULT hr = _Module.RegisterServer(TRUE);
+	if (FAILED(hr)) {
+		// If registration failed, attempt to unregister to clean up any partial registration
+		_Module.UnregisterServer(TRUE);
+		return hr;
+	}
+	return hr;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
 STDAPI DllUnregisterServer() {
-	return _Module.UnregisterServer(TRUE);
+	HRESULT hr = _Module.UnregisterServer(TRUE);
+	// Even if unregistration fails partially, we still return the result
+	// The caller can check the return value to determine if cleanup was successful
+	return hr;
 }
