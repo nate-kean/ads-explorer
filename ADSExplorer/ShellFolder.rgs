@@ -12,6 +12,7 @@ HKCR
             ShellFolder
             {
                 val Attributes = d '4160749584'
+                val WantsFORPARSING = s ''
             }
             Implemented Categories
             {
@@ -43,6 +44,13 @@ HKLM
                                 {
                                     val 'Removal Message' = s '@%MODULE%,-300'
                                 }
+                            }
+                        }
+                        NoRemove Shell Extensions
+                        {
+                            NoRemove Approved
+                            {
+                                ForceRemove {ED383D11-6797-4103-85EF-CBDB8DEB50E2} = s 'ADS Explorer Shell Extension'
                             }
                         }
                     }
