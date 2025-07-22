@@ -11,7 +11,7 @@ HKCR
             DefaultIcon = s '%MODULE%,0'
             ShellFolder
             {
-                val Attributes = d '4160749568'
+                val Attributes = d '4160749584'
                 val WantsFORPARSING = s ''
             }
             Implemented Categories
