@@ -41,6 +41,7 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 
 
 #pragma region ADSX::CShellFolder
+
 CShellFolder::CShellFolder()
 	: m_pidlRoot(NULL)
 	, m_pidl(NULL) {
@@ -53,87 +54,18 @@ CShellFolder::~CShellFolder() {
 	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
 	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
 }
-#pragma endregion
 
 
-#pragma region IPersist
-STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
-	if (pclsid == NULL) return E_POINTER;
-	// if (pclsid == NULL) return WrapReturn(E_POINTER);
-	*pclsid = CLSID_ADSExplorerShellFolder;
-	return S_OK;
-	// return WrapReturn(S_OK);
-}
-#pragma endregion
-
-
-#pragma region IPersistFolder
 /**
- * COM constructor for a brand new ADSX Shell Folder. Called by Windows.
- * Initialize() is passed the PIDL of the folder where our extension is.
- * Copies, does not take ownership of, the PIDL.
- * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
- *       (I _assume_ those are the only two values Explorer ever passes to us.)
- * @pre: 0 < PIDL length < 3.
- * @post: this ADSX​::CShellFolder instance is ready to be used.
+ * Entry point for creating an ADSX Shell Folder from a call to BindToObject.
  */
-STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
-	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
-
-	// Don't initialize more than once.
-	// This is necessary because for reasons beyond me Windows tries to.
-	// TODO(nate-kean): Why does Windows call Initialize() more than once sometimes?
-	if (m_pidlRoot != NULL) {
-		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
-		// return WrapReturn(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
-	}
-
-	// Validate input PIDL
-	if (
-		// PIDL length is 0?
-		ILIsEmpty(pidlRoot) ||
-		// or more than 2?
-		(!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot))))
-	) {
-		return WrapReturn(E_INVALIDARG);
-	}
-
-	// Keep this around for use elsewhere
-	m_pidlRoot = ILCloneFull(pidlRoot);
-	if (m_pidlRoot == NULL) return E_OUTOFMEMORY;
-	// if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
-
-	// Initialize to the root of the namespace, [Desktop]
-	HRESULT hr = SHGetDesktopFolder(&m_psf);
-	if (FAILED(hr)) return hr;
-	// if (FAILED(hr)) return WrapReturn(hr);
-
-	return hr;
-	// return WrapReturn(hr);
-}
-
-
-STDMETHODIMP
-CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
-	// LOG(P_RSF << L"GetCurFolder()");
-	if (ppidl == NULL) return E_POINTER;
-	// if (ppidl == NULL) return WrapReturn(E_POINTER);
-	*ppidl = ILCloneFull(m_pidlRoot);
-	return *ppidl != NULL ? S_OK : E_OUTOFMEMORY;
-	// return WrapReturn(*ppidl != NULL ? S_OK : E_OUTOFMEMORY);
-}
-
-#pragma endregion
-
-
-#pragma region IShellFolder
 HRESULT CShellFolder::BindToObjectInitialize(
-	_In_      IShellFolder*      psfParent,
-	_In_      PCIDLIST_ABSOLUTE  pidlRoot,
-	_In_      PCIDLIST_ABSOLUTE  pidlParent,
-	_In_      PCUIDLIST_RELATIVE pidlNext,
-	_In_opt_  IBindCtx*          pbc,
-	_In_      REFIID             riid
+	_In_     IShellFolder*      psfParent,
+	_In_     PCIDLIST_ABSOLUTE  pidlRoot,
+	_In_     PCIDLIST_ABSOLUTE  pidlParent,
+	_In_     PCUIDLIST_RELATIVE pidlNext,
+	_In_opt_ IBindCtx*          pbc,
+	_In_     REFIID             riid
 ) {
 	HRESULT hr;
 
@@ -142,6 +74,9 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	// Browse this path internally.
+	// TODO(nate-kean): Find out whether this path is a directory without
+	// actually browsing to it. We DON'T want to browse if it turns out to be
+	// a file at the end; we don't want to open it.
 	hr = psfParent->BindToObject(
 		pidlNext,
 		pbc,
@@ -151,8 +86,8 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
 	if (hr == E_FAIL) {
 		// Tried to browse into a file, which is fine for us.
-		// If EnumObjects is called for this instance of the ADSX Shell Folder,
-		// we'll be enumerating the file's ADSes.
+		// If EnumObjects is now called for this instance of the
+		// ADSX Shell Folder, we'll be enumerating the file's ADSes.
 		m_psf = psfParent;
 	} else if (FAILED(hr)) {
 		return WrapReturnFailOK(hr);
@@ -171,19 +106,100 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	LOG(L" ** New instance's PIDL: " << PidlToString(m_pidl));
 	return WrapReturn(S_OK);
 }
+#pragma endregion
 
 
-// TODO(garlic-os): Explain this function
+#pragma region IPersist
+
+STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
+	if (pclsid == NULL) return E_POINTER;
+	// if (pclsid == NULL) return WrapReturn(E_POINTER);
+	*pclsid = CLSID_ADSExplorerShellFolder;
+	return S_OK;
+	// return WrapReturn(S_OK);
+}
+
+#pragma endregion
+
+
+#pragma region IPersistFolder
+
+/**
+ * COM constructor for a brand new ADSX Shell Folder. Called by Windows.
+ * Initialize() is passed the PIDL of the folder where our extension is.
+ * Copies, does not take ownership of, the PIDL.
+ * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
+ *       (I _assume_ those are the only two values Explorer ever passes to us.)
+ * @pre: 0 < PIDL length < 3.
+ * @post: this ADSX​::CShellFolder instance is ready to be used.
+ */
+STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
+	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
+
+	// Don't initialize more than once.
+	// This is necessary because for reasons beyond me Windows tries to.
+	// TODO(nate-kean): Why does Windows call Initialize() more than once sometimes?
+	if (m_pidlRoot != NULL) {
+		// return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
+		return WrapReturn(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
+		// return WrapReturnFailOK(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
+	}
+
+	// Validate input PIDL
+	if (
+		// PIDL length is 0?
+		ILIsEmpty(pidlRoot) ||
+		// or more than 2?
+		(!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot))))
+	) {
+		return WrapReturn(E_INVALIDARG);
+	}
+
+	// Keep this around for use elsewhere
+	m_pidlRoot = ILCloneFull(pidlRoot);
+	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
+
+	// Initialize to the root of the namespace, [Desktop]
+	HRESULT hr = SHGetDesktopFolder(&m_psf);
+	if (FAILED(hr)) return WrapReturn(hr);
+
+	return hr;
+	// return WrapReturn(hr);
+}
+
+
+STDMETHODIMP CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
+	// LOG(P_RSF << L"GetCurFolder()");
+	if (ppidl == NULL) return E_POINTER;
+	// if (ppidl == NULL) return WrapReturn(E_POINTER);
+	*ppidl = ILCloneFull(m_pidlRoot);
+	if (*ppidl != NULL) {
+		return S_OK;
+		// return WrapReturn(S_OK);
+	} else {
+		return WrapReturn(E_OUTOFMEMORY);
+	}
+}
+
+#pragma endregion
+
+
+#pragma region IShellFolder
+
+/**
+ * Create a new Shell Folder object for a given PIDL.
+ */
 STDMETHODIMP CShellFolder::BindToObject(
 	_In_         PCUIDLIST_RELATIVE pidl,
 	_In_opt_     IBindCtx*          pbc,
 	_In_         REFIID             riid,
 	_COM_Outptr_ void**             ppShellFolder
 ) {
-	if (ppShellFolder == NULL) return E_POINTER;
+	if (ppShellFolder == NULL) return WrapReturnFailOK(E_POINTER);
 	*ppShellFolder = NULL;
 
-	// Don't log unsupported interfaces
+	// Don't accept unsupported interfaces
+	// (And don't log them either)
 	if (riid != IID_IShellFolder && riid != IID_IShellFolder2) {
 		return E_NOINTERFACE;
 	}
@@ -209,11 +225,11 @@ STDMETHODIMP CShellFolder::BindToObject(
 		pbc,
 		riid
 	);
-	if (FAILED(hr)) return hr;  // Was already Wrap'd
+	if (FAILED(hr)) return hr;  // Was already Wrap'd before we received it
+
+	// Return a (new object implementing) IShellFolder to the caller.
 	hr = pShellFolder->QueryInterface(riid, ppShellFolder);
-	if (FAILED(hr)) return WrapReturn(hr);
-	
-	return WrapReturn(S_OK);
+	return WrapReturn(hr);
 }
 
 
@@ -284,8 +300,8 @@ STDMETHODIMP CShellFolder::CreateViewObject(
 	// Not logging all interface requests because there are too many
 	// LOG(P_RSF << L"CreateViewObject(riid=[" << IIDToString(riid) << L"])");
 
-	if (ppViewObject == NULL) return E_POINTER;
-	// if (ppvViewObject == NULL) return WrapReturn(E_POINTER);
+	// if (ppViewObject == NULL) return E_POINTER;
+	if (ppViewObject == NULL) return WrapReturn(E_POINTER);
 	*ppViewObject = NULL;
 
 	HRESULT hr;
@@ -599,6 +615,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		LOG(L" ** FS Object");
 		// NOTE(nate-kean): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
+		// return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
 		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
 	}
 
