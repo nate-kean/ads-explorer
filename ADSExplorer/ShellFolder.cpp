@@ -69,6 +69,7 @@ STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
 
 #pragma region IPersistFolder
 /**
+ * COM constructor for a brand new ADSX Shell Folder. Called by Windows.
  * Initialize() is passed the PIDL of the folder where our extension is.
  * Copies, does not take ownership of, the PIDL.
  * @pre: PIDL is [Desktop\ADS Explorer] or [ADS Explorer].
@@ -81,6 +82,7 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 
 	// Don't initialize more than once.
 	// This is necessary because for reasons beyond me Windows tries to.
+	// TODO(nate-kean): Why does Windows call Initialize() more than once sometimes?
 	if (m_pidlRoot != NULL) {
 		return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
 		// return WrapReturn(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
@@ -88,12 +90,12 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 
 	// Validate input PIDL
 	if (
+		// PIDL length is 0?
 		ILIsEmpty(pidlRoot) ||
+		// or more than 2?
 		(!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot))))
 	) {
-		// PIDL length is 0 or more than 2
-		return E_INVALIDARG;
-		// return WrapReturn(E_INVALIDARG);
+		return WrapReturn(E_INVALIDARG);
 	}
 
 	// Keep this around for use elsewhere
@@ -242,7 +244,7 @@ STDMETHODIMP CShellFolder::CompareIDs(
 		return WrapReturn(E_INVALIDARG);
 	}
 
-	// Only child ADS PIDLs supported
+	// Only child ADS PIDLs are supported
 	ATLASSERT(ILIsChild(pidl1) && ILIsChild(pidl2));
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return WrapReturn(E_INVALIDARG);
@@ -318,8 +320,8 @@ STDMETHODIMP CShellFolder::CreateViewObject(
 
 
 /**
- * Return a COM object that implements IEnumIDList and enumerates the ADSes in
- * the current folder.
+ * Return a COM object that implements IEnumIDList and enumerates the ADSes
+ * within the current file system object.
  * @pre: Windows has browsed to a path of the format
  *       [Desktop\ADS Explorer\{FS path}]
  * @pre: i.e., m_pidl is [Desktop\{FS path}]
@@ -389,7 +391,7 @@ STDMETHODIMP CShellFolder::EnumObjects(
 
 
 /**
- * Return if the items represented by the given PIDLs have the attributes
+ * Return whether the items represented by the given PIDLs have the attributes
  * requested.
  * For each bit flag:
  *   1 if the flag is set on input and all the given items have that attribute,
@@ -446,7 +448,9 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 }
 
 
-// Provide any of several sub-objects like IExtractIcon and IDataObject.
+/**
+ * Provide any of several sub-objects like IExtractIcon and IDataObject.
+ */
 STDMETHODIMP CShellFolder::GetUIObjectOf(
 	_In_         HWND                  hwndOwner,
 	_In_         UINT                  cidl,

@@ -56,7 +56,7 @@ IFACEMETHODIMP CContextMenuEntry::Initialize(
 	if (hDrop == NULL) return WrapReturn(E_INVALIDARG);
 	defer({ GlobalUnlock(stg.hGlobal); });
 
-	// Sanity check – make sure there is at least one filename.
+	// Basic integrity check – make sure there is at least one filename.
 	// (0xFFFFFFFF = get file count)
 	UINT uNumFiles = DragQueryFileW(hDrop, 0xFFFFFFFF, NULL, 0);
 	if (uNumFiles == 0) return WrapReturn(E_INVALIDARG);
@@ -141,6 +141,7 @@ IFACEMETHODIMP CContextMenuEntry::InvokeCommand(
 	// context menu.
 	if (uCmd != 0) return WrapReturnFailOK(E_INVALIDARG);
 
+	// Go to the ADS Explorer version of this path in Explorer.
 	ShellExecuteW(
 		pcmici->hwnd,
 		L"explore",

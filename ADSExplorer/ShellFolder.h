@@ -92,7 +92,6 @@ class ATL_NO_VTABLE CShellFolder
 	//--------------------------------------------------------------------------
 
    protected:
-	// Entry point for when an ADSX folder is created by a call to BindToObject.
 	HRESULT BindToObjectInitialize(
 		_In_      IShellFolder*      psfParent,
 		_In_      PCIDLIST_ABSOLUTE  pidlRoot,
@@ -102,7 +101,7 @@ class ATL_NO_VTABLE CShellFolder
 		_In_      REFIID             riid
 	);
 
-	PIDLIST_ABSOLUTE m_pidlRoot;  // [Desktop]\ADS Explorer
+	PIDLIST_ABSOLUTE m_pidlRoot;  // Always [Desktop\ADS Explorer]
 
 	// Our inner model of where we are in the filesystem as Windows drills from
 	// the root of the namespace to whatever path we're getting the ADSX view
