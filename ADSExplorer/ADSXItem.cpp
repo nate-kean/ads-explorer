@@ -6,10 +6,16 @@ namespace ADSX {
 
 
 bool CItem::IsOwn(PCUIDLIST_RELATIVE pidl) {
-  return pidl != NULL &&
-		 pidl->mkid.cb == sizeof(ITEMIDLIST) + sizeof(CItem) - sizeof(BYTE) &&
-		 ILIsChild(pidl) &&
-		 CItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->SIGNATURE == 'ADSX';
+	return (
+		// Not null of course
+		pidl != NULL &&
+		// Is of expected size
+		pidl->mkid.cb == sizeof(ITEMIDLIST) + sizeof(CItem) - sizeof(BYTE) &&
+		// Is a child PIDL as are all ADSX::CItems
+		ILIsChild(pidl) &&
+		// Pronounces shibboleth correctly
+		CItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->SIGNATURE == 'ADSX'
+	);
 }
 
 
@@ -26,7 +32,7 @@ PADSXITEMID_CHILD CItem::NewPidl() {
 		CoTaskMemAlloc(sizeof(ADSXITEMID_CHILD))
 	);
 	if (pidl == NULL) return NULL;
-	new (CItem::Get(pidl)) CItem();
+	new (reinterpret_cast<CItem *>(&pidl->mkid.abID)) CItem();
 	return pidl;
 }
 
