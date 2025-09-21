@@ -406,7 +406,7 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 		L"pfAttribs=[" << SFGAOFToString(pfAttribs) << L"]"
 	L")");
 
-	if (cidl < 1) return WrapReturn(E_INVALIDARG);  // TODO(garlic-os): support more than one item
+	if (cidl < 1) return WrapReturn(E_INVALIDARG);  // TODO(nate-kean): support more than one item
 	if (aPidls == NULL) return WrapReturn(E_POINTER);
 
 	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
@@ -469,7 +469,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 	}
 
 	// Only one item at a time
-	// TODO(garlic-os): It was a design decision for Hurni's NSE to support
+	// TODO(nate-kean): It was a design decision for Hurni's NSE to support
 	// only one item at a time. I should consider supporting multiple.
 	if (cidl != 1) return WrapReturn(E_INVALIDARG);
 
@@ -503,7 +503,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 		return WrapReturn(hr);
 	}
 
-	// TODO(garlic-os): implement other interfaces as listed in
+	// TODO(nate-kean): implement other interfaces as listed in
 	// https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ishellfolder-getuiobjectof#remarks.
 	// OpenWindows had the luxury of their objects being real/normal filesystem
 	// objects (i.e., the folders other Explorer windows were open to), so it
@@ -593,7 +593,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 
 	if (!ADSX::CItem::IsOwn(pidl)) {
 		LOG(L" ** FS Object");
-		// NOTE(garlic-os): Has returned E_INVALIDARG on [Desktop\C:\] before
+		// NOTE(nate-kean): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
 		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
 	}
@@ -623,7 +623,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		}
 
 		case SHGDN_INFOLDER | SHGDN_FOREDITING:
-			return WrapReturn(E_FAIL);  // TODO(garlic-os)
+			return WrapReturn(E_FAIL);  // TODO(nate-kean)
 			// return E_FAIL;
 
 		case SHGDN_INFOLDER:
@@ -672,7 +672,7 @@ STDMETHODIMP CShellFolder::ParseDisplayName(
 }
 
 
-// TODO(garlic-os): should this be implemented?
+// TODO(nate-kean): should this be implemented?
 STDMETHODIMP CShellFolder::SetNameOf(
 	_In_     HWND,
 	_In_     PCUITEMID_CHILD,
@@ -880,7 +880,7 @@ STDMETHODIMP CShellFolder::MapColumnToSCID(
 				*pscid = PKEY_ItemNameDisplay;
 				return WrapReturn(S_OK);
 			case DetailsColumn::Filesize:
-				// TODO(garlic-os): is this right? where are PKEYs'
+				// TODO(nate-kean): is this right? where are PKEYs'
 				// documentation?
 				*pscid = PKEY_TotalFileSize;
 				// *pscid = PKEY_Size;

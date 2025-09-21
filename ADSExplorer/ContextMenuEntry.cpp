@@ -176,7 +176,7 @@ IFACEMETHODIMP CContextMenuEntry::QueryContextMenu(
 		i,
 		MF_STRING | MF_BYPOSITION,
 		uidCmdFirst,
-		// TODO(garlic-os): put this in a resource string
+		// TODO(nate-kean): put this in a resource string
 		L"Browse alternate data streams"
 	);
 	return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1));

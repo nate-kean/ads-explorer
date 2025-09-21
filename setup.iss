@@ -2,7 +2,7 @@
 AppName=ADS Explorer
 AppCopyright=Copyright (c) 2024 Nate Kean
 AppPublisher=Nate Kean
-AppPublisherURL=https://github.com/garlic-os/ads-explorer
+AppPublisherURL=https://github.com/nate-kean/ads-explorer
 AppVersion=1.0.0
 DefaultDirName={pf}\ADS Explorer
 DisableProgramGroupPage=yes
