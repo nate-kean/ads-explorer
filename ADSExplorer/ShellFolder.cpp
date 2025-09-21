@@ -249,17 +249,17 @@ STDMETHODIMP CShellFolder::CompareIDs(
 	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
-	auto Item1 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
-	auto Item2 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
+	auto pItem1 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
+	auto pItem2 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
 		case DetailsColumn::Name:
-			Result = wcscmp(Item1->pszName, Item2->pszName);
+			Result = wcscmp(pItem1->pszName, pItem2->pszName);
 			break;
 		case DetailsColumn::Filesize:
-			Result = static_cast<USHORT>(Item1->llFilesize - Item2->llFilesize);
+			Result = static_cast<USHORT>(pItem1->llFilesize - pItem2->llFilesize);
 			if (Result < 0) Result = -1;
 			else if (Result > 0) Result = 1;
 			break;
@@ -603,7 +603,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 	}
 
 	LOG(L" ** ADS");
-	auto Item = ADSX::CItem::Get(pidl);
+	auto pItem = ADSX::CItem::Get(pidl);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
@@ -620,7 +620,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 			if (FAILED(hr)) return WrapReturn(hr);
 			defer({ CoTaskMemFree(pszPath); });
 			std::wostringstream ossPath;
-			ossPath << pszPath << L":" << Item->pszName;
+			ossPath << pszPath << L":" << pItem->pszName;
 			return WrapReturn(
 				SetReturnString(ossPath.str().c_str(), pName) ? S_OK : E_FAIL
 			);
@@ -634,7 +634,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		case SHGDN_INFOLDER | SHGDN_FORPARSING:
 		default:
 			return WrapReturn(
-				SetReturnString(Item->pszName, pName) ? S_OK : E_FAIL
+				SetReturnString(pItem->pszName, pName) ? S_OK : E_FAIL
 			);
 			// return SetReturnString(Item->pszName, *pName) ? S_OK : E_FAIL;
 	}
