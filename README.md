@@ -45,13 +45,13 @@ This touches everything with a shell view (e.g., Window Explorer and file
 picker dialogs), so it might cause stability issues. _Caveat emptor._
 
 ## Known issues
-* An installer would be nice.
-* Modern property handling is very, very basic and intended just to appease the
+- An installer would be nice.
+- Modern property handling is very, very basic and intended just to appease the
   tile view subtitles in Vista+. It should probably use fancier behavior,
   but as it is now it delegates as much as it can except the bare minimum to
   the "classic" way of doing it.
-* Not feature complete.
-* It would be nice for this to be backwards compatible with the oldest versions
+- Not feature complete.
+- It would be nice for this to be backwards compatible with the oldest versions
   of Windows possible.
 
 ## Attributions
