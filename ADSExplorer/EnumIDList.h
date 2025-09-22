@@ -27,18 +27,28 @@ class ATL_NO_VTABLE CEnumIDList
 	virtual ~CEnumIDList();
 	
 	/**
-	 * Initialization logic in a separate method because COM object constructors
-	 * are called in a weird way that makes it so that AFAIK they can't have
-	 * parameters
-	 * @post: pszPath is copied and ownership remains with caller
+	 * Language-agnostic constructor apart from C++'s CEnumIDList() to play nice
+	 * with COM because it's language-agnostic.
+	 * @post: pszPath is copied and ownership remains with caller.
 	 */
 	HRESULT Init(_In_ IUnknown *pUnkOwner, _In_ PCWSTR pszPath);
 
+	// -------------------------------------------------------------------------
 	// IEnumIDList
-	STDMETHOD(Next)(_In_ ULONG, _Outptr_ PITEMID_CHILD*, _Out_ ULONG*);
-	STDMETHOD(Skip)(_In_ ULONG);
-	STDMETHOD(Reset)(void);
-	STDMETHOD(Clone)(_COM_Outptr_ IEnumIDList**);
+	STDMETHOD(Next)(
+		_In_     ULONG,
+		_Outptr_ PITEMID_CHILD*,
+		_Out_    ULONG*
+	);
+	STDMETHOD(Skip)(
+		_In_ ULONG
+	);
+	STDMETHOD(Reset)(
+		void
+	);
+	STDMETHOD(Clone)(
+		_COM_Outptr_ IEnumIDList**
+	);
 
   protected:
 	using FnConsume = std::function<

@@ -33,31 +33,31 @@ class ATL_NO_VTABLE CContextMenuEntry
 	//--------------------------------------------------------------------------
 	// IShellExtInit
 	IFACEMETHOD(Initialize)(
-		_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
-		_In_     IDataObject*      pdo,
-		_In_     HKEY              hkeyProgID
+		_In_opt_ PCIDLIST_ABSOLUTE,
+		_In_     IDataObject*,
+		_In_     HKEY
 	);
 
 	//--------------------------------------------------------------------------
 	// IContextMenu
 	IFACEMETHOD(GetCommandString)(
-		_In_                 UINT_PTR idCmd,
-		_In_                 UINT     uFlags,
-		_In_                 UINT*    puReserved,
-		_Out_writes_(cchMax) LPSTR    pszName,
-		_In_                 UINT     cchMax
+		_In_                 UINT_PTR,
+		_In_                 UINT,
+		_In_                 UINT*,
+		_Out_writes_(cchMax) LPSTR,
+		_In_                 UINT
 	);
 
 	IFACEMETHOD(InvokeCommand)(
-		_In_ CMINVOKECOMMANDINFO* pici
+		_In_ CMINVOKECOMMANDINFO*
 	);
 
 	IFACEMETHOD(QueryContextMenu)(
-		_In_ HMENU hmenu,
-		_In_ UINT  i,
-		_In_ UINT  uidCmdFirst,
-		_In_ UINT  uidCmdLast,
-		_In_ UINT  uFlags
+		_In_ HMENU,
+		_In_ UINT,
+		_In_ UINT,
+		_In_ UINT,
+		_In_ UINT
 	);
 
    protected:

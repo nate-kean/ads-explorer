@@ -15,8 +15,8 @@ namespace ADSX {
 
 // helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
 static HGLOBAL CreateShellIDList(
-	PIDLIST_ABSOLUTE pidlParent,
-	PCUITEMID_CHILD pidl
+	_In_ PIDLIST_ABSOLUTE pidlParent,
+	_In_ PCUITEMID_CHILD  pidl
 ) {
 	// Get the combined size of the parent folder's PIDL and the other PIDL
 	UINT cbpidl = ILGetSize(pidlParent) + ILGetSize(pidl);
@@ -63,6 +63,9 @@ static HGLOBAL CreateShellIDList(
 	return hGlobal;
 }
 
+
+#pragma region CDataObject
+
 CDataObject::~CDataObject() {
 	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
 	if (m_pidlParent != NULL) CoTaskMemFree(m_pidlParent);
@@ -79,10 +82,14 @@ void CDataObject::Init(
 	m_cfShellIDList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
 }
 
-//------------------------------------------------------------------------------
-// IDataObject
+#pragma endregion
 
-STDMETHODIMP CDataObject::GetData(LPFORMATETC pFE, LPSTGMEDIUM pStgMedium) {
+#pragma region IDataObject
+
+STDMETHODIMP CDataObject::GetData(
+	_In_  LPFORMATETC pFE,
+	_Out_ LPSTGMEDIUM pStgMedium
+) {
 	LOG(P_DO << L"GetData()");
 	if (pFE->cfFormat != m_cfShellIDList) return WrapReturn(E_INVALIDARG);
 
@@ -116,30 +123,31 @@ STDMETHODIMP CDataObject::SetData(LPFORMATETC, LPSTGMEDIUM, BOOL) {
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC **) {
+STDMETHODIMP CDataObject::EnumFormatEtc(DWORD, IEnumFORMATETC**) {
 	LOG(P_DO << L"EnumFormatEtc()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink *, LPDWORD) {
+STDMETHODIMP CDataObject::DAdvise(LPFORMATETC, DWORD, IAdviseSink*, LPDWORD) {
 	LOG(P_DO << L"DAdvise()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::DUnadvise(DWORD dwConnection) {
+STDMETHODIMP CDataObject::DUnadvise(DWORD) {
 	LOG(P_DO << L"DUnadvise()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
+STDMETHODIMP CDataObject::EnumDAdvise(IEnumSTATDATA**) {
 	LOG(P_DO << L"EnumDAdvise()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-//------------------------------------------------------------------------------
-// IEnumFORMATETC
+#pragma endregion
 
-STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG *) {
+#pragma region IEnumFORMATETC
+
+STDMETHODIMP CDataObject::Next(ULONG, LPFORMATETC, ULONG*) {
 	LOG(P_DO << L"Next()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
@@ -154,9 +162,11 @@ STDMETHODIMP CDataObject::Reset() {
 	return WrapReturnFailOK(E_NOTIMPL);
 }
 
-STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC *) {
+STDMETHODIMP CDataObject::Clone(LPENUMFORMATETC*) {
 	LOG(P_DO << L"Clone()");
 	return WrapReturnFailOK(E_NOTIMPL);
 }
+
+#pragma endregion
 
 }  // namespace ADSX

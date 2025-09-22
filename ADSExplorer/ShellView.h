@@ -67,7 +67,11 @@ class CShellFolderViewImpl : public CMessageMap,
 		return SHShellFolderView_Message(m_hwndOwner, uMsg, lParam);
 	}
 
-	STDMETHODIMP MessageSFVCB(UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+	STDMETHODIMP MessageSFVCB(
+		_In_ UINT   uMsg,
+		     WPARAM wParam,
+		     LPARAM lParam
+	) noexcept {
 		// LOG(P_RSV << L"MessageSFVCB(uMsg=" << uMsg << L")");
 		LRESULT lResult = NULL;
 		BOOL bResult = this->ProcessWindowMessage(
@@ -117,8 +121,12 @@ class CADSXShellView : public CShellFolderViewImpl {
 	END_MSG_MAP()
 
 	// Offer to set the default view mode
-	LRESULT
-	OnDefViewMode(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
+	LRESULT OnDefViewMode(
+		UINT   uMsg,
+		WPARAM wParam,
+		LPARAM lParam,
+		BOOL   &bHandled
+	) {
 		LOG(P_RSV << L"OnDefViewMode()");
 		#ifdef FVM_CONTENT
 			/* Requires Windows 7+, by Gravis' request */
@@ -135,8 +143,12 @@ class CADSXShellView : public CShellFolderViewImpl {
 	}
 
 	// When a user clicks on a column header in details mode
-	LRESULT
-	OnColumnClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
+	LRESULT OnColumnClick(
+		UINT   uMsg,
+		WPARAM wParam,
+		LPARAM lParam,
+		BOOL   &bHandled
+	) {
 		// LOG(P_RSV << L"OnColumnClick(iColumn=" << static_cast<int>(wParam) << L")");
 
 		// Shell version 4.7x doesn't understand S_FALSE as described in the
@@ -149,15 +161,18 @@ class CADSXShellView : public CShellFolderViewImpl {
 
 	// This message is used with shell version 4.7x, shell 5 and above prefer to
 	// use IShellFolder2::GetDetailsOf()
-	LRESULT
-	OnGetDetailsOf(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL &bHandled) {
+	LRESULT OnGetDetailsOf(
+		UINT   uMsg,
+		WPARAM wParam,
+		LPARAM lParam,
+		BOOL   &bHandled
+	) {
 		int iColumn = static_cast<int>(wParam);
 		auto pDetailsInfo = reinterpret_cast<DETAILSINFO *>(lParam);
 
 		// LOG(P_RSV << L"OnGetDetailsOf(iColumn=" << iColumn << L")");
 
 		if (pDetailsInfo == NULL) return E_POINTER;
-		// if (pDetailsInfo == NULL) return WrapReturn(E_POINTER);
 
 		HRESULT hr;
 		SHELLDETAILS ShellDetails;
@@ -169,8 +184,8 @@ class CADSXShellView : public CShellFolderViewImpl {
 
 		hr = pShellDetails->GetDetailsOf(pDetailsInfo->pidl, iColumn, &ShellDetails);
 		pShellDetails->Release();
-		if (FAILED(hr)) return hr;
-		// if (FAILED(hr)) return WrapReturn(hr);
+		// if (FAILED(hr)) return hr;
+		if (FAILED(hr)) return WrapReturn(hr);
 
 		pDetailsInfo->cxChar = ShellDetails.cxChar;
 		pDetailsInfo->fmt = ShellDetails.fmt;

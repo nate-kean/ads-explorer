@@ -18,8 +18,8 @@
 namespace ADSX {
 
 
-//==========================================================================
-// ADSX::CContextMenuEntry
+#pragma region ADSX::CContextMenuEntry
+
 CContextMenuEntry::CContextMenuEntry() : m_pszADSPath((NULL)) {
 	LOG(P_CME << L"CONSTRUCTOR");
 }
@@ -29,9 +29,11 @@ CContextMenuEntry::~CContextMenuEntry() {
 	if (m_pszADSPath != NULL) CoTaskMemFree(m_pszADSPath);
 }
 
+#pragma endregion
 
-//==========================================================================
-// IShellExtInit
+
+#pragma region IShellExtInit
+
 IFACEMETHODIMP CContextMenuEntry::Initialize(
 	_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
 	_In_     IDataObject*      pdo,
@@ -82,9 +84,11 @@ IFACEMETHODIMP CContextMenuEntry::Initialize(
 	return WrapReturn(S_OK);
 }
 
+#pragma endregion
 
-//==========================================================================
-// IContextMenu
+
+#pragma region IContextMenu
+
 IFACEMETHODIMP CContextMenuEntry::GetCommandString(
 	_In_                 UINT_PTR idCmd,
 	_In_                 UINT     uFlags,
@@ -182,5 +186,7 @@ IFACEMETHODIMP CContextMenuEntry::QueryContextMenu(
 	);
 	return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1));
 }
+
+#pragma endregion
 
 }  // namespace ADSX

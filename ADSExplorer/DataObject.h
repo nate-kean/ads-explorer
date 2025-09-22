@@ -32,14 +32,21 @@ class ATL_NO_VTABLE CDataObject
 
 	~CDataObject();
 
-	// Ensure the owner object is not freed before this one and 
-	// populate the object with the Favorite Item pidl.
-	// This member must be called before any IDataObject member.
-	void Init(IUnknown *pUnkOwner, PCIDLIST_ABSOLUTE pidlParent, PCUITEMID_CHILD pidl);
+	// Ensure the owner object is not freed before this one and populate the
+	// object with the Favorite Item pidl.
+	// This member must be called before any IDataObject member (Pascal Hurni).
+	void Init(
+		IUnknown*         pUnkOwner,
+		PCIDLIST_ABSOLUTE pidlParent,
+		PCUITEMID_CHILD   pidl
+	);
 
 	//--------------------------------------------------------------------------
-	// IDataObject methods
-	STDMETHOD(GetData)(LPFORMATETC, LPSTGMEDIUM);
+	// IDataObject
+	STDMETHOD(GetData)(
+		_In_  LPFORMATETC,
+		_Out_ LPSTGMEDIUM
+	);
 	STDMETHOD(GetDataHere)(LPFORMATETC, LPSTGMEDIUM);
 	STDMETHOD(QueryGetData)(LPFORMATETC);
 	STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC, LPFORMATETC);
@@ -50,7 +57,7 @@ class ATL_NO_VTABLE CDataObject
 	STDMETHOD(EnumDAdvise)(IEnumSTATDATA**);
 
 	//--------------------------------------------------------------------------
-	// IEnumFORMATETC members
+	// IEnumFORMATETC
 	STDMETHOD(Next)(ULONG, LPFORMATETC, ULONG*);
 	STDMETHOD(Skip)(ULONG);
 	STDMETHOD(Reset)();
