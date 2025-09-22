@@ -33,15 +33,17 @@ BOOL APIENTRY DllMain(
 	return TRUE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
+/**
+ * Used to determine whether the DLL can be unloaded by OLE.
+ */
 __control_entrypoint(DllExport)
 STDAPI DllCanUnloadNow(void) {
 	return (_Module.GetLockCount() == 0) ? S_OK : S_FALSE;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
+/**
+ * Return a class factory to create an object of the requested type.
+ */
 _Check_return_
 STDAPI DllGetClassObject(
 	_In_     REFCLSID rclsid,
@@ -51,24 +53,28 @@ STDAPI DllGetClassObject(
 	return _Module.GetClassObject(rclsid, riid, ppObject);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
+/**
+ * Add entries to the system registry.
+ * Registers object, typelib and all interfaces in typelib
+ */
 STDAPI DllRegisterServer() {
-	// registers object, typelib and all interfaces in typelib
 	HRESULT hr = _Module.RegisterServer(TRUE);
 	if (FAILED(hr)) {
-		// If registration failed, attempt to unregister to clean up any partial registration
+		// If registration failed, attempt to unregister to clean up any partial
+		// registration.
 		_Module.UnregisterServer(TRUE);
 		return hr;
 	}
 	return hr;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
+/**
+ * Remove entries from the system registry.
+ */
 STDAPI DllUnregisterServer() {
 	HRESULT hr = _Module.UnregisterServer(TRUE);
-	// Even if unregistration fails partially, we still return the result
-	// The caller can check the return value to determine if cleanup was successful
+	// Even if unregistration fails partially, we still return the result.
+	// The caller can check the return value to determine if cleanup was
+	// successful.
 	return hr;
 }
