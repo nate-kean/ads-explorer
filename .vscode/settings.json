@@ -1,3 +1,4 @@
 {
+    // A terminal profile with the Visual Studio Developer Command Prompt loaded
     "terminal.integrated.defaultProfile.windows": "Visual Studio",
 }
