@@ -73,27 +73,30 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	m_pidlRoot = ILCloneFull(pidlRoot);
 	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	// Browse this path internally.
-	// TODO(nate-kean): Find out whether this path is a directory without
-	// actually browsing to it. We DON'T want to browse if it turns out to be
-	// a file at the end; we don't want to open it.
-	hr = psfParent->BindToObject(
-		pidlNext,
-		pbc,
-		riid,
-		reinterpret_cast<void**>(&m_psf)
-	);
-	LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
-	if (hr == E_FAIL) {
-		// Tried to browse into a file, which is fine for us.
+	// Is pidlNext another folder to browse into, or have we arrived at a file?
+	SFGAOF sfgaofTest = SFGAO_FOLDER;
+	hr = psfParent->GetAttributesOf(1, &pidlNext, &sfgaofTest);
+	if (FAILED(hr)) return WrapReturnFailOK(hr);
+	bool bNextIsFolder = sfgaofTest & SFGAO_FOLDER;
+
+	if (bNextIsFolder) {
+		// Browse into this folder internally.
+		hr = psfParent->BindToObject(
+			pidlNext,
+			pbc,
+			riid,
+			reinterpret_cast<void**>(&m_psf)
+		);
+		LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
+		if (FAILED(hr)) return WrapReturnFailOK(hr);
+	} else {
+		// We have arrived at a file.
 		// If EnumObjects is now called for this instance of the
 		// ADSX Shell Folder, we'll be enumerating the file's ADSes.
 		m_psf = psfParent;
-	} else if (FAILED(hr)) {
-		return WrapReturnFailOK(hr);
 	}
 
-	// Set the new instance's internal PIDL.
+	// Set this new instance's internal PIDL.
 	// These are the two cases I've seen: either a child PIDL directly relative
 	// to our current path, or an absolute path/PIDL.
 	// Either way, what the next instance's PIDL is supposed to be is
