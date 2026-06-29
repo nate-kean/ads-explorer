@@ -58,6 +58,8 @@ CShellFolder::~CShellFolder() {
 
 /**
  * Entry point for creating an ADSX Shell Folder from a call to BindToObject.
+ * We need the extra context we have during a call to BindToObject to know
+ * where we are while Windows is using us to drill down to the end of a file path.
  */
 HRESULT CShellFolder::BindToObjectInitialize(
 	_In_     IShellFolder*      psfParent,
@@ -74,13 +76,14 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	// Is pidlNext another folder to browse into, or have we arrived at a file?
-	SFGAOF sfgaofTest = SFGAO_FOLDER;
-	hr = psfParent->GetAttributesOf(1, &pidlNext, &sfgaofTest);
+	SFGAOF rgfTest = SFGAO_FOLDER;
+	hr = psfParent->GetAttributesOf(1, &pidlNext, &rgfTest);
 	if (FAILED(hr)) return WrapReturnFailOK(hr);
 	bool bNextIsFolder = sfgaofTest & SFGAO_FOLDER;
 
 	if (bNextIsFolder) {
-		// Browse into this folder internally.
+		// Browse into this folder internally,
+		// set our internal ShellFolder to this new one.
 		hr = psfParent->BindToObject(
 			pidlNext,
 			pbc,
@@ -93,6 +96,7 @@ HRESULT CShellFolder::BindToObjectInitialize(
 		// We have arrived at a file.
 		// If EnumObjects is now called for this instance of the
 		// ADSX Shell Folder, we'll be enumerating the file's ADSes.
+		// Keep our internal ShellFolder as the one that holds this file.
 		m_psf = psfParent;
 	}
 
