@@ -67,20 +67,20 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		return hr;
 	}
 
-	std::wstring PidlToString(PCUIDLIST_RELATIVE pidl) {
-		if (pidl == NULL) return L"<null>";
+	std::wstring PidlToString(PCUIDLIST_RELATIVE pidlr) {
+		if (pidlr == NULL) return L"<null>";
 		std::wostringstream oss;
 		bool first = true;
-		for (; !ILIsEmpty(pidl); pidl = ILNext(pidl)) {
+		for (; !ILIsEmpty(pidlr); pidlr = ILNext(pidlr)) {
 			if (!first) {
 				oss << L"--";
 			}
-			if (ADSX::CItem::IsOwn(pidl)) {
+			if (ADSX::CItem::IsOwn(pidlr)) {
 				oss <<
-					ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl))->pszName;
+					ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidlr))->pszName;
 			} else {
 				WCHAR tmp[16];
-				swprintf_s(tmp, L"<unk-%02d>", pidl->mkid.cb);
+				swprintf_s(tmp, L"<unk-%02d>", pidlr->mkid.cb);
 				oss << tmp;
 			}
 			first = false;
@@ -88,11 +88,11 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 		return oss.str();
 	}
 
-	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidl) {
-		if (pidl == NULL) return L"<null>";
+	std::wstring PidlToString(PCIDLIST_ABSOLUTE pidla) {
+		if (pidla == NULL) return L"<null>";
 		PWSTR pszPath = NULL;
 		HRESULT hr = SHGetNameFromIDList(
-			pidl,
+			pidla,
 			SIGDN_DESKTOPABSOLUTEPARSING,
 			&pszPath
 		);

@@ -43,16 +43,16 @@ bool SetReturnString(_In_ PCWSTR pszSource, _Out_ STRRET *strret) {
 #pragma region ADSX::CShellFolder
 
 CShellFolder::CShellFolder()
-	: m_pidlRoot(NULL)
-	, m_pidl(NULL) {
+	: m_pidlaRoot(NULL)
+	, m_pidla(NULL) {
 	// LOG(P_RSF << L"CONSTRUCTOR");
 }
 
 
 CShellFolder::~CShellFolder() {
 	// LOG(P_RSF << L"DESTRUCTOR");
-	if (m_pidlRoot != NULL) CoTaskMemFree(m_pidlRoot);
-	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
+	if (m_pidlaRoot != NULL) CoTaskMemFree(m_pidlaRoot);
+	if (m_pidla != NULL) CoTaskMemFree(m_pidla);
 }
 
 
@@ -72,10 +72,10 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	HRESULT hr;
 
 	// Carry on the legacy
-	m_pidlRoot = ILCloneFull(pidlaRoot);
-	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
+	m_pidlaRoot = ILCloneFull(pidlaRoot);
+	if (m_pidlaRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	// Is pidlNext another folder to browse into, or have we arrived at a file?
+	// Is pidlrNext another folder to browse into, or have we arrived at a file?
 	bool bNextIsFolder = false;
 	if (ILIsChild(pidlrNext)) {
 		auto pidlcNext = static_cast<PCUITEMID_CHILD>(pidlrNext);
@@ -109,12 +109,12 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	// to our current path, or an absolute path/PIDL.
 	// Either way, what the next instance's PIDL is supposed to be is
 	// straightforward.
-	m_pidl = ILIsChild(pidlrNext) ?
+	m_pidla = ILIsChild(pidlrNext) ?
 		ILCombine(pidlaParent, pidlrNext) :
 		ILCloneFull(static_cast<PCUIDLIST_ABSOLUTE>(pidlrNext));
-	if (m_pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
+	if (m_pidla == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	LOG(L" ** New instance's PIDL: " << PidlToString(m_pidl));
+	LOG(L" ** New instance's PIDL: " << PidlToString(m_pidla));
 	return WrapReturn(S_OK);
 }
 #pragma endregion
@@ -144,13 +144,13 @@ STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
  * @pre: 0 < PIDL length < 3.
  * @post: this ADSX​::CShellFolder instance is ready to be used.
  */
-STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
-	// LOG(P_RSF << L"Initialize(pidl=[" << PidlToString(pidlRoot) << L"])");
+STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlaRoot) {
+	// LOG(P_RSF << L"Initialize(pidlaRoot=[" << PidlToString(pidlaRoot) << L"])");
 
 	// Don't initialize more than once.
 	// This is necessary because for reasons beyond me Windows tries to.
 	// TODO(nate-kean): Why does Windows call Initialize() more than once sometimes?
-	if (m_pidlRoot != NULL) {
+	if (m_pidlaRoot != NULL) {
 		// return HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED);
 		return WrapReturn(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
 		// return WrapReturnFailOK(HRESULT_FROM_WIN32(ERROR_ALREADY_INITIALIZED));
@@ -159,16 +159,16 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 	// Validate input PIDL
 	if (
 		// PIDL length is 0?
-		ILIsEmpty(pidlRoot) ||
+		ILIsEmpty(pidlaRoot) ||
 		// or more than 2?
-		(!ILIsEmpty(ILNext(pidlRoot)) && !ILIsEmpty(ILNext(ILNext(pidlRoot))))
+		(!ILIsEmpty(ILNext(pidlaRoot)) && !ILIsEmpty(ILNext(ILNext(pidlaRoot))))
 	) {
 		return WrapReturn(E_INVALIDARG);
 	}
 
 	// Keep this around for use elsewhere
-	m_pidlRoot = ILCloneFull(pidlRoot);
-	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
+	m_pidlaRoot = ILCloneFull(pidlaRoot);
+	if (m_pidlaRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	// Initialize to the root of the namespace, [Desktop]
 	HRESULT hr = SHGetDesktopFolder(&m_psf);
@@ -179,12 +179,12 @@ STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlRoot) {
 }
 
 
-STDMETHODIMP CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
+STDMETHODIMP CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidla) {
 	// LOG(P_RSF << L"GetCurFolder()");
-	if (ppidl == NULL) return E_POINTER;
-	// if (ppidl == NULL) return WrapReturn(E_POINTER);
-	*ppidl = ILCloneFull(m_pidlRoot);
-	if (*ppidl != NULL) {
+	if (ppidla == NULL) return E_POINTER;
+	// if (ppidla == NULL) return WrapReturn(E_POINTER);
+	*ppidla = ILCloneFull(m_pidlaRoot);
+	if (*ppidla != NULL) {
 		return S_OK;
 		// return WrapReturn(S_OK);
 	} else {
@@ -201,7 +201,7 @@ STDMETHODIMP CShellFolder::GetCurFolder(_Outptr_ PIDLIST_ABSOLUTE *ppidl) {
  * Create a new Shell Folder object for a given PIDL.
  */
 STDMETHODIMP CShellFolder::BindToObject(
-	_In_         PCUIDLIST_RELATIVE pidl,
+	_In_         PCUIDLIST_RELATIVE pidlr,
 	_In_opt_     IBindCtx*          pbc,
 	_In_         REFIID             riid,
 	_COM_Outptr_ void**             ppShellFolder
@@ -216,7 +216,7 @@ STDMETHODIMP CShellFolder::BindToObject(
 	}
 	
 	LOG(P_RSF << L"BindToObject("
-		L"pidl=[" << PidlToString(pidl) << L"], "
+		L"pidlr=[" << PidlToString(pidlr) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 
@@ -230,9 +230,9 @@ STDMETHODIMP CShellFolder::BindToObject(
 	defer({ pShellFolder->Release(); });
 	hr = pShellFolder->BindToObjectInitialize(
 		m_psf,
-		m_pidlRoot,
-		m_pidl,
-		pidl,
+		m_pidlaRoot,
+		m_pidla,
+		pidlr,
 		pbc,
 		riid
 	);
@@ -247,37 +247,37 @@ STDMETHODIMP CShellFolder::BindToObject(
 /**
  * Return the sort order of two PIDLs.
  * lParam can be the 0-based Index of the details column
- * @pre pidl1 and pidl2 hold ADSX::CItems.
+ * @pre: pidlr1 and pidlr2 hold ADSX::CItems.
  */
 STDMETHODIMP CShellFolder::CompareIDs(
 	_In_ LPARAM             lParam,
-	_In_ PCUIDLIST_RELATIVE pidl1,
-	_In_ PCUIDLIST_RELATIVE pidl2
+	_In_ PCUIDLIST_RELATIVE pidlr1,
+	_In_ PCUIDLIST_RELATIVE pidlr2
 ) {
 	LOG(P_RSF << L"CompareIDs("
 		L"lParam=" << std::hex << static_cast<long>(lParam) << L"), "
-		L"pidl1=[" << PidlToString(pidl1) << L"], "
-		L"pidl2=[" << PidlToString(pidl2) << L"])"
+		L"pidlr1=[" << PidlToString(pidlr1) << L"], "
+		L"pidlr2=[" << PidlToString(pidlr2) << L"])"
 	);
 
 	// Delegate PIDLs that aren't ours to the real ShellFolder
-	if (!ADSX::CItem::IsOwn(pidl1) && !ADSX::CItem::IsOwn(pidl2)) {
-		return m_psf->CompareIDs(lParam, pidl1, pidl2);
+	if (!ADSX::CItem::IsOwn(pidlr1) && !ADSX::CItem::IsOwn(pidlr2)) {
+		return m_psf->CompareIDs(lParam, pidlr1, pidlr2);
 	}
 
 	// Both PIDLs must either be ours or not ours
-	ATLASSERT(ADSX::CItem::IsOwn(pidl1) && ADSX::CItem::IsOwn(pidl2));
-	if (!ADSX::CItem::IsOwn(pidl1) || !ADSX::CItem::IsOwn(pidl2)) {
+	ATLASSERT(ADSX::CItem::IsOwn(pidlr1) && ADSX::CItem::IsOwn(pidlr2));
+	if (!ADSX::CItem::IsOwn(pidlr1) || !ADSX::CItem::IsOwn(pidlr2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
 
 	// Only child ADS PIDLs are supported
-	ATLASSERT(ILIsChild(pidl1) && ILIsChild(pidl2));
-	if (!ILIsChild(pidl1) || !ILIsChild(pidl2)) {
+	ATLASSERT(ILIsChild(pidlr1) && ILIsChild(pidlr2));
+	if (!ILIsChild(pidlr1) || !ILIsChild(pidlr2)) {
 		return WrapReturn(E_INVALIDARG);
 	}
-	auto pItem1 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl1));
-	auto pItem2 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidl2));
+	auto pItem1 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidlr1));
+	auto pItem2 = ADSX::CItem::Get(static_cast<PCUITEMID_CHILD>(pidlr2));
 
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
@@ -351,7 +351,7 @@ STDMETHODIMP CShellFolder::CreateViewObject(
  * within the current file system object.
  * @pre: Windows has browsed to a path of the format
  *       [Desktop\ADS Explorer\{FS path}]
- * @pre: i.e., m_pidl is [Desktop\{FS path}]
+ * @pre: i.e., m_pidla is [Desktop\{FS path}]
  * @post: ppEnumIDList holds a CEnumIDList** on {FS path}
  */
 STDMETHODIMP CShellFolder::EnumObjects(
@@ -361,14 +361,14 @@ STDMETHODIMP CShellFolder::EnumObjects(
 ) {
 	LOG(P_RSF
 		<< L"EnumObjects(dwFlags=[" << SHCONTFToString(&dwFlags) << L"])"
-		<< L", Path=[" << PidlToString(m_pidl) << L"]");
+		<< L", Path=[" << PidlToString(m_pidla) << L"]");
 	UNREFERENCED_PARAMETER(hwndOwner);
 
 	if (ppEnumIDList == NULL) return WrapReturn(E_POINTER);
 	*ppEnumIDList = NULL;
 	
 	// Don't try to enumerate if nothing has been browsed yet
-	if (m_pidl == NULL) return WrapReturn(S_FALSE);
+	if (m_pidla == NULL) return WrapReturn(S_FALSE);
 
 	switch (dwFlags) {
 		case SHCONTF_FOLDERS | SHCONTF_NONFOLDERS |
@@ -394,7 +394,7 @@ STDMETHODIMP CShellFolder::EnumObjects(
 	// Get the path this folder is bound to in string form.
 	PWSTR pszPath = NULL;
 	hr = SHGetNameFromIDList(
-		m_pidl,
+		m_pidla,
 		SIGDN_DESKTOPABSOLUTEPARSING,
 		&pszPath
 	);
@@ -431,7 +431,7 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 	_Inout_ SFGAOF                *pfAttribs
 ) {
 	LOG(P_RSF << L"GetAttributesOf("
-		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
+		L"aPidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
 		L"pfAttribs=[" << SFGAOFToString(pfAttribs) << L"]"
 	L")");
 
@@ -487,7 +487,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 	_COM_Outptr_ void                  **ppUIObject
 ) {
 	LOG(P_RSF << L"GetUIObjectOf("
-		L"pidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
+		L"aPidls=[" << PidlArrayToString(cidl, aPidls) << L"], "
 		L"riid=[" << IIDToString(riid) << L"])"
 	);
 	UNREFERENCED_PARAMETER(hwndOwner);
@@ -527,7 +527,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 
 		// Tie its lifetime with this object (the IShellFolder object)
 		// and embed the PIDL in the data
-		pDataObject->Init(this->GetUnknown(), m_pidlRoot, aPidls[0]);
+		pDataObject->Init(this->GetUnknown(), m_pidlaRoot, aPidls[0]);
 		// Return the requested interface to the caller
 		hr = pDataObject->QueryInterface(riid, ppUIObject);
 		pDataObject->Release();
@@ -583,19 +583,19 @@ STDMETHODIMP CShellFolder::BindToStorage(
  * @pre: *pName struct is initialized
  */
 STDMETHODIMP CShellFolder::GetDisplayNameOf(
-	_In_  PCUITEMID_CHILD pidl,
+	_In_  PCUITEMID_CHILD pidlc,
 	_In_  SHGDNF          uFlags,
 	_Out_ STRRET          *pName
 ) {
 	LOG(P_RSF << L"GetDisplayNameOf("
-		L"pidl=[" << PidlToString(pidl) << L"], "
+		L"pidlc=[" << PidlToString(pidlc) << L"], "
 		L"uFlags=[" << SHGDNFToString(&uFlags) << L"]"
 	L")");
 
-	if (pidl == NULL || pName == NULL) return WrapReturn(E_POINTER);
+	if (pidlc == NULL || pName == NULL) return WrapReturn(E_POINTER);
 
 	// Return name of Root
-	if (pidl->mkid.cb == 0) {
+	if (pidlc->mkid.cb == 0) {
 		switch (uFlags) {
 			// If wantsFORPARSING is present in the registry.
 			// As stated in the SDK, we should return here our virtual junction
@@ -622,26 +622,26 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		}
 	}
 
-	if (!ADSX::CItem::IsOwn(pidl)) {
+	if (!ADSX::CItem::IsOwn(pidlc)) {
 		LOG(L" ** FS Object");
 		// NOTE(nate-kean): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
-		// return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
-		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidl, uFlags, pName));
+		// return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidlc, uFlags, pName));
+		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidlc, uFlags, pName));
 	}
 
 	LOG(L" ** ADS");
-	auto pItem = ADSX::CItem::Get(pidl);
+	auto pItem = ADSX::CItem::Get(pidlc);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
 			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
-			PCIDLIST_ABSOLUTE pidlADSXFSPath = ILCombine(
-				m_pidlRoot,
-				ILNext(m_pidl)  // remove [Desktop]
+			PCIDLIST_ABSOLUTE pidlaADSXFSPath = ILCombine(
+				m_pidlaRoot,
+				ILNext(m_pidla)  // remove [Desktop]
 			);
 			PWSTR pszPath = NULL;
 			HRESULT hr = SHGetNameFromIDList(
-				pidlADSXFSPath,
+				pidlaADSXFSPath,
 				SIGDN_DESKTOPABSOLUTEPARSING,
 				&pszPath
 			);
@@ -674,7 +674,7 @@ STDMETHODIMP CShellFolder::ParseDisplayName(
 	_In_opt_    IBindCtx*         pbc,
 	_In_        PWSTR             pszDisplayName,
 	_Out_opt_   ULONG*            pchEaten,
-	_Outptr_    PIDLIST_RELATIVE* ppidl,
+	_Outptr_    PIDLIST_RELATIVE* ppidlr,
 	_Inout_opt_ SFGAOF*           pfAttributes
 ) {
 	LOG(P_RSF << L"ParseDisplayName("
@@ -692,12 +692,12 @@ STDMETHODIMP CShellFolder::ParseDisplayName(
 		pbc,
 		pszDisplayName,
 		pchEaten,
-		ppidl,
+		ppidlr,
 		pfAttributes
 	);
 	// if (FAILED(hr)) return WrapReturn(hr);
 	if (FAILED(hr)) return WrapReturnFailOK(hr);
-	LOG(" ** Parsed: [" << PidlToString(*ppidl) << L"]");
+	LOG(" ** Parsed: [" << PidlToString(*ppidlr) << L"]");
 	LOG(" ** Attributes: " << SFGAOFToString(pfAttributes));
 
 	return WrapReturn(S_OK);
@@ -731,19 +731,19 @@ STDMETHODIMP CShellFolder::ColumnClick(_In_ UINT uColumn) {
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
 // (uColumn >= DetailsColumn::MAX)
 STDMETHODIMP CShellFolder::GetDetailsOf(
-	_In_opt_ PCUITEMID_CHILD pidl,
+	_In_opt_ PCUITEMID_CHILD pidlc,
 	_In_     UINT uColumn,
 	_Out_    SHELLDETAILS *pDetails
 ) {
 	LOG(P_RSF << L"GetDetailsOf("
 		L"uColumn=" << uColumn << L", "
-		L"pidl=[" << PidlToString(pidl) << L"])"
+		L"pidlc=[" << PidlToString(pidlc) << L"])"
 	);
 
 	HRESULT hr;
 
 	// Shell is asking for the column headers
-	if (pidl == NULL) {
+	if (pidlc == NULL) {
 		// Load the uColumn based string from the resource
 		if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
@@ -758,20 +758,20 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 		);
 	}
 
-	if (!ADSX::CItem::IsOwn(pidl)) {
+	if (!ADSX::CItem::IsOwn(pidlc)) {
 		// Lazy load this because this doesn't happen for every shellfolder
 		// instance (e.g., during browsing's "drill down" phase)
 		if (m_psd == NULL) {
-			hr = m_psf->BindToObject(pidl, NULL, IID_PPV_ARGS(&m_psd));
+			hr = m_psf->BindToObject(pidlc, NULL, IID_PPV_ARGS(&m_psd));
 			if (FAILED(hr)) return WrapReturnFailOK(hr);
 		}
-		return WrapReturnFailOK(m_psd->GetDetailsOf(pidl, uColumn, pDetails));
+		return WrapReturnFailOK(m_psd->GetDetailsOf(pidlc, uColumn, pDetails));
 	}
 
 	if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 
 	// Okay, this time it's for a real item
-	auto Item = ADSX::CItem::Get(pidl);
+	auto Item = ADSX::CItem::Get(pidlc);
 	switch (uColumn) {
 		case DetailsColumn::Name:
 			pDetails->fmt = LVCFMT_LEFT;
@@ -862,13 +862,13 @@ STDMETHODIMP CShellFolder::GetDefaultSearchGUID(_Out_ GUID *pguid) {
 
 
 STDMETHODIMP CShellFolder::GetDetailsEx(
-	_In_  PCUITEMID_CHILD pidl,
+	_In_  PCUITEMID_CHILD pidlc,
 	_In_  const SHCOLUMNID *pscid,
 	_Out_ VARIANT *pv
 ) {
 	LOG(P_RSF << L"GetDetailsEx("
 		L"pscid->pid=" << pscid->pid << L", "
-		L"pidl=[" << PidlToString(pidl) << L"])"
+		L"pidlc=[" << PidlToString(pidlc) << L"])"
 	);
 
 	#ifdef ADSX_PKEYS_SUPPORT

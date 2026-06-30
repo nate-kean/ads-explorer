@@ -35,11 +35,11 @@ CContextMenuEntry::~CContextMenuEntry() {
 #pragma region IShellExtInit
 
 IFACEMETHODIMP CContextMenuEntry::Initialize(
-	_In_opt_ PCIDLIST_ABSOLUTE pidlFolder,
+	_In_opt_ PCIDLIST_ABSOLUTE pidlaFolder,
 	_In_     IDataObject*      pdo,
 	_In_     HKEY              hkeyProgID
 ) {
-	UNREFERENCED_PARAMETER(pidlFolder);
+	UNREFERENCED_PARAMETER(pidlaFolder);
 	UNREFERENCED_PARAMETER(hkeyProgID);
 	LOG(P_CME << L"Initialize()");
 

@@ -37,8 +37,8 @@ class ATL_NO_VTABLE CDataObject
 	// This member must be called before any IDataObject member (Pascal Hurni).
 	void Init(
 		IUnknown*         pUnkOwner,
-		PCIDLIST_ABSOLUTE pidlParent,
-		PCUITEMID_CHILD   pidl
+		PCIDLIST_ABSOLUTE pidlaParent,
+		PCUITEMID_CHILD   pidlc
 	);
 
 	//--------------------------------------------------------------------------
@@ -68,8 +68,8 @@ class ATL_NO_VTABLE CDataObject
 
 	UINT m_cfShellIDList;
 
-	PUITEMID_CHILD m_pidl;
-	PIDLIST_ABSOLUTE m_pidlParent;
+	PUITEMID_CHILD m_pidlc;
+	PIDLIST_ABSOLUTE m_pidlaParent;
 };
 
 }  // namespace ADSX

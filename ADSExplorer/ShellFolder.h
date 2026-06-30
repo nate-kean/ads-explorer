@@ -183,14 +183,14 @@ class ATL_NO_VTABLE CShellFolder
 		_In_     REFIID
 	);
 
-	PIDLIST_ABSOLUTE m_pidlRoot;  // Always [Desktop\ADS Explorer]
+	PIDLIST_ABSOLUTE m_pidlaRoot;  // Always [Desktop\ADS Explorer]
 
 	// Our inner model of where we are in the filesystem as Windows drills from
 	// the root of the namespace to whatever path we're getting the ADSX view
 	// of.
 	// Ends up needed in both PIDL and IShellFolder form throughout the
 	// implementation.
-	PIDLIST_ABSOLUTE m_pidl;
+	PIDLIST_ABSOLUTE m_pidla;
 	CComPtr<IShellFolder> m_psf;
 	CComPtr<IShellDetails> m_psd;
 };

@@ -23,13 +23,16 @@ struct CItem {
 	// ADSX::CItem.
 	// ADSX::CItems are always the last part of the PIDL (i.e. the child).
 	// FUTURE: pseudofolders may open this up to be any relative PIDL.
-	static bool IsOwn(PCUIDLIST_RELATIVE pidl);
+	static bool IsOwn(PCUIDLIST_RELATIVE pidlr);
 
 	// Helper functions for accessing the data member of a child item ID
-	static CItem *Get(PUITEMID_CHILD pidl);
-	static const CItem *Get(PCUITEMID_CHILD pidl);
+	static CItem *Get(PUITEMID_CHILD pidlc);
+	static const CItem *Get(PCUITEMID_CHILD pidlc);
 
-	// Allocates and constructs a new child item ID holding an ADSX::CItem
+	/**
+	 * Allocates and constructs a new child item ID holding an ADSX::CItem.
+	 * @post: returned pointer must be freed with CoTaskMemFree.
+	 */
 	static PADSXITEMID_CHILD NewPidl();
 };
 
