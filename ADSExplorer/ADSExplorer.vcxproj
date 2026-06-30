@@ -224,7 +224,7 @@
     <ClInclude Include="ShellView.h" />
     <ClInclude Include="ShellFolderView.h" />
     <ClInclude Include="DataObject.h" />
-    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
@@ -254,7 +254,7 @@
     <ClCompile Include="ContextMenuEntry.cpp" />
     <ClCompile Include="ShellFolder.cpp" />
     <ClCompile Include="DataObject.cpp" />
-    <ClCompile Include="StdAfx.cpp">
+    <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

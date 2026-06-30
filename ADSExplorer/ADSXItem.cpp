@@ -1,4 +1,4 @@
-#include "StdAfx.h"  // Precompiled header; include first
+#include "pch.h"  // Precompiled header; include first
 
 #include "ADSXItem.h"
 

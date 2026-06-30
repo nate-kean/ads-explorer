@@ -4,7 +4,7 @@
  */
 
 // dllmain.cpp : Defines the entry point for the DLL application.
-#include "StdAfx.h"  // Precompiled header; include first
+#include "pch.h"  // Precompiled header; include first
 
 #include "ADSExplorer_h.h"
 #include "ADSExplorer_i.c"

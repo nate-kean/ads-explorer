@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "StdAfx.h"  // Precompiled header; include first
+#include "pch.h"  // Precompiled header; include first
 #include "resource.h"  // Resource IDs from the RC file
 
 #include "ContextMenuEntry.h"
