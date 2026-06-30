@@ -119,7 +119,7 @@ SOURCE=.\DataObject.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.cpp
+SOURCE=.\pch.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -155,7 +155,7 @@ SOURCE=.\DataObject.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=.\pch.h
 # End Source File
 # Begin Source File
 
