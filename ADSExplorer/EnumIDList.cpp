@@ -32,7 +32,7 @@ static bool PushPidl(
 ) {
 	std::wstring sName(fsd.cStreamName);
 	// All ADSes follow this name pattern AFAIK, but if they don't,
-	// 1: we shouldn't modify its name
+	// 1: we shouldn't modify its name as we are going to with all the others
 	// 2: I want to know about it
 	ATLASSERT(sName.starts_with(L":") && sName.ends_with(L":$DATA"));
 	if (sName.starts_with(L":") && sName.ends_with(L":$DATA")) {

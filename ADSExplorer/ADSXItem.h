@@ -34,20 +34,28 @@ struct CItem {
 };
 
 
-// Definition for a new subclass of ITEMID_CHILD for our purposes:
-// Just ITEMID_CHILD with a different name so we can tell them apart.
+// A new subclass of ITEMID_CHILD for our purposes:
+// An ITEMID_CHILD that always holds an ADSX::CItem.
 #include <pshpack1.h>
 	typedef struct _ADSXITEMID {
-		USHORT cb = FIELD_OFFSET(_ADSXITEMID, abIDNull);
+		// This ITEMID has a known, fixed size!
+		// So write it down here.
+		USHORT cb = sizeof(USHORT) + sizeof(CItem);
+		// Always ADSX::CItem.
 		CItem abID;
+		// Sentinel "null" item at the end that all properly-formed
+		// ITEMIDLISTs, including children, have to have.
+		// (So something that doesn't KNOW this is a child can seek
+		// past for the next item and safely ("safely"...) find null.)
 		USHORT cbNull = 0;
 		BYTE abIDNull = NULL;
 	} ADSXITEMID;
-	typedef struct _ADSXITEMID_CHILD: ITEMID_CHILD {
+	typedef struct _ADSXITEMID_CHILD : ITEMID_CHILD {
 		ADSXITEMID mkid;
 	} ADSXITEMID_CHILD;
 #include <poppack.h>
 
+// Boilerplate for the rest of the variants to fit the Windows typedef naming scheme
 typedef /* [wire_marshal] */ ADSXITEMID_CHILD *PADSXITEMID_CHILD;
 typedef /* [wire_marshal] */ const ADSXITEMID_CHILD *PCADSXITEMID_CHILD;
 typedef /* [wire_marshal] */ ADSXITEMID_CHILD __unaligned *PUADSXITEMID_CHILD;
