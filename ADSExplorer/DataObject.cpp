@@ -13,13 +13,13 @@
 
 namespace ADSX {
 
-// helper function that creates a CFSTR_SHELLIDLIST format from given pidls.
+// Helper function that creates a CFSTR_SHELLIDLIST format from given PIDLs.
 static HGLOBAL CreateShellIDList(
-	_In_ PIDLIST_ABSOLUTE pidlParent,
-	_In_ PCUITEMID_CHILD  pidl
+	_In_ PIDLIST_ABSOLUTE pidlaParent,
+	_In_ PCUITEMID_CHILD  pidlc
 ) {
-	// Get the combined size of the parent folder's PIDL and the other PIDL
-	UINT cbpidl = ILGetSize(pidlParent) + ILGetSize(pidl);
+	// Get the combined size of the parent folder's PIDL and the other PIDL.
+	UINT cbpidl = ILGetSize(pidlaParent) + ILGetSize(pidlc);
 
 	// Find the end of the CIDA structure. This is the size of the
 	// CIDA structure itself (which includes one element of aoffset) plus the
@@ -33,7 +33,7 @@ static HGLOBAL CreateShellIDList(
 		(size_t) (uCurPos +	// size of the CIDA structure and the additional
 							// aoffset elements
 				 (cbpidl + 1))
-	);	// size of the pidls
+	);	// Size of the PIDLs
 	if (hGlobal == NULL) return NULL;
 
 	const LPIDA pData = static_cast<LPIDA>(GlobalLock(hGlobal));
@@ -43,21 +43,21 @@ static HGLOBAL CreateShellIDList(
 	pData->cidl = 1;
 	pData->aoffset[0] = uCurPos;
 
-	// add the PIDL for the parent folder
-	cbpidl = ILGetSize(pidlParent);
-	CopyMemory(VOID_OFFSET(pData, uCurPos), pidlParent, cbpidl);
+	// Add the PIDL for the parent folder.
+	cbpidl = ILGetSize(pidlaParent);
+	CopyMemory(VOID_OFFSET(pData, uCurPos), pidlaParent, cbpidl);
 	uCurPos += cbpidl;
 
-	// get the size of the PIDL
-	cbpidl = ILGetSize(pidl);
+	// Get the size of the PIDL.
+	cbpidl = ILGetSize(pidlc);
 
-	// fill out the members of the CIDA structure.
+	// Fill out the members of the CIDA structure.
 	pData->aoffset[1] = uCurPos;
 
-	// copy the contents of the PIDL
-	CopyMemory(VOID_OFFSET(pData, uCurPos), pidl, cbpidl);
+	// Copy the contents of the PIDL.
+	CopyMemory(VOID_OFFSET(pData, uCurPos), pidlc, cbpidl);
 
-	// set up the position of the next PIDL
+	// Set up the position of the next PIDL.
 	uCurPos += cbpidl;
 
 	return hGlobal;
@@ -67,18 +67,18 @@ static HGLOBAL CreateShellIDList(
 #pragma region CDataObject
 
 CDataObject::~CDataObject() {
-	if (m_pidl != NULL) CoTaskMemFree(m_pidl);
-	if (m_pidlParent != NULL) CoTaskMemFree(m_pidlParent);
+	if (m_pidlc != NULL) CoTaskMemFree(m_pidlc);
+	if (m_pidlaParent != NULL) CoTaskMemFree(m_pidlaParent);
 }
 
 void CDataObject::Init(
 	IUnknown *pUnkOwner,
-	PCIDLIST_ABSOLUTE pidlParent,
-	PCUITEMID_CHILD pidl
+	PCIDLIST_ABSOLUTE pidlaParent,
+	PCUITEMID_CHILD pidlc
 ) {
 	m_UnkOwnerPtr = pUnkOwner;
-	m_pidlParent = ILCloneFull(pidlParent);
-	m_pidl = ILCloneChild(pidl);
+	m_pidlaParent = ILCloneFull(pidlaParent);
+	m_pidlc = ILCloneChild(pidlc);
 	m_cfShellIDList = RegisterClipboardFormat(CFSTR_SHELLIDLIST);
 }
 
@@ -93,7 +93,7 @@ STDMETHODIMP CDataObject::GetData(
 	LOG(P_DO << L"GetData()");
 	if (pFE->cfFormat != m_cfShellIDList) return WrapReturn(E_INVALIDARG);
 
-	pStgMedium->hGlobal = CreateShellIDList(m_pidlParent, m_pidl);
+	pStgMedium->hGlobal = CreateShellIDList(m_pidlaParent, m_pidlc);
 	if (pStgMedium->hGlobal == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	pStgMedium->tymed = TYMED_HGLOBAL;

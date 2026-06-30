@@ -51,12 +51,12 @@ static bool PushPidl(
 	);
 
 	// Fill in the item
-	PADSXITEMID_CHILD pidl = ADSX::CItem::NewPidl();
-	if (pidl == NULL) {
+	PADSXITEMID_CHILD adsxpidlc = ADSX::CItem::NewPidl();
+	if (adsxpidlc == NULL) {
 		SetLastError(ERROR_OUTOFMEMORY);
 		return false;
 	}
-	auto Item = CItem::Get(pidl);
+	auto Item = CItem::Get(adsxpidlc);
 	Item->llFilesize = fsd.StreamSize.QuadPart;
 	Item->pszName = static_cast<PWSTR>(
 		CoTaskMemAlloc(sName.length() + sizeof(WCHAR))
@@ -64,10 +64,10 @@ static bool PushPidl(
 	sName.copy(Item->pszName, sName.length());
 
 	// Put that PIDL into the output array
-	**ppelt = pidl;
+	**ppelt = adsxpidlc;
 
 	// Advance the enumerator
-	*ppelt += sizeof(PITEMID_CHILD);
+	*ppelt += sizeof(PADSXITEMID_CHILD);
 	++*nActual;
 	return true;
 }
