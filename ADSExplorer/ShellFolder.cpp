@@ -63,29 +63,33 @@ CShellFolder::~CShellFolder() {
  */
 HRESULT CShellFolder::BindToObjectInitialize(
 	_In_     IShellFolder*      psfParent,
-	_In_     PCIDLIST_ABSOLUTE  pidlRoot,
-	_In_     PCIDLIST_ABSOLUTE  pidlParent,
-	_In_     PCUIDLIST_RELATIVE pidlNext,
+	_In_     PCIDLIST_ABSOLUTE  pidlaRoot,
+	_In_     PCIDLIST_ABSOLUTE  pidlaParent,
+	_In_     PCUIDLIST_RELATIVE pidlrNext,
 	_In_opt_ IBindCtx*          pbc,
 	_In_     REFIID             riid
 ) {
 	HRESULT hr;
 
 	// Carry on the legacy
-	m_pidlRoot = ILCloneFull(pidlRoot);
+	m_pidlRoot = ILCloneFull(pidlaRoot);
 	if (m_pidlRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	// Is pidlNext another folder to browse into, or have we arrived at a file?
-	SFGAOF rgfTest = SFGAO_FOLDER;
-	hr = psfParent->GetAttributesOf(1, &pidlNext, &rgfTest);
-	if (FAILED(hr)) return WrapReturnFailOK(hr);
-	bool bNextIsFolder = sfgaofTest & SFGAO_FOLDER;
+	bool bNextIsFolder = false;
+	if (ILIsChild(pidlrNext)) {
+		auto pidlcNext = static_cast<PCUITEMID_CHILD>(pidlrNext);
+		SFGAOF rgfTest = SFGAO_FOLDER;
+		hr = psfParent->GetAttributesOf(1, &pidlcNext, &rgfTest);
+		if (FAILED(hr)) return WrapReturnFailOK(hr);
+		bNextIsFolder = rgfTest & SFGAO_FOLDER;
+	}
 
 	if (bNextIsFolder) {
 		// Browse into this folder internally,
 		// set our internal ShellFolder to this new one.
 		hr = psfParent->BindToObject(
-			pidlNext,
+			pidlrNext,
 			pbc,
 			riid,
 			reinterpret_cast<void**>(&m_psf)
@@ -105,9 +109,9 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	// to our current path, or an absolute path/PIDL.
 	// Either way, what the next instance's PIDL is supposed to be is
 	// straightforward.
-	m_pidl = ILIsChild(pidlNext) ?
-		ILCombine(pidlParent, pidlNext) :
-		ILCloneFull(reinterpret_cast<PCIDLIST_ABSOLUTE>(pidlNext));
+	m_pidl = ILIsChild(pidlrNext) ?
+		ILCombine(pidlaParent, pidlrNext) :
+		ILCloneFull(static_cast<PCUIDLIST_ABSOLUTE>(pidlrNext));
 	if (m_pidl == NULL) return WrapReturn(E_OUTOFMEMORY);
 
 	LOG(L" ** New instance's PIDL: " << PidlToString(m_pidl));
