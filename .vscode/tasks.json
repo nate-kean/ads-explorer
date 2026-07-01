@@ -29,6 +29,33 @@
             }
         },
         {
+            "label": "Build",
+            "command": "./Scripts/build.ps1",
+            "type": "shell",
+            "options": {
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-NoProfile",
+                        "-File"
+                    ]
+                },
+                "cwd": "${workspaceFolder}",
+            },
+            "problemMatcher": [
+                "$msCompile",
+                "$msvc"
+            ],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
             "label": "Clean",
             "type": "shell",
             "command": "./Scripts/clean.ps1",
