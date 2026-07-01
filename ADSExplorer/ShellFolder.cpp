@@ -438,7 +438,7 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 	if (cidl < 1) return WrapReturn(E_INVALIDARG);  // TODO(nate-kean): support more than one item
 	if (aPidls == NULL) return WrapReturn(E_POINTER);
 
-	if (cidl == 0 || aPidls[0]->mkid.cb == 0) {
+	if (cidl == 0 || ILIsEmpty(aPidls[0])) {
 		// Root folder: [Desktop\ADS Explorer] or [ADS Explorer]
 		// Not a real filesystem object -> not accessible from ADS Explorer
 		LOG(L" ** Root folder");
@@ -595,7 +595,7 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 	if (pidlc == NULL || pName == NULL) return WrapReturn(E_POINTER);
 
 	// Return name of Root
-	if (pidlc->mkid.cb == 0) {
+	if (ILIsEmpty(pidlc)) {
 		switch (uFlags) {
 			// If wantsFORPARSING is present in the registry.
 			// As stated in the SDK, we should return here our virtual junction
