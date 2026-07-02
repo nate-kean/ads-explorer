@@ -7,10 +7,34 @@
         // Usage: open a Windows Explorer window, start debug,
         // select the Explorer process
         {
-            "name": "(Windows) Attach",
+            "name": "Attach to Explorer",
             "type": "cppvsdbg",
             "request": "attach",
             "processId": "${command:pickProcess}"
-        }
+        },
+        {
+            "name": "Register",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "sudo",
+            "args": ["regsvr32", "ADSExplorer.dll"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}\\Active",
+            "environment": [],
+            "console": "internalConsole",
+            "preLaunchTask": "Build"
+        },
+        {
+            "name": "Unregister",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "sudo",
+            "args": ["regsvr32", "/u", "ADSExplorer.dll"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}\\Active",
+            "environment": [],
+            "console": "internalConsole",
+            "preLaunchTask": "Build"
+        },
     ]
 }

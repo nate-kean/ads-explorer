@@ -13,7 +13,7 @@
                         "-File"
                     ]
                 },
-                "cwd": "${workspaceFolder}",
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$msCompile",
@@ -40,7 +40,7 @@
                         "-File"
                     ]
                 },
-                "cwd": "${workspaceFolder}",
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$msCompile",
@@ -67,7 +67,7 @@
                         "-File"
                     ]
                 },
-                "cwd": "${workspaceFolder}",
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [
                 "$msCompile",
