@@ -25,8 +25,10 @@ BOOL APIENTRY DllMain(
 	_In_ LPVOID    lpReserved
 ) {
 	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-		_Module.Init(ObjectMap, hInstance, &LIBID_ADSEXPLORERLib);
-		DisableThreadLibraryCalls(hInstance);
+		HRESULT hr = _Module.Init(ObjectMap, hInstance, &LIBID_ADSEXPLORERLib);
+		if (FAILED(hr)) return FALSE;
+		BOOL result = DisableThreadLibraryCalls(hInstance);
+		if (result == 0) return FALSE;
 	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
 		_Module.Term();
 	}
