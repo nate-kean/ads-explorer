@@ -9,6 +9,8 @@ sudo {
 		regsvr32 /s /u ADSExplorer.dll | Out-Null
 		if ($LastExitCode -ne 0) {
 			Write-Warning "Failed to unregister ADSExplorer.dll (status $LastExitCode)"
+		} else {
+			Write-Output "Successfully unregistered ADSExplorer.dll"
 		}
 
 		Copy-Item ..\x64\Debug\* .
@@ -18,6 +20,8 @@ sudo {
 		if ($LastExitCode -ne 0) {
 			Write-Error "Failed to register ADSExplorer.dll (status $LastExitCode)"
 			exit $LastExitCode
+		} else {
+			Write-Output "Successfully registered ADSExplorer.dll"
 		}
 
 		Start-Process explorer.exe
