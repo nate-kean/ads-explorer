@@ -68,6 +68,7 @@ class CDebugStream
 	std::wstring SHCONTFToString(const SHCONTF *pfAttribs);
 	std::wstring SHGDNFToString(const SHGDNF *pfAttribs);
 	std::wstring HRESULTToString(HRESULT hr);
+	std::wstring CMFToString(UINT cmf);
 #else
 	// Require a semicolon after LOG() to avoid "expected ';' after expression"
 	// error while still compiling down to nothing in release builds.
@@ -83,4 +84,5 @@ class CDebugStream
 	#define SHCONTFToString(_) DBG_NOTHING
 	#define SHGDNFToString(_) DBG_NOTHING
 	#define HRESULTToString(_) DBG_NOTHING
+	#define CMFToString(_) DBG_NOTHING
 #endif

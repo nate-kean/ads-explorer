@@ -17,10 +17,9 @@
 
 namespace ADSX {
 
-
 #pragma region ADSX::CContextMenuEntry
 
-CContextMenuEntry::CContextMenuEntry() : m_pszADSPath((NULL)) {
+CContextMenuEntry::CContextMenuEntry() : m_pszADSPath(NULL) {
 	LOG(P_CME << L"CONSTRUCTOR");
 }
 
@@ -30,7 +29,6 @@ CContextMenuEntry::~CContextMenuEntry() {
 }
 
 #pragma endregion
-
 
 #pragma region IShellExtInit
 
@@ -52,7 +50,7 @@ IFACEMETHODIMP CContextMenuEntry::Initialize(
 	hr = pdo->GetData(&fmt, &stg);
 	if (FAILED(hr)) return WrapReturn(E_INVALIDARG);
 	defer({ ReleaseStgMedium(&stg); });
-	
+
 	// Get a pointer to the actual data.
 	HDROP hDrop = static_cast<HDROP>(GlobalLock(stg.hGlobal));
 	if (hDrop == NULL) return WrapReturn(E_INVALIDARG);
@@ -80,7 +78,8 @@ IFACEMETHODIMP CContextMenuEntry::Initialize(
 	m_pszADSPath = static_cast<PWSTR>(CoTaskMemAlloc(cbADSPath));
 	wcsncpy_s(m_pszADSPath, cbADSPath, szPrefix, _countof(szPrefix));
 	wcsncat_s(m_pszADSPath, cbADSPath, pszFilePath, cchPath);
-	
+	LOG(L" ** " << m_pszADSPath);
+
 	return WrapReturn(S_OK);
 }
 
@@ -96,7 +95,7 @@ IFACEMETHODIMP CContextMenuEntry::GetCommandString(
 	_Out_writes_(cchMax) LPSTR    pszName,
 	_In_                 UINT     cchMax
 ) {
-	LOG(P_CME << L"GetCommandString()");
+	LOG(P_CME << L"GetCommandString(idCmd=" << idCmd << L")");
 
 	if (uFlags & GCS_VERBW) {
 		LOG(L" ** GCS_VERBW");
@@ -120,6 +119,8 @@ IFACEMETHODIMP CContextMenuEntry::GetCommandString(
 			lstrcpynW(
 				reinterpret_cast<PWSTR>(pszName),
 				L"Browse alternate data streams",
+				// L"Our time on Earth is borrowed",
+				// L"Stop what you're doing and go to hehe cat folder",
 				cchMax
 			);
 			return WrapReturn(S_OK);
@@ -166,7 +167,9 @@ IFACEMETHODIMP CContextMenuEntry::QueryContextMenu(
 	_In_ UINT  uidCmdLast,
 	_In_ UINT  uFlags
 ) {
-	LOG(P_CME << L"QueryContextMenu()");
+	LOG(P_CME << L"QueryContextMenu(i=" << i << L", uidCmdFirst=" << uidCmdFirst
+			  << L", uidCmdLast=" << uidCmdLast << L", uFlags="
+			  << CMFToString(uFlags) << L")");
 
 	// If the flags include CMF_DEFAULTONLY then we shouldn't do anything.
 	if (uFlags & CMF_DEFAULTONLY) {

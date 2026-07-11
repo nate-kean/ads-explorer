@@ -229,4 +229,32 @@ CDebugStream::overflow(CDebugStream::Base::int_type c) {
 				return ss.str();
 		}
 	}
+
+	std::wstring CMFToString(UINT cmf) {
+		std::wostringstream oss;
+		// from shobjidl_core.h
+		if (cmf & CMF_NORMAL) oss << L"CMF_NORMAL | ";
+		if (cmf & CMF_DEFAULTONLY) oss << L"CMF_DEFAULTONLY | ";
+		if (cmf & CMF_VERBSONLY) oss << L"CMF_VERBSONLY | ";
+		if (cmf & CMF_EXPLORE) oss << L"CMF_EXPLORE | ";
+		if (cmf & CMF_NOVERBS) oss << L"CMF_NOVERBS | ";
+		if (cmf & CMF_CANRENAME) oss << L"CMF_CANRENAME | ";
+		if (cmf & CMF_NODEFAULT) oss << L"CMF_NODEFAULT | ";
+		#if (NTDDI_VERSION < NTDDI_VISTA)
+			if (cmf & CMF_INCLUDESTATIC) oss << L"CMF_INCLUDESTATIC | ";
+		#endif
+		#if (NTDDI_VERSION >= NTDDI_VISTA)
+			if (cmf & CMF_ITEMMENU) oss << L"CMF_ITEMMENU | ";
+		#endif
+		if (cmf & CMF_EXTENDEDVERBS) oss << L"CMF_EXTENDEDVERBS | ";
+		#if (NTDDI_VERSION >= NTDDI_VISTA)
+			if (cmf & CMF_DISABLEDVERBS) oss << L"CMF_DISABLEDVERBS | ";
+		#endif
+		if (cmf & CMF_ASYNCVERBSTATE) oss << L"CMF_ASYNCVERBSTATE | ";
+		if (cmf & CMF_OPTIMIZEFORINVOKE) oss << L"CMF_OPTIMIZEFORINVOKE | ";
+		if (cmf & CMF_SYNCCASCADEMENU) oss << L"CMF_SYNCCASCADEMENU | ";
+		if (cmf & CMF_DONOTPICKDEFAULT) oss << L"CMF_DONOTPICKDEFAULT | ";
+		if (cmf & CMF_RESERVED) oss << L"CMF_RESERVED | ";
+		return oss.str();
+	}
 #endif
