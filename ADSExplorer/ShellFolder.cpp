@@ -626,7 +626,6 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 		LOG(L" ** FS Object");
 		// NOTE(nate-kean): Has returned E_INVALIDARG on [Desktop\C:\] before
 		// and I don't know why
-		// return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidlc, uFlags, pName));
 		return WrapReturnFailOK(m_psf->GetDisplayNameOf(pidlc, uFlags, pName));
 	}
 
