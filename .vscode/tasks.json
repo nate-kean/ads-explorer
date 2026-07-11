@@ -81,6 +81,53 @@
                 "kind": "build",
                 "isDefault": false
             }
+        },
+        {
+            "label": "Uninstall",
+            "type": "shell",
+            "command": "./Scripts/uninstall.ps1",
+            "options": {
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-NoProfile",
+                        "-File"
+                    ]
+                },
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Restart Explorer",
+            "type": "shell",
+            "command": "./Scripts/restartexplorer.ps1",
+            "options": {
+                "shell": {
+                    "executable": "powershell",
+                    "args": [
+                        "-NoProfile",
+                        "-File"
+                    ]
+                }
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": false
+            },
+            "problemMatcher": []
         }
     ]
 }
