@@ -699,7 +699,7 @@ STDMETHODIMP CShellFolder::ParseDisplayName(
 	LOG(" ** Parsed: [" << PidlToString(*ppidlr) << L"]");
 	LOG(" ** Attributes: " << SFGAOFToString(pfAttributes));
 
-	return WrapReturn(S_OK);
+	return WrapReturn(hr);
 }
 
 
