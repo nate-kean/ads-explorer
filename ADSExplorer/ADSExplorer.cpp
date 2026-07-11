@@ -20,17 +20,27 @@ BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
 BOOL APIENTRY DllMain(
-	_In_ HINSTANCE hInstance,
-	_In_ DWORD     ul_reason_for_call,
-	_In_ LPVOID    lpReserved
+	_In_ HINSTANCE hinstDLL,
+	_In_ DWORD     fdwReason,
+	_In_ LPVOID    lpvReserved
 ) {
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-		HRESULT hr = _Module.Init(ObjectMap, hInstance, &LIBID_ADSEXPLORERLib);
-		if (FAILED(hr)) return FALSE;
-		BOOL result = DisableThreadLibraryCalls(hInstance);
-		if (result == 0) return FALSE;
-	} else if (ul_reason_for_call == DLL_PROCESS_DETACH) {
-		_Module.Term();
+	switch (fdwReason) {
+		case DLL_PROCESS_ATTACH: {
+			HRESULT hr = _Module.Init(ObjectMap, hinstDLL, &LIBID_ADSEXPLORERLib);
+			if (FAILED(hr)) return FALSE;
+			BOOL result = DisableThreadLibraryCalls(hinstDLL);
+			if (result == 0) return FALSE;
+			break;
+		}
+		case DLL_PROCESS_DETACH: {
+			if (lpvReserved != nullptr) {
+				// learn.microsoft.com says not to clean up if there is
+				// something in lpvReserved
+				break;
+			}
+			_Module.Term();
+			break;
+		}
 	}
 	return TRUE;
 }
@@ -64,8 +74,11 @@ STDAPI DllRegisterServer() {
 	if (FAILED(hr)) {
 		// If registration failed, attempt to unregister to clean up any partial
 		// registration.
-		_Module.UnregisterServer(TRUE);
-		return hr;
+		HRESULT hr2 = _Module.UnregisterServer(TRUE);
+		if (FAILED(hr2)) {
+			// Megafailure
+			return hr2;
+		}
 	}
 	return hr;
 }
@@ -74,9 +87,5 @@ STDAPI DllRegisterServer() {
  * Remove entries from the system registry.
  */
 STDAPI DllUnregisterServer() {
-	HRESULT hr = _Module.UnregisterServer(TRUE);
-	// Even if unregistration fails partially, we still return the result.
-	// The caller can check the return value to determine if cleanup was
-	// successful.
-	return hr;
+	return _Module.UnregisterServer(TRUE);
 }
