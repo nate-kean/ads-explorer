@@ -69,6 +69,13 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	_In_opt_ IBindCtx*          pbc,
 	_In_     REFIID             riid
 ) {
+	LOG(P_RSF << L"BindToObjectInitialize("
+		<< L"psfParent=" << std::hex << psfParent << L", "
+		<< L"pidlaRoot=[" << PidlToString(pidlaRoot) << L"], "
+		<< L"pidlaParent=[" << PidlToString(pidlaParent) << L"], "
+		<< L"pidlrNext=[" << PidlToString(pidlrNext) << L"], "
+		<< L"riid=" << IIDToString(riid)
+	<< L")");
 	HRESULT hr;
 
 	// Carry on the legacy
@@ -145,7 +152,7 @@ STDMETHODIMP CShellFolder::GetClassID(_Out_ CLSID *pclsid) {
  * @post: this ADSX​::CShellFolder instance is ready to be used.
  */
 STDMETHODIMP CShellFolder::Initialize(_In_ PCIDLIST_ABSOLUTE pidlaRoot) {
-	// LOG(P_RSF << L"Initialize(pidlaRoot=[" << PidlToString(pidlaRoot) << L"])");
+	LOG(P_RSF << L"Initialize(pidlaRoot=[" << PidlToString(pidlaRoot) << L"])");
 
 	// Don't initialize more than once.
 	// This is necessary because for reasons beyond me Windows tries to.
