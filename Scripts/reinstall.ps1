@@ -11,8 +11,6 @@ sudo {
 			Write-Warning "Failed to unregister ADSExplorer.dll (status $LastExitCode)"
 		}
 
-		Start-Process explorer.exe
-
 		Copy-Item ..\x64\Debug\* .
 		Copy-Item ..\ADSExplorer\x64\Debug\ADSExplorer.tlb .
 
@@ -21,5 +19,7 @@ sudo {
 			Write-Error "Failed to register ADSExplorer.dll (status $LastExitCode)"
 			exit $LastExitCode
 		}
+
+		Start-Process explorer.exe
 	Pop-Location
 }
