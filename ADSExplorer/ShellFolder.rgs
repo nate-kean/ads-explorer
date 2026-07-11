@@ -46,12 +46,12 @@ HKLM
                                 }
                             }
                         }
-                        NoRemove Shell Extensions
+                    }
+                    NoRemove Shell Extensions
+                    {
+                        NoRemove Approved
                         {
-                            NoRemove Approved
-                            {
-                                ForceRemove {ED383D11-6797-4103-85EF-CBDB8DEB50E2} = s 'ADS Explorer Shell Extension'
-                            }
+                            ForceRemove {ED383D11-6797-4103-85EF-CBDB8DEB50E2} = s 'ADS Explorer Shell Extension'
                         }
                     }
                 }
