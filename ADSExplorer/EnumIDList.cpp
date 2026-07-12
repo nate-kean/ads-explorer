@@ -157,7 +157,7 @@ HRESULT CEnumIDList::NextInternal(
 					return WrapReturn(S_FALSE);
 				default:
 					LOG(L" ** Error: " << GetLastError());
-					return HRESULT_FROM_WIN32(GetLastError());
+					return AtlHresultFromLastError();
 			}
 		}
 		if (GetLastError() == ERROR_HANDLE_EOF) {
@@ -168,7 +168,7 @@ HRESULT CEnumIDList::NextInternal(
 		bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 		if (!bPushPidlSuccess) {
 			LOG(L" ** Error: " << GetLastError());
-			return HRESULT_FROM_WIN32(GetLastError());
+			return AtlHresultFromLastError();
 		}
 	}
 
@@ -183,14 +183,14 @@ HRESULT CEnumIDList::NextInternal(
 			} else {
 				// Stream has stopped unexpectedly
 				LOG(L" ** Error: " << GetLastError());
-				return HRESULT_FROM_WIN32(GetLastError());
+				return AtlHresultFromLastError();
 			}
 		} else {
 			// Consume stream
 			bPushPidlSuccess = fnConsume(fsd, &rgelt, &nActual);
 			if (!bPushPidlSuccess) {
 				LOG(L" ** Error: " << GetLastError());
-				return HRESULT_FROM_WIN32(GetLastError());
+				return AtlHresultFromLastError();
 			}
 		}
 	}
@@ -212,7 +212,7 @@ STDMETHODIMP CEnumIDList::Reset() {
 		m_nTotalFetched = 0;
 		const BOOL success = FindClose(m_hFinder);
 		m_hFinder = NULL;
-		if (!success) return HRESULT_FROM_WIN32(GetLastError());
+		if (!success) return AtlHresultFromLastError();
 	}
 	return WrapReturn(S_OK);
 }
