@@ -289,10 +289,10 @@ STDMETHODIMP CShellFolder::CompareIDs(
 	USHORT Result = 0;  // see note below (MAKE_HRESULT)
 
 	switch (lParam & SHCIDS_COLUMNMASK) {
-		case DetailsColumn::Name:
+		case ADSX::DetailsColumn::Name:
 			Result = wcscmp(pItem1->pszName, pItem2->pszName);
 			break;
-		case DetailsColumn::Filesize:
+		case ADSX::DetailsColumn::Filesize:
 			Result = static_cast<USHORT>(pItem1->llFilesize - pItem2->llFilesize);
 			if (Result < 0) Result = -1;
 			else if (Result > 0) Result = 1;
@@ -735,7 +735,7 @@ STDMETHODIMP CShellFolder::ColumnClick(_In_ UINT uColumn) {
 
 
 // Called for uColumn = 0, 1, 2, ... until function returns E_FAIL
-// (uColumn >= DetailsColumn::MAX)
+// (uColumn >= ADSX::DetailsColumn::MAX)
 STDMETHODIMP CShellFolder::GetDetailsOf(
 	_In_opt_ PCUITEMID_CHILD pidlc,
 	_In_     UINT uColumn,
@@ -753,7 +753,9 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 		// Load the uColumn based string from the .rc file
 		// TODO: Use LoadString instead of bringing in this whole awful string
 		// class
-		if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
+		if (uColumn >= ADSX::DetailsColumn::MAX) {
+			return WrapReturnFailOK(E_FAIL);
+		}
 		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
 		const CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
 		pDetails->fmt = LVCFMT_LEFT;
@@ -767,8 +769,8 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 	}
 
 	if (!ADSX::CItem::IsOwn(pidlc)) {
-		// Lazy load this because this doesn't happen for every shellfolder
-		// instance (e.g., during browsing's "drill down" phase)
+		// Lazy load the Shell Details object because it's not used in every
+		// ShellFolder instance (e.g., during browsing's "drill down" phase)
 		if (m_psd == NULL) {
 			hr = m_psf->BindToObject(pidlc, NULL, IID_PPV_ARGS(&m_psd));
 			if (FAILED(hr)) return WrapReturnFailOK(hr);
@@ -776,12 +778,12 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 		return WrapReturnFailOK(m_psd->GetDetailsOf(pidlc, uColumn, pDetails));
 	}
 
-	if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
+	if (uColumn >= ADSX::DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 
 	// Okay, this time it's for a real item
 	auto Item = ADSX::CItem::Get(pidlc);
 	switch (uColumn) {
-		case DetailsColumn::Name:
+		case ADSX::DetailsColumn::Name:
 			pDetails->fmt = LVCFMT_LEFT;
 			ATLASSERT(wcslen(Item->pszName) <= INT_MAX);
 			pDetails->cxChar = static_cast<int>(wcslen(Item->pszName));
@@ -792,7 +794,7 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 				) ? S_OK : E_OUTOFMEMORY
 			);
 
-		case DetailsColumn::Filesize:
+		case ADSX::DetailsColumn::Filesize:
 			pDetails->fmt = LVCFMT_RIGHT;
 			constexpr UINT8 uLongLongStrLenMax =
 				_countof("-9,223,372,036,854,775,808");
@@ -829,8 +831,8 @@ STDMETHODIMP CShellFolder::GetDefaultColumn(
 
 	if (pSort == NULL || pDisplay == NULL) return WrapReturn(E_POINTER);
 
-	*pSort = DetailsColumn::Name;
-	*pDisplay = DetailsColumn::Name;
+	*pSort = ADSX::DetailsColumn::Name;
+	*pDisplay = ADSX::DetailsColumn::Name;
 
 	return WrapReturn(S_OK);
 }
@@ -849,10 +851,10 @@ STDMETHODIMP CShellFolder::GetDefaultColumnState(
 	// not sort the column. (not setting it means that our CompareIDs() will be
 	// called)
 	switch (uColumn) {
-		case DetailsColumn::Name:
+		case ADSX::DetailsColumn::Name:
 			*pcsFlags = SHCOLSTATE_TYPE_STR | SHCOLSTATE_ONBYDEFAULT;
 			break;
-		case DetailsColumn::Filesize:
+		case ADSX::DetailsColumn::Filesize:
 			*pcsFlags = SHCOLSTATE_TYPE_INT | SHCOLSTATE_ONBYDEFAULT;
 			break;
 		default:
@@ -916,10 +918,10 @@ STDMETHODIMP CShellFolder::MapColumnToSCID(
 		// This will map the columns to some built-in properties on Vista.
 		// It's needed for the tile subtitles to display properly.
 		switch (uColumn) {
-			case DetailsColumn::Name:
+			case ADSX::DetailsColumn::Name:
 				*pscid = PKEY_ItemNameDisplay;
 				return WrapReturn(S_OK);
-			case DetailsColumn::Filesize:
+			case ADSX::DetailsColumn::Filesize:
 				// TODO(nate-kean): is this right? where are PKEYs'
 				// documentation?
 				*pscid = PKEY_TotalFileSize;
