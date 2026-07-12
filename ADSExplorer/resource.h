@@ -3,13 +3,17 @@
 // Used by ADSExplorer.rc
 //
 #define IDS_PROJNAME                    100
+
 #define IDR_ADSXSHELLFOLDER             102
 #define IDR_CONTEXTMENUENTRY            103
-#define IDI_ICON1                       104
+
 #define IDI_ADSX_ROOT                   104
+
 #define IDS_COLUMN_NAME                 200
 #define IDS_COLUMN_FILESIZE             201
-#define IDS_REMOVAL_MSG                 300
+
+#define IDS_MSG_REMOVAL                 300
+#define IDS_MSG_BROWSE                  301
 
 // Next default values for new objects
 // 

@@ -6,11 +6,11 @@
 #pragma once
 
 #include "pch.h"  // Precompiled header; include first
-#include "resource.h"  // Resource IDs from the RC file
 
 #include "ContextMenuEntry.h"
 
 #include "debug.h"
+#include "resource.h"  // Resource IDs from the RC file
 
 // Debug log prefix for ADSX::CContextMenuEntry
 #define P_CME L"ADSX::CContextMenuEntry(0x" << std::hex << this << L")::"
@@ -32,6 +32,10 @@ CContextMenuEntry::~CContextMenuEntry() {
 
 #pragma region IShellExtInit
 
+WCHAR ADSX::CContextMenuEntry::s_szMessage[
+	_countof(ADSX::CContextMenuEntry::s_szMessage)
+] = {};
+
 IFACEMETHODIMP CContextMenuEntry::Initialize(
 	_In_opt_ PCIDLIST_ABSOLUTE pidlaFolder,
 	_In_     IDataObject*      pdo,
@@ -52,33 +56,48 @@ IFACEMETHODIMP CContextMenuEntry::Initialize(
 	defer({ ReleaseStgMedium(&stg); });
 
 	// Get a pointer to the actual data.
-	HDROP hDrop = static_cast<HDROP>(GlobalLock(stg.hGlobal));
+	auto hDrop = static_cast<HDROP>(GlobalLock(stg.hGlobal));
 	if (hDrop == NULL) return WrapReturn(E_INVALIDARG);
 	defer({ GlobalUnlock(stg.hGlobal); });
 
-	// Basic integrity check – make sure there is at least one filename.
+	// Make sure there is exactly one FS object selected.
+	// We can't show the ADS view of two things at once (or of nothing).
 	// (0xFFFFFFFF = get file count)
 	UINT uNumFiles = DragQueryFileW(hDrop, 0xFFFFFFFF, NULL, 0);
-	if (uNumFiles == 0) return WrapReturn(E_INVALIDARG);
+	if (uNumFiles != 1) return WrapReturn(E_INVALIDARG);
 	
-	// Get the required size of the first file's name buffer.
+	// Get the required buffer size for the first path and allocate it.
 	// (Returned size does not include null terminator)
 	UINT cchPath = DragQueryFileW(hDrop, 0, NULL, 0);
-	PWSTR pszFilePath = new WCHAR[cchPath + 1];
-	defer({ delete[] pszFilePath; });
+	PWSTR pszPath = new WCHAR[cchPath + 1];
+	defer({ delete[] pszPath; });
 
-	// Get the first file's name.
-	UINT uResult = DragQueryFileW(hDrop, 0, pszFilePath, cchPath + 1);
-	if (uResult == 0) return WrapReturn(E_INVALIDARG);
-	LOG(L" ** " << pszFilePath);
+	// Load the path into the buffer.
+	UINT cchPathCopied = DragQueryFileW(hDrop, 0, pszPath, cchPath + 1);
+	if (cchPathCopied == 0) return WrapReturn(E_INVALIDARG);
+	LOG(L" ** Received file path: " << pszPath);
 
 	// ADS path = prefix + path
-	size_t cchADSPath = _countof(szPrefix) + cchPath + 1;
+	size_t cchADSPath = _countof(s_szPrefix) + cchPath + 1;
 	size_t cbADSPath = cchADSPath * sizeof(WCHAR);
 	m_pszADSPath = static_cast<PWSTR>(CoTaskMemAlloc(cbADSPath));
-	wcsncpy_s(m_pszADSPath, cbADSPath, szPrefix, _countof(szPrefix));
-	wcsncat_s(m_pszADSPath, cbADSPath, pszFilePath, cchPath);
-	LOG(L" ** " << m_pszADSPath);
+	wcsncpy_s(m_pszADSPath, cbADSPath, s_szPrefix, _countof(s_szPrefix));
+	wcsncat_s(m_pszADSPath, cbADSPath, pszPath, cchPath);
+	LOG(L" ** Computed destination: " << m_pszADSPath);
+
+	static bool s_bMessageLoaded = false;
+	if (!s_bMessageLoaded) {
+		int cchMessageCopied = LoadStringW(
+			NULL,
+			IDS_MSG_BROWSE,
+			s_szMessage,
+			_countof(s_szMessage)
+		);
+		if (cchMessageCopied == 0) {
+			return WrapReturn(AtlHresultFromLastError());
+		}
+		s_bMessageLoaded = true;
+	}
 
 	return WrapReturn(S_OK);
 }
@@ -173,21 +192,45 @@ IFACEMETHODIMP CContextMenuEntry::QueryContextMenu(
 
 	// If the flags include CMF_DEFAULTONLY then we shouldn't do anything.
 	if (uFlags & CMF_DEFAULTONLY) {
-		return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0));
+		return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
 	}
 
-	// Use the helper function InsertMenu to add a new menu item.
-	// We specify CMF_SEPARATOR to add a separator.
-	// InsertMenuW(hmenu, i, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
-	InsertMenuW(
-		hmenu,
-		i,
-		MF_STRING | MF_BYPOSITION,
-		uidCmdFirst,
-		// TODO(nate-kean): put this in a resource string
-		L"Browse alternate data streams"
-	);
-	return WrapReturn(MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 1));
+	// Called with this flag in a bogus duplicate Context Menu Entry instance
+	// with an incorrect parent dir of %USERPROFILE%\Desktop. I don't get it,
+	// result is not used, documentation makes it seem optional, and....
+	// following through causes heap corruption!!!!! ?????? So we skip it.
+	// TODO: Find out what the second instance with the weird file path is for
+	// TODO: Surely there is something *I* am doing wrong to cause the heap
+	// corruption
+	if (uFlags == CMF_OPTIMIZEFORINVOKE) {
+		return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
+	}
+
+	// TODO: Add this back once base functionality is working
+	UINT nItems = 0;
+	// InsertMenuW(hmenu, i + nItems++, MF_SEPARATOR | MF_BYPOSITION, 0, NULL);
+
+	MENUITEMINFOW mii = {
+		.cbSize = sizeof(MENUITEMINFOW),
+		.fMask = MIIM_DATA | MIIM_ID | MIIM_TYPE,
+		.fType = MFT_STRING,
+		.fState = MFS_ENABLED | MFS_UNCHECKED | MFS_UNHILITE,
+		.wID = uidCmdFirst,
+		.hSubMenu = hmenu,
+		.hbmpChecked = NULL,
+		.hbmpUnchecked = NULL,
+		.dwItemData = 0,
+		// .dwTypeData = GetCMEMessage()->GetBuffer(),
+		// .cch = static_cast<UINT>(GetCMEMessage()->GetLength())
+		.dwTypeData = s_szMessage,
+		.cch = _countof(s_szMessage)
+	};
+	#if (WINVER >= 0x0500)
+		mii.hbmpItem = NULL;
+	#endif /* WINVER >= 0x0500 */
+	InsertMenuItemW(hmenu, i + nItems++, TRUE, &mii);
+
+	return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, nItems);
 }
 
 #pragma endregion

@@ -9,7 +9,7 @@
 
 #include "ADSExplorer_h.h"
 
-#include "resource.h"  // main symbols
+#include "resource.h"
 
 
 namespace ADSX {

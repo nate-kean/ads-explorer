@@ -113,7 +113,8 @@ BEGIN
     IDS_PROJNAME            "ADS Explorer"
     IDS_COLUMN_NAME         "Name"
     IDS_COLUMN_FILESIZE     "Size"
-    IDS_REMOVAL_MSG         "To remove this view, unregister the DLL."
+    IDS_MSG_REMOVAL         "To remove this view, unregister the DLL."
+    IDS_MSG_BROWSE          "Browse alternate data streams"
 END
 
 #endif    // English (United States) resources
