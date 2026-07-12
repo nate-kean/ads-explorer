@@ -750,7 +750,9 @@ STDMETHODIMP CShellFolder::GetDetailsOf(
 
 	// Shell is asking for the column headers
 	if (pidlc == NULL) {
-		// Load the uColumn based string from the resource
+		// Load the uColumn based string from the .rc file
+		// TODO: Use LoadString instead of bringing in this whole awful string
+		// class
 		if (uColumn >= DetailsColumn::MAX) return WrapReturnFailOK(E_FAIL);
 		const WORD wResourceID = IDS_COLUMN_NAME + uColumn;
 		const CStringW ColumnName(MAKEINTRESOURCE(wResourceID));
