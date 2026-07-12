@@ -111,16 +111,8 @@ IDI_ADSX_ROOT           ICON                    "icon1.ico"
 STRINGTABLE
 BEGIN
     IDS_PROJNAME            "ADS Explorer"
-END
-
-STRINGTABLE
-BEGIN
     IDS_COLUMN_NAME         "Name"
     IDS_COLUMN_FILESIZE     "Size"
-END
-
-STRINGTABLE
-BEGIN
     IDS_REMOVAL_MSG         "To remove this view, unregister the DLL."
 END
 
