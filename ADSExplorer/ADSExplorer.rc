@@ -80,7 +80,7 @@ BEGIN
             VALUE "FileDescription", "Namespace for opened Explorer windows"
             VALUE "FileVersion", "1.0.0"
             VALUE "InternalName", "ADSExplorer.dll"
-            VALUE "LegalCopyright", "Copyright (C) Nate Kean 2024"
+            VALUE "LegalCopyright", "Copyright (C) Nate Kean 2026"
             VALUE "OriginalFilename", "ADSExplorer.dll"
             VALUE "ProductName", "ADS Explorer"
             VALUE "ProductVersion", "1.0.0"

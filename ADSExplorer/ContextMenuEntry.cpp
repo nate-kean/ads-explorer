@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
- * Copyright (c) 2024 Nate Kean
+ * Copyright (c) 2026 Nate Kean
  */
 
 #pragma once

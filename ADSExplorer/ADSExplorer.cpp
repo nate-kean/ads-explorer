@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
+ * Copyright (c) 2026 Nate Kean
  */
 
 // dllmain.cpp : Defines the entry point for the DLL application.

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2004 Pascal Hurni
  * Copyright (c) 2020 Calvin Buckley
- * Copyright (c) 2024 Nate Kean
+ * Copyright (c) 2026 Nate Kean
  */
 
 #include "pch.h"  // Precompiled header; include first

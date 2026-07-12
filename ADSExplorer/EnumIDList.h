@@ -1,5 +1,5 @@
 /**
- * 2024 Nate Kean
+ * 2026 Nate Kean
  *
  * A Windows Enumerator object that produces LPITEMIDLISTs that contain
  * ADSX::CItem structures.
