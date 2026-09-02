@@ -60,6 +60,8 @@ CShellFolder::~CShellFolder() {
  * Entry point for creating an ADSX Shell Folder from a call to BindToObject.
  * We need the extra context we have during a call to BindToObject to know
  * where we are while Windows is using us to drill down to the end of a file path.
+ * I developed this independently, but it turns out that ZIPFolders does it too!
+ * I guess I'm doing something right. Or making the same mistake as my ancestors.
  */
 HRESULT CShellFolder::BindToObjectInitialize(
 	_In_     IShellFolder*      psfParent,
@@ -82,18 +84,16 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	m_pidlaRoot = ILCloneFull(pidlaRoot);
 	if (m_pidlaRoot == NULL) return WrapReturn(E_OUTOFMEMORY);
 
-	// Is pidlrNext another folder to browse into, or have we arrived at a file?
-	bool bNextIsFolder = false;
+	// Is pidlrNext another folder to browse into, or have we arrived at the end?
 	if (ILIsChild(pidlrNext)) {
-		auto pidlcNext = static_cast<PCUITEMID_CHILD>(pidlrNext);
-		SFGAOF rgfTest = SFGAO_FOLDER;
-		hr = psfParent->GetAttributesOf(1, &pidlcNext, &rgfTest);
-		if (FAILED(hr)) return WrapReturnFailOK(hr);
-		bNextIsFolder = rgfTest & SFGAO_FOLDER;
-	}
-
-	if (bNextIsFolder) {
-		// Browse into this folder internally,
+		// We have arrived at the FS object at the end.
+		// If EnumObjects is now called for this instance of the
+		// ADSX Shell Folder, we'll be enumerating this FS object's ADSes.
+		// We will keep our internal ShellFolder as the parent of this object.
+		m_psf = psfParent;
+	} else {
+		// Just another folder in the middle of the path.
+		// Browse into this folder internally and produce a new ShellFolder object,
 		// set our internal ShellFolder to this new one.
 		hr = psfParent->BindToObject(
 			pidlrNext,
@@ -103,12 +103,6 @@ HRESULT CShellFolder::BindToObjectInitialize(
 		);
 		LOG(L" ** Inner BindToObject -> " << HRESULTToString(hr));
 		if (FAILED(hr)) return WrapReturnFailOK(hr);
-	} else {
-		// We have arrived at a file.
-		// If EnumObjects is now called for this instance of the
-		// ADSX Shell Folder, we'll be enumerating the file's ADSes.
-		// Keep our internal ShellFolder as the one that holds this file.
-		m_psf = psfParent;
 	}
 
 	// Set this new instance's internal PIDL.
@@ -118,7 +112,7 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	// Either way, what the next instance's PIDL is supposed to be is
 	// straightforward.
 	m_pidla = ILIsChild(pidlrNext) ?
-		ILCombine(pidlaParent, pidlrNext) :
+		ILCombine(pidlaParent, static_cast<PCUITEMID_CHILD>(pidlrNext)) :
 		ILCloneFull(static_cast<PCUIDLIST_ABSOLUTE>(pidlrNext));
 	if (m_pidla == NULL) return WrapReturn(E_OUTOFMEMORY);
 
@@ -458,6 +452,9 @@ STDMETHODIMP CShellFolder::GetAttributesOf(
 	} else if (!ADSX::CItem::IsOwn(aPidls[0])) {
 		// Files and folders
 		// FS objects along the way to and including the requested file/folder
+		// Importantly, we're going to tell Windows that even a file at the end of the path
+		// is like a FOLDER, that we can BROWSE INTO!
+		// Thus, Windows will WANT to browse into it. And we'll show its ADSes.
 		LOG(L" ** FS Object");
 		// HRESULT hr = m_psf->GetAttributesOf(cidl, aPidls, pfAttribs);
 		// if (FAILED(hr)) return WrapReturn(hr);
@@ -509,7 +506,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 
 	// Only one item at a time
 	// TODO(nate-kean): It was a design decision for Hurni's NSE to support
-	// only one item at a time. I should consider supporting multiple.
+	// having only one item selected at a time. I should consider supporting multiple.
 	if (cidl != 1) return WrapReturn(E_INVALIDARG);
 
 	HRESULT hr;
@@ -547,7 +544,7 @@ STDMETHODIMP CShellFolder::GetUIObjectOf(
 	// OpenWindows had the luxury of their objects being real/normal filesystem
 	// objects (i.e., the folders other Explorer windows were open to), so it
 	// could just proxy these requests on to those objects ('s parent folders).
-	// Our objects are not real/normal filesystem objects, so we have to
+	// Our objects are not real/normal filesystem objects, so we're going to have to
 	// implement these interfaces ourselves.
 	else if (riid == IID_IContextMenu) {
 		return WrapReturnFailOK(E_NOINTERFACE);
@@ -641,10 +638,12 @@ STDMETHODIMP CShellFolder::GetDisplayNameOf(
 	auto pItem = ADSX::CItem::Get(pidlc);
 	switch (uFlags) {
 		case SHGDN_NORMAL | SHGDN_FORPARSING: {
-			// "Desktop\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
+			// "[Desktop]\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\{fs object's path}:{ADS name}"
 			PCIDLIST_ABSOLUTE pidlaADSXFSPath = ILCombine(
 				m_pidlaRoot,
-				ILNext(m_pidla)  // remove [Desktop]
+				// minus [Desktop] here
+				// otherwise it would be "[Desktop]\::{ED383D11-6797-4103-85EF-CBDB8DEB50E2}\[Desktop]\{fs object's path}:{ADS name}"
+				ILNext(m_pidla)
 			);
 			PWSTR pszPath = NULL;
 			HRESULT hr = SHGetNameFromIDList(
