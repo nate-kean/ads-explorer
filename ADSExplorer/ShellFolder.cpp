@@ -112,7 +112,8 @@ HRESULT CShellFolder::BindToObjectInitialize(
 	}
 
 	// Set this new instance's internal PIDL.
-	// These are the two cases I've seen: either a child PIDL directly relative
+	// These are the two cases I've seen in this function:
+	// it either gets a child PIDL directly relative
 	// to our current path, or an absolute path/PIDL.
 	// Either way, what the next instance's PIDL is supposed to be is
 	// straightforward.
